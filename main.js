@@ -21,7 +21,7 @@
                     var elementText = element.innerText.trim();
                     if (elementText.length >= 60)
                         if (!(element.tagName === 'LI' && elementText.includes('    ')))
-                            text += ". " + elementText;
+                            text += " " + elementText;
                 });
                 getReadOptions(text);
 				break;
