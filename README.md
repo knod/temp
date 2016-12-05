@@ -1,3 +1,10 @@
+# This fork:
+
+ - Removes the usage of the web API, which doesn't exist anyways
+ - Fixes the bad offline fallback of the extension to reading the whole document, including navigational links and such
+
+-----
+
 ### Read
 
 Speed reading via rapid serial visual presentation
@@ -23,7 +30,7 @@ Select text on any website by dragging over it with your mouse. When you right c
 
 This tool handles all of the parsing and display logic on the client-side. There is no dictionary look-up or database of words referenced. Everything is parsed by regular expressions. Even with these limitations, read offers some unique features.
 
-##### RSVP 
+##### RSVP
 
 Rapid serial visual presentation allows for readers to keep their eyes focused on a single point on the page, saving a massive amount of time normally lost in reading. As the speed of this serial presentation increases, sub-vocalization also decreases and astounding speeds can be reached with great comprehension.
 

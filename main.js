@@ -12,23 +12,18 @@
 	chrome.extension.onMessage.addListener(function (request, sender, sendResponse) {
 		switch (request.functiontoInvoke) {
 			case "readSelectedText":
-				getReadOptions ( request.selectedText );
+				getReadOptions (request.selectedText);
 				break;
 			case "readFullPage":
-				var getArticle = $.get( '//read.tomasino.org/read.py?url=' + document.URL );
-
-				getArticle.success(function( result ) {
-					if (result.error) {
-						getReadOptions( result.messages );
-					} else {
-						var title = result.title;
-						var content = result.content;
-						var text = $(content).text();
-						getReadOptions( title + "\n\n" + text );
-					}
-				}).error(function( jqXHR, textStatus, errorThrown ) {
-					getReadOptions ( document.body.innerText || document.body.textContent );
-				});
+                var text = '';
+                var elements = $('p, li, h1, h2, h3, h4, h5, h6, span, pre');
+                elements.each(function(index, element) {
+                    var elementText = element.innerText.trim();
+                    if (elementText.length >= 60)
+                        if (!(element.tagName === 'LI' && elementText.includes('    ')))
+                            text += ". " + elementText;
+                });
+                getReadOptions(text);
 				break;
 			default:
 				break;
