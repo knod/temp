@@ -18,10 +18,6 @@
 		this.isLong = false;
 		this.isNumeric = false;
 
-		// START CUSTOM CODE FOR GREEK
-		this.isGreek = false;
-		// END CUSTOM CODE FOR GREEK
-
 		this.process();
 	};
 
@@ -31,13 +27,6 @@
 
 		var match = this.val.match(textRegex);
 		this.length = (match) ? match.length : 0;
-
-		// START CUSTOM CODE FOR GREEK
-		if ( this.length ) {
-			console.log( 'is this greek?', this.val.test(/[\u0370-\u03FF]+/g));
-			this.isGreek = this.val.test(/[\u0370-\u03FF]+/g);
-		}
-		// END CUSTOM CODE FOR GREEK
 
 		var lastChar = this.val.substr(-1);
 		var firstChar = this.val[0];
@@ -113,4 +102,3 @@
 	window.ReadWord = ReadWord;
 
 }(window) );
-

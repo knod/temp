@@ -80,10 +80,6 @@
 
 	function Read ( block, options ) { //element, wpm ) {
 
-		// START CUSTOM
-		this._isGreek = false;
-		// END CUSTOM
-
 		// Defaults
 		this._parentElement = null;
 		this._barElement = null;
@@ -170,10 +166,6 @@
 		if (this._displayElement) {
 			var word = this._currentWord.val;
 
-			// START CUSTOM CODE FOR GREEK
-			var isGreek = this._currentWord.isGreek;
-			// END CUSTOM CODE FOR GREEK
-
 			var before = word.substr(0, this._currentWord.index);
 			var letter = word.substr(this._currentWord.index, 1);
 
@@ -181,14 +173,14 @@
 			var $before = this._options.element.find('.__read_before').html(before).css("opacity","0");
 			var $letter = this._options.element.find('.__read_letter').html(letter).css("opacity","0");
 
-			var calc = $before.textWidth() + Math.round( $letter.textWidth() / 2 );
 			// START CUSTOM CODE FOR GREEK
-			if ( isGreek ) { calc = calc + 40; }
+			var calc = 0;
 			// END CUSTOM CODE FOR GREEK
 
 			if (!this._currentWord.val.match(whiteSpace)){
 				this._displayElement.html(this._currentWord.val);
 				this._displayElement.css("margin-left", -calc);
+				console.log( 'actual margin:', this._displayElement.css('margin-left') );
 			}
 		}
 
