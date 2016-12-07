@@ -180,7 +180,6 @@
 			if (!this._currentWord.val.match(whiteSpace)){
 				this._displayElement.html(this._currentWord.val);
 				this._displayElement.css("margin-left", -calc);
-				console.log( 'actual margin:', this._displayElement.css('margin-left') );
 			}
 		}
 
