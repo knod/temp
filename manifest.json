@@ -22,7 +22,8 @@
                 "ReadWord.js",
                 "ReadBlock.js",
                 "Read.js",
-				"main.js"
+                "bundle.js"
+                
             ],
             "matches": [
                 "http://*/*",
