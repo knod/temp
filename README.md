@@ -1,9 +1,8 @@
 # This fork:
 
- - Removes the usage of the web API, which doesn't exist anyways
- - Fixes the bad offline fallback of the extension to reading the whole document, including navigational links and such
+ - Centers words more consistently across languages
+ - Parses html to try to find the main text of an article
 
------
 -----
 ##Attributions:
 This tool was derived from the [RSVP read plugin](https://github.com/MicroDroid/read_plugin) created by [MicroDroid](https://github.com/MicroDroid) which was derived from the [RSVP read plugin](https://github.com/jamestomasino/read_plugin) created by [jamestomasino](https://github.com/jamestomasino), which handles the UI of the RSVP interface.
@@ -25,7 +24,7 @@ Click the extension's icon to read the body of the article on the page or select
 
 - `Pause` by clicking on the words in the reading bar.
 - `Resume` by clicking on the words in the reading bar again.
-- Change your reading speed by entering a new number on the left.
+- Change your reading speed using settings available from a gear icon on the left.
 
 - - - - -
 
