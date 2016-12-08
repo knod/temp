@@ -30,7 +30,7 @@ var unfluff = require('unfluff');
 
 		if ( text ) { 
 			var filtered = text.replace(/\[\d{0,3}?]/g, '');
-			getReadOptions(text);
+			getReadOptions(filtered);
 		}
 	});
 
