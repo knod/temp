@@ -23,7 +23,6 @@
                 "ReadBlock.js",
                 "Read.js",
                 "bundle.js"
-                
             ],
             "matches": [
                 "http://*/*",
