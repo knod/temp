@@ -2,9 +2,6 @@ var unfluff = require('unfluff');
 
 (function(){
 
-	var data = unfluff( document.documentElement.outerHTML );
-	console.log(data)
-
 	var readOptions = {
 		"wpm": 300,
 		"slowStartCount": 5,
@@ -21,17 +18,8 @@ var unfluff = require('unfluff');
 				getReadOptions (request.selectedText);
 				break;
 			case "readFullPage":
-                var text = '';
-                var elements = $('p, li, h1, h2, h3, h4, h5, h6, span, pre');
-                elements.each(function(index, element) {
-                    var elementText = element.innerText.trim();
-                    if (elementText.length >= 60)
-                        if (!(element.tagName === 'LI' && elementText.includes('    ')))
-                            text += " " + elementText;
-                });
-				// var getter 	= new ReadGetter(),
-				// 	text 	= getter.getMainText( document.body );
-
+				var data = unfluff( document.documentElement.outerHTML ),
+					text = data.text.replace(/\[\d{0,3}?]/g, '');
                 getReadOptions(text);
 				break;
 			default:

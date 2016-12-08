@@ -173,9 +173,9 @@
 			var $before = this._options.element.find('.__read_before').html(before).css("opacity","0");
 			var $letter = this._options.element.find('.__read_letter').html(letter).css("opacity","0");
 
-			// START CUSTOM CODE FOR GREEK
+			// START CUSTOM CODE FOR BETTER TEXT CENTERING
 			var calc = 0;
-			// END CUSTOM CODE FOR GREEK
+			// END CUSTOM CODE FOR BETTER TEXT CENTERING
 
 			if (!this._currentWord.val.match(whiteSpace)){
 				this._displayElement.html(this._currentWord.val);
