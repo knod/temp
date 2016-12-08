@@ -4,9 +4,6 @@
   "description": "- Removes the usage of the web API, which doesn't exist anyways  - Fixes the bad offline fallback of the extension to reading the whole document, including navigational links and such",
   "main": "main.js",
   "dependencies": {
-    "jquery": "^3.1.1",
-    "nouislider": "^9.0.0",
-    "require-globify": "^1.4.1",
     "unfluff": "^1.1.0"
   },
   "devDependencies": {},
