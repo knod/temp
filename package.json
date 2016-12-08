@@ -1,7 +1,7 @@
 {
   "name": "read_plugin",
   "version": "1.0.0",
-  "description": "- Removes the usage of the web API, which doesn't exist anyways  - Fixes the bad offline fallback of the extension to reading the whole document, including navigational links and such",
+  "description": "- Derived from https://github.com/MicroDroid/read_plugin and https://github.com/ageitgey/node-unfluff to make articles readable one word at a time -",
   "main": "main.js",
   "dependencies": {
     "unfluff": "^1.1.0"
@@ -14,7 +14,7 @@
     "type": "git",
     "url": "git+https://github.com/knod/read_plugin.git"
   },
-  "author": "",
+  "author": "knod",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/knod/read_plugin/issues"
