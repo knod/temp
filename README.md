@@ -32,6 +32,8 @@ Click the extension's icon to read the body of the article on the page or select
 
 When reading the whole page, this tool, with the help of other modules and libraries, parses the html and tries to identify the main text there. That feature is not guaranteed to work. It all depends on how the html of the website is built. If it's built in a zany way, this tool may not be able to detect the main text. Selecting text should work anytime, though. It also tries to filter out a little of the noise often present in an article.
 
+This tool uses the front-end only. No server required.
+
 #### RSVP
 
 (From [MicroDroid](https://github.com/MicroDroid/read_plugin)) Rapid serial visual presentation allows for readers to keep their eyes focused on a single point on the page, saving a massive amount of time normally lost in reading. As the speed of this serial presentation increases, sub-vocalization also decreases and astounding speeds can be reached with great comprehension.
