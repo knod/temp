@@ -14,17 +14,23 @@ var unfluff = require('unfluff');
 
 	chrome.extension.onMessage.addListener(function (request, sender, sendResponse) {
 
+		var text = null;
+
 		switch (request.functiontoInvoke) {
 			case "readSelectedText":
-				getReadOptions (request.selectedText);
+				text = request.selectedText
 				break;
 			case "readFullPage":
-				var data = unfluff( document.documentElement.outerHTML ),
-					text = data.text.replace(/\[\d{0,3}?]/g, '');
-                getReadOptions(text);
+				var data 	= unfluff( document.documentElement.outerHTML );
+				text 		= data.text;
 				break;
 			default:
 				break;
+		}
+
+		if ( text ) { 
+			var filtered = text.replace(/\[\d{0,3}?]/g, '');
+			getReadOptions(text);
 		}
 	});
 
