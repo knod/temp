@@ -1,4 +1,5 @@
-var unfluff = require('unfluff');
+var unfluff = require('unfluff-custom');
+var detect = require('detect-lang-flex');
 
 (function(){
 
@@ -13,26 +14,26 @@ var unfluff = require('unfluff');
 
 	chrome.extension.onMessage.addListener(function (request, sender, sendResponse) {
 
-		var text = null;
-
-		switch (request.functiontoInvoke) {
-			case "readSelectedText":
-				text = request.selectedText
-				break;
-			case "readFullPage":
-
-				var lang 	= detectLanguage(),
-					data 	= unfluff( document.documentElement.outerHTML, lang );
-				text 		= data.text;
-				break;
-			default:
-				break;
-		}
-
-		if ( text ) { 
+		var read = function ( text ) {
 			var filtered = text.replace(/\[\d{0,3}?]/g, '');
 			getReadOptions(filtered);
 		}
+
+		switch (request.functiontoInvoke) {
+			case "readSelectedText":
+				read( request.selectedText );
+				break;
+			case "readFullPage":
+				detect( $(document.body).text() ).then(function (data) {
+					var lang = data.iso6391 || 'en',
+						data = unfluff( document.documentElement.outerHTML, lang );
+					read( data.text )
+				});
+				break;
+			default:
+				break;
+		}  // End which event
+
 	});
 
 	$(document).on( 'blur', '.__read .__read_speed', function () {
@@ -182,10 +183,11 @@ var unfluff = require('unfluff');
 
 			// Get number of matches in this language
 			let matches 	= text.match( regexes[ code ] ),
-				numMatches 	= 0;
-			// console.log('matches:', matches[1])
+				// Because .match can come out to null (comment here: http://stackoverflow.com/a/1072782/3791179)
+				numMatches 	= ( matches || [] ).length;
+
 			// console.log('matches:', code + ':', matches)
-			if ( matches ) { numMatches = matches.length; }
+			// if ( matches ) { numMatches = matches.length; }
 
 			// Top the previous one, if you can
 			if ( numMatches > topMatches ) {
@@ -196,11 +198,5 @@ var unfluff = require('unfluff');
 
 		return [topCode, topMatches];
 	};  // End matchLanguage()
-
-
-	// function stopWordsToRegex ( wordArr ) {
-
-	// 	return new Regex( str, 'g' );
-	// };  // End stopWordsToRegex
 
 })();

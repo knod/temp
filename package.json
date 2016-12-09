@@ -4,6 +4,7 @@
   "description": "- Derived from https://github.com/MicroDroid/read_plugin and https://github.com/ageitgey/node-unfluff to make articles readable one word at a time -",
   "main": "main.js",
   "dependencies": {
+    "detect-lang": "^1.0.0",
     "unfluff": "^1.1.0"
   },
   "devDependencies": {},

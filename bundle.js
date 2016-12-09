@@ -1,7 +1,15 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var unfluff = require('unfluff');
+var detect = require('detect-lang-flex');
+// var lngDetector = new (require('languagedetect'));
 
 (function(){
+	detect( $(document.body).text() ).then(function (data) { console.log(data) } );
+	// var langs = lngDetector.detect( $(document.body).text() );
+	// langs.sort(function (a, b) {
+	// 	return b[1] - a[1];
+	// })
+	// console.log(lngDetector.getLanguages());
 
 	var readOptions = {
 		"wpm": 300,
@@ -14,26 +22,31 @@ var unfluff = require('unfluff');
 
 	chrome.extension.onMessage.addListener(function (request, sender, sendResponse) {
 
-		var text = null;
+		var read = function ( text ) {
+			var filtered = text.replace(/\[\d{0,3}?]/g, '');
+			getReadOptions(filtered);
+		}
 
 		switch (request.functiontoInvoke) {
 			case "readSelectedText":
-				text = request.selectedText
+				read( request.selectedText );
 				break;
 			case "readFullPage":
 
-				var lang 	= detectLanguage(),
-					data 	= unfluff( document.documentElement.outerHTML, lang );
-				text 		= data.text;
+				detect( $(document.body).text() ).then(function (data) {
+
+					var lang = data.iso6391 || 'en',
+						data = unfluff( document.documentElement.outerHTML, lang );
+					console.log('lang:', lang)
+					read( data.text )
+
+				});
+
 				break;
 			default:
 				break;
 		}
 
-		if ( text ) { 
-			var filtered = text.replace(/\[\d{0,3}?]/g, '');
-			getReadOptions(filtered);
-		}
 	});
 
 	$(document).on( 'blur', '.__read .__read_speed', function () {
@@ -183,10 +196,11 @@ var unfluff = require('unfluff');
 
 			// Get number of matches in this language
 			let matches 	= text.match( regexes[ code ] ),
-				numMatches 	= 0;
-			// console.log('matches:', matches[1])
+				// Because .match can come out to null (comment here: http://stackoverflow.com/a/1072782/3791179)
+				numMatches 	= ( matches || [] ).length;
+
 			// console.log('matches:', code + ':', matches)
-			if ( matches ) { numMatches = matches.length; }
+			// if ( matches ) { numMatches = matches.length; }
 
 			// Top the previous one, if you can
 			if ( numMatches > topMatches ) {
@@ -198,68 +212,8520 @@ var unfluff = require('unfluff');
 		return [topCode, topMatches];
 	};  // End matchLanguage()
 
-
-	// function stopWordsToRegex ( wordArr ) {
-
-	// 	return new Regex( str, 'g' );
-	// };  // End stopWordsToRegex
-
 })();
 
-},{"unfluff":29}],2:[function(require,module,exports){
-module.exports = [ "فى", "في", "كل", "لم", "لن", "له", "من", "هو", "هي", "قوة", "كما", "لها", "منذ", "وقد", "ولا", "نفسه", "لقاء", "مقابل", "هناك", "وقال", "وكان", "نهاية", "وقالت", "وكانت", "للامم", "فيه", "كلم", "لكن", "وفي", "وقف", "ولم", "ومن", "وهو", "وهي", "يوم", "فيها", "منها", "مليار", "لوكالة", "يكون", "يمكن", "مليون", "حيث", "اكد", "الا", "اما", "امس", "السابق", "التى", "التي", "اكثر", "ايار", "ايضا", "ثلاثة", "الذاتي", "الاخيرة", "الثاني", "الثانية", "الذى", "الذي", "الان", "امام", "ايام", "خلال", "حوالى", "الذين", "الاول", "الاولى", "بين", "ذلك", "دون", "حول", "حين", "الف", "الى", "انه", "اول", "ضمن", "انها", "جميع", "الماضي", "الوقت", "المقبل", "اليوم", "ـ", "ف", "و", "و6", "قد", "لا", "ما", "مع", "مساء", "هذا", "واحد", "واضاف", "واضافت", "فان", "قبل", "قال", "كان", "لدى", "نحو", "هذه", "وان", "واكد", "كانت", "واوضح", "مايو", "ب", "ا", "أ", "،", "عشر", "عدد", "عدة", "عشرة", "عدم", "عام", "عاما", "عن", "عند", "عندما", "على", "عليه", "عليها", "زيارة", "سنة", "سنوات", "تم", "ضد", "بعد", "بعض", "اعادة", "اعلنت", "بسبب", "حتى", "اذا", "احد", "اثر", "برس", "باسم", "غدا", "شخصا", "صباح", "اطار", "اربعة", "اخرى", "بان", "اجل", "غير", "بشكل", "حاليا", "بن", "به", "ثم", "اف", "ان", "او", "اي", "بها", "صفر" ];
-},{}],3:[function(require,module,exports){
-module.exports = [ "а", "автентичен", "аз", "ако", "ала", "бе", "без", "беше", "би", "бивш", "бивша", "бившо", "бил", "била", "били", "било", "благодаря", "близо", "бъдат", "бъде", "бяха", "в", "вас", "ваш", "ваша", "вероятно", "вече", "взема", "ви", "вие", "винаги", "внимава", "време", "все", "всеки", "всички", "всичко", "всяка", "във", "въпреки", "върху", "г", "ги", "главен", "главна", "главно", "глас", "го", "година", "години", "годишен", "д", "да", "дали", "два", "двама", "двамата", "две", "двете", "ден", "днес", "дни", "до", "добра", "добре", "добро", "добър", "докато", "докога", "дори", "досега", "доста", "друг", "друга", "други", "е", "евтин", "едва", "един", "една", "еднаква", "еднакви", "еднакъв", "едно", "екип", "ето", "живот", "за", "забавям", "зад", "заедно", "заради", "засега", "заспал", "затова", "защо", "защото", "и", "из", "или", "им", "има", "имат", "иска", "й", "каза", "как", "каква", "какво", "както", "какъв", "като", "кога", "когато", "което", "които", "кой", "който", "колко", "която", "къде", "където", "към", "лесен", "лесно", "ли", "лош", "м", "май", "малко", "ме", "между", "мек", "мен", "месец", "ми", "много", "мнозина", "мога", "могат", "може", "мокър", "моля", "момента", "му", "н", "на", "над", "назад", "най", "направи", "напред", "например", "нас", "не", "него", "нещо", "нея", "ни", "ние", "никой", "нито", "нищо", "но", "нов", "нова", "нови", "новина", "някои", "някой", "няколко", "няма", "обаче", "около", "освен", "особено", "от", "отгоре", "отново", "още", "пак", "по", "повече", "повечето", "под", "поне", "поради", "после", "почти", "прави", "пред", "преди", "през", "при", "пък", "първата", "първи", "първо", "пъти", "равен", "равна", "с", "са", "сам", "само", "се", "сега", "си", "син", "скоро", "след", "следващ", "сме", "смях", "според", "сред", "срещу", "сте", "съм", "със", "също", "т", "тази", "така", "такива", "такъв", "там", "твой", "те", "тези", "ти", "т.н.", "то", "това", "тогава", "този", "той", "толкова", "точно", "три", "трябва", "тук", "тъй", "тя", "тях", "у", "утре", "харесва", "хиляди", "ч", "часа", "че", "често", "чрез", "ще", "щом", "юмрук", "я", "як" ];
+},{"detect-lang-flex":2,"unfluff":81}],2:[function(require,module,exports){
+var fs = require('fs'),
+    path = require('path');
+
+var parseInput = function (input) {
+    return new Promise(function (resolve, reject) {
+        // test string
+        if (typeof input !== 'string' && !(input instanceof String)) {
+            throw new Error('Input must be a string');
+        }
+        // test file
+        if (fs.existsSync && fs.existsSync(path.normalize(input))) {
+            fs.readFile(path.normalize(input), function (err, data) {
+                if (err) throw err;
+                resolve(data.toString());
+            });
+        } else {
+            if (input.length < 64) throw new Error('Not enough text to process. At least 64 characters are expected.');
+            resolve(input);
+        }
+    });
+};
+
+var getLang = function (input) {
+    return new Promise(function (resolve, reject) {
+       require('retext').use(require('retext-language')).use(function () {
+           return function (cst) {
+               resolve(cst);
+           }
+       }).process(input)
+    });
+};
+
+var count = function(ary, classifier) {
+    return ary.reduce(function(counter, item) {
+        var p = (classifier || String)(item);
+        counter[p] = counter.hasOwnProperty(p) ? counter[p] + 1 : 1;
+        return counter;
+    }, {})
+};
+
+var parseLang = function (det) {
+    return new Promise(function (resolve, reject) {
+        var tmp = [];
+        
+        // calc each lang iteration
+        for (var i in det.children) {
+            for (var j in det.children[i].children) {
+                if (det.children[i].children[j].data && det.children[i].children[j].data.language) {
+                    tmp.push(det.children[i].children[j].data.language);
+                }
+            }
+        }
+
+        // sum up duplicates
+        tmp = count(tmp);
+
+        // find best lang
+        var topLang = 0, lang, totalLang = 0;
+        for (var k in tmp) {
+            totalLang += tmp[k];
+            if (tmp[k] > topLang) {
+                topLang = tmp[k];
+                lang = k;
+            }
+        }
+
+        resolve({
+            langcode: lang,
+            probability: ((topLang / totalLang) * 100).toFixed(2),
+            detection: tmp
+        });
+    });
+};
+
+var buildResponse = function (inc) {
+    var iso639 = require('./iso-639.json');
+    var declang = iso639[inc.langcode];
+
+    if (!declang) throw new Error('Not a recognized language');
+
+    if (declang.bibliographic) {
+        declang.terminologic = iso639[declang.bibliographic].terminologic || null;
+    } else {
+        declang.bibliographic = declang.terminologic ? iso639[declang.terminologic].bibliographic : null;
+    }
+    if (declang.bibliographic == null && declang.terminologic == null) {
+        declang.iso6392 = inc.langcode;
+    } else {
+        declang.iso6392 = null;
+    }
+
+    declang.probability = inc.probability;
+    declang.detected_langs = inc.detection;
+
+    return declang;
+}
+
+var DetectLang = module.exports = function (input) {
+    return new Promise(function (resolve, reject) {
+        parseInput(input)
+            .then(getLang)
+            .then(parseLang)
+            .then(buildResponse)
+            .then(resolve)
+            .catch(reject);
+    });
+};
+
+},{"./iso-639.json":3,"fs":155,"path":164,"retext":13,"retext-language":10}],3:[function(require,module,exports){
+module.exports={
+  "aar": {
+    "terminologic": null,
+    "iso6391": "aa",
+    "name": "Afar"
+  },
+  "abk": {
+    "terminologic": null,
+    "iso6391": "ab",
+    "name": "Abkhazian"
+  },
+  "ace": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Achinese"
+  },
+  "ach": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Acoli"
+  },
+  "ada": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Adangme"
+  },
+  "ady": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Adyghe; Adygei"
+  },
+  "afa": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Afro-Asiatic languages"
+  },
+  "afh": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Afrihili"
+  },
+  "afr": {
+    "terminologic": null,
+    "iso6391": "af",
+    "name": "Afrikaans"
+  },
+  "ain": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Ainu"
+  },
+  "aka": {
+    "terminologic": null,
+    "iso6391": "ak",
+    "name": "Akan"
+  },
+  "akk": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Akkadian"
+  },
+  "alb": {
+    "terminologic": "sqi",
+    "iso6391": "sq",
+    "name": "Albanian"
+  },
+  "ale": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Aleut"
+  },
+  "alg": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Algonquian languages"
+  },
+  "als": {
+    "terminologic": "sqi",
+    "iso6391": "sq",
+    "name": "Albanian"
+  },
+  "alt": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Southern Altai"
+  },
+  "amh": {
+    "terminologic": null,
+    "iso6391": "am",
+    "name": "Amharic"
+  },
+  "ang": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "English, Old (ca.450-1100)"
+  },
+  "anp": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Angika"
+  },
+  "apa": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Apache languages"
+  },
+  "ara": {
+    "terminologic": null,
+    "iso6391": "ar",
+    "name": "Arabic"
+  },
+  "arb": {
+    "iso6392": "ara",
+    "iso6391": "ar",
+    "name": "Arabic"
+  },
+  "arc": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Official Aramaic (700-300 BCE); Imperial Aramaic (700-300 BCE)"
+  },
+  "arg": {
+    "terminologic": null,
+    "iso6391": "an",
+    "name": "Aragonese"
+  },
+  "arm": {
+    "terminologic": "hye",
+    "iso6391": "hy",
+    "name": "Armenian"
+  },
+  "arn": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Mapudungun; Mapuche"
+  },
+  "arp": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Arapaho"
+  },
+  "art": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Artificial languages"
+  },
+  "arw": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Arawak"
+  },
+  "asm": {
+    "terminologic": null,
+    "iso6391": "as",
+    "name": "Assamese"
+  },
+  "ast": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Asturian; Bable; Leonese; Asturleonese"
+  },
+  "ath": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Athapascan languages"
+  },
+  "aus": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Australian languages"
+  },
+  "ava": {
+    "terminologic": null,
+    "iso6391": "av",
+    "name": "Avaric"
+  },
+  "ave": {
+    "terminologic": null,
+    "iso6391": "ae",
+    "name": "Avestan"
+  },
+  "awa": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Awadhi"
+  },
+  "aym": {
+    "terminologic": null,
+    "iso6391": "ay",
+    "name": "Aymara"
+  },
+  "aze": {
+    "terminologic": null,
+    "iso6391": "az",
+    "name": "Azerbaijani"
+  },
+  "bad": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Banda languages"
+  },
+  "bai": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Bamileke languages"
+  },
+  "bak": {
+    "terminologic": null,
+    "iso6391": "ba",
+    "name": "Bashkir"
+  },
+  "bal": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Baluchi"
+  },
+  "bam": {
+    "terminologic": null,
+    "iso6391": "bm",
+    "name": "Bambara"
+  },
+  "ban": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Balinese"
+  },
+  "baq": {
+    "terminologic": "eus",
+    "iso6391": "eu",
+    "name": "Basque"
+  },
+  "bas": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Basa"
+  },
+  "bat": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Baltic languages"
+  },
+  "bej": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Beja; Bedawiyet"
+  },
+  "bel": {
+    "terminologic": null,
+    "iso6391": "be",
+    "name": "Belarusian"
+  },
+  "bem": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Bemba"
+  },
+  "ben": {
+    "terminologic": null,
+    "iso6391": "bn",
+    "name": "Bengali"
+  },
+  "ber": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Berber languages"
+  },
+  "bho": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Bhojpuri"
+  },
+  "bih": {
+    "terminologic": null,
+    "iso6391": "bh",
+    "name": "Bihari languages"
+  },
+  "bik": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Bikol"
+  },
+  "bin": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Bini; Edo"
+  },
+  "bis": {
+    "terminologic": null,
+    "iso6391": "bi",
+    "name": "Bislama"
+  },
+  "bla": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Siksika"
+  },
+  "bnt": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Bantu (Other)"
+  },
+  "bod": {
+    "bibliographic": "tib",
+    "iso6391": "bo",
+    "name": "Tibetan"
+  },
+  "bos": {
+    "terminologic": null,
+    "iso6391": "bs",
+    "name": "Bosnian"
+  },
+  "bra": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Braj"
+  },
+  "bre": {
+    "terminologic": null,
+    "iso6391": "br",
+    "name": "Breton"
+  },
+  "btk": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Batak languages"
+  },
+  "bua": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Buriat"
+  },
+  "bug": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Buginese"
+  },
+  "bul": {
+    "terminologic": null,
+    "iso6391": "bg",
+    "name": "Bulgarian"
+  },
+  "bur": {
+    "terminologic": "mya",
+    "iso6391": "my",
+    "name": "Burmese"
+  },
+  "byn": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Blin; Bilin"
+  },
+  "cad": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Caddo"
+  },
+  "cai": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Central American Indian languages"
+  },
+  "car": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Galibi Carib"
+  },
+  "cat": {
+    "terminologic": null,
+    "iso6391": "ca",
+    "name": "Catalan; Valencian"
+  },
+  "cau": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Caucasian languages"
+  },
+  "ceb": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Cebuano"
+  },
+  "cel": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Celtic languages"
+  },
+  "ces": {
+    "bibliographic": "cze",
+    "iso6391": "cs",
+    "name": "Czech"
+  },
+  "cha": {
+    "terminologic": null,
+    "iso6391": "ch",
+    "name": "Chamorro"
+  },
+  "chb": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Chibcha"
+  },
+  "che": {
+    "terminologic": null,
+    "iso6391": "ce",
+    "name": "Chechen"
+  },
+  "chg": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Chagatai"
+  },
+  "chi": {
+    "terminologic": "zho",
+    "iso6391": "zh",
+    "name": "Chinese"
+  },
+  "chk": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Chuukese"
+  },
+  "chm": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Mari"
+  },
+  "chn": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Chinook jargon"
+  },
+  "cho": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Choctaw"
+  },
+  "chp": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Chipewyan; Dene Suline"
+  },
+  "chr": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Cherokee"
+  },
+  "chu": {
+    "terminologic": null,
+    "iso6391": "cu",
+    "name": "Church Slavic; Old Slavonic; Church Slavonic; Old Bulgarian; Old Church Slavonic"
+  },
+  "chv": {
+    "terminologic": null,
+    "iso6391": "cv",
+    "name": "Chuvash"
+  },
+  "chy": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Cheyenne"
+  },
+  "cmc": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Chamic languages"
+  },
+  "cmn": {
+    "bibliographic": "chi",
+    "iso6391": "zh",
+    "name": "Chinese"
+  },
+  "cop": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Coptic"
+  },
+  "cor": {
+    "terminologic": null,
+    "iso6391": "kw",
+    "name": "Cornish"
+  },
+  "cos": {
+    "terminologic": null,
+    "iso6391": "co",
+    "name": "Corsican"
+  },
+  "cpe": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Creoles and pidgins, English based"
+  },
+  "cpf": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Creoles and pidgins, French-based "
+  },
+  "cpp": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Creoles and pidgins, Portuguese-based "
+  },
+  "cre": {
+    "terminologic": null,
+    "iso6391": "cr",
+    "name": "Cree"
+  },
+  "crh": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Crimean Tatar; Crimean Turkish"
+  },
+  "crp": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Creoles and pidgins "
+  },
+  "csb": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Kashubian"
+  },
+  "cus": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Cushitic languages"
+  },
+  "cym": {
+    "bibliographic": "wel",
+    "iso6391": "cy",
+    "name": "Welsh"
+  },
+  "cze": {
+    "terminologic": "ces",
+    "iso6391": "cs",
+    "name": "Czech"
+  },
+  "dak": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Dakota"
+  },
+  "dan": {
+    "terminologic": null,
+    "iso6391": "da",
+    "name": "Danish"
+  },
+  "dar": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Dargwa"
+  },
+  "day": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Land Dayak languages"
+  },
+  "del": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Delaware"
+  },
+  "den": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Slave (Athapascan)"
+  },
+  "deu": {
+    "bibliographic": "ger",
+    "iso6391": "de",
+    "name": "German"
+  },
+  "dgr": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Dogrib"
+  },
+  "din": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Dinka"
+  },
+  "div": {
+    "terminologic": null,
+    "iso6391": "dv",
+    "name": "Divehi; Dhivehi; Maldivian"
+  },
+  "doi": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Dogri"
+  },
+  "dra": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Dravidian languages"
+  },
+  "dsb": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Lower Sorbian"
+  },
+  "dua": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Duala"
+  },
+  "dum": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Dutch, Middle (ca.1050-1350)"
+  },
+  "dut": {
+    "terminologic": "nld",
+    "iso6391": "nl",
+    "name": "Dutch; Flemish"
+  },
+  "dyu": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Dyula"
+  },
+  "dzo": {
+    "terminologic": null,
+    "iso6391": "dz",
+    "name": "Dzongkha"
+  },
+  "efi": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Efik"
+  },
+  "egy": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Egyptian (Ancient)"
+  },
+  "eka": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Ekajuk"
+  },
+  "ell": {
+    "bibliographic": "gre",
+    "iso6391": "el",
+    "name": "Greek, Modern (1453-)"
+  },
+  "elx": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Elamite"
+  },
+  "eng": {
+    "terminologic": null,
+    "iso6391": "en",
+    "name": "English"
+  },
+  "enm": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "English, Middle (1100-1500)"
+  },
+  "epo": {
+    "terminologic": null,
+    "iso6391": "eo",
+    "name": "Esperanto"
+  },
+  "est": {
+    "terminologic": null,
+    "iso6391": "et",
+    "name": "Estonian"
+  },
+  "eus": {
+    "bibliographic": "baq",
+    "iso6391": "eu",
+    "name": "Basque"
+  },
+  "ewe": {
+    "terminologic": null,
+    "iso6391": "ee",
+    "name": "Ewe"
+  },
+  "ewo": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Ewondo"
+  },
+  "fan": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Fang"
+  },
+  "fao": {
+    "terminologic": null,
+    "iso6391": "fo",
+    "name": "Faroese"
+  },
+  "fas": {
+    "bibliographic": "per",
+    "iso6391": "fa",
+    "name": "Persian"
+  },
+  "fat": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Fanti"
+  },
+  "fij": {
+    "terminologic": null,
+    "iso6391": "fj",
+    "name": "Fijian"
+  },
+  "fil": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Filipino; Pilipino"
+  },
+  "fin": {
+    "terminologic": null,
+    "iso6391": "fi",
+    "name": "Finnish"
+  },
+  "fiu": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Finno-Ugrian languages"
+  },
+  "fon": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Fon"
+  },
+  "fra": {
+    "bibliographic": "fre",
+    "iso6391": "fr",
+    "name": "French"
+  },
+  "fre": {
+    "terminologic": "fra",
+    "iso6391": "fr",
+    "name": "French"
+  },
+  "frm": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "French, Middle (ca.1400-1600)"
+  },
+  "fro": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "French, Old (842-ca.1400)"
+  },
+  "frr": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Northern Frisian"
+  },
+  "frs": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Eastern Frisian"
+  },
+  "fry": {
+    "terminologic": null,
+    "iso6391": "fy",
+    "name": "Western Frisian"
+  },
+  "ful": {
+    "terminologic": null,
+    "iso6391": "ff",
+    "name": "Fulah"
+  },
+  "fur": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Friulian"
+  },
+  "gaa": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Ga"
+  },
+  "gay": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Gayo"
+  },
+  "gba": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Gbaya"
+  },
+  "gem": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Germanic languages"
+  },
+  "geo": {
+    "terminologic": "kat",
+    "iso6391": "ka",
+    "name": "Georgian"
+  },
+  "ger": {
+    "terminologic": "deu",
+    "iso6391": "de",
+    "name": "German"
+  },
+  "gez": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Geez"
+  },
+  "gil": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Gilbertese"
+  },
+  "gla": {
+    "terminologic": null,
+    "iso6391": "gd",
+    "name": "Gaelic; Scottish Gaelic"
+  },
+  "gle": {
+    "terminologic": null,
+    "iso6391": "ga",
+    "name": "Irish"
+  },
+  "glg": {
+    "terminologic": null,
+    "iso6391": "gl",
+    "name": "Galician"
+  },
+  "glv": {
+    "terminologic": null,
+    "iso6391": "gv",
+    "name": "Manx"
+  },
+  "gmh": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "German, Middle High (ca.1050-1500)"
+  },
+  "goh": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "German, Old High (ca.750-1050)"
+  },
+  "gon": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Gondi"
+  },
+  "gor": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Gorontalo"
+  },
+  "got": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Gothic"
+  },
+  "grb": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Grebo"
+  },
+  "grc": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Greek, Ancient (to 1453)"
+  },
+  "gre": {
+    "terminologic": "ell",
+    "iso6391": "el",
+    "name": "Greek, Modern (1453-)"
+  },
+  "grn": {
+    "terminologic": null,
+    "iso6391": "gn",
+    "name": "Guarani"
+  },
+  "gsw": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Swiss German; Alemannic; Alsatian"
+  },
+  "guj": {
+    "terminologic": null,
+    "iso6391": "gu",
+    "name": "Gujarati"
+  },
+  "gwi": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Gwich'in"
+  },
+  "hai": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Haida"
+  },
+  "hat": {
+    "terminologic": null,
+    "iso6391": "ht",
+    "name": "Haitian; Haitian Creole"
+  },
+  "hau": {
+    "terminologic": null,
+    "iso6391": "ha",
+    "name": "Hausa"
+  },
+  "haw": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Hawaiian"
+  },
+  "heb": {
+    "terminologic": null,
+    "iso6391": "he",
+    "name": "Hebrew"
+  },
+  "her": {
+    "terminologic": null,
+    "iso6391": "hz",
+    "name": "Herero"
+  },
+  "hil": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Hiligaynon"
+  },
+  "him": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Himachali languages; Western Pahari languages"
+  },
+  "hin": {
+    "terminologic": null,
+    "iso6391": "hi",
+    "name": "Hindi"
+  },
+  "hit": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Hittite"
+  },
+  "hmn": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Hmong; Mong"
+  },
+  "hmo": {
+    "terminologic": null,
+    "iso6391": "ho",
+    "name": "Hiri Motu"
+  },
+  "hrv": {
+    "terminologic": null,
+    "iso6391": "hr",
+    "name": "Croatian"
+  },
+  "hsb": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Upper Sorbian"
+  },
+  "hun": {
+    "terminologic": null,
+    "iso6391": "hu",
+    "name": "Hungarian"
+  },
+  "hup": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Hupa"
+  },
+  "hye": {
+    "bibliographic": "arm",
+    "iso6391": "hy",
+    "name": "Armenian"
+  },
+  "iba": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Iban"
+  },
+  "ibo": {
+    "terminologic": null,
+    "iso6391": "ig",
+    "name": "Igbo"
+  },
+  "ice": {
+    "terminologic": "isl",
+    "iso6391": "is",
+    "name": "Icelandic"
+  },
+  "ido": {
+    "terminologic": null,
+    "iso6391": "io",
+    "name": "Ido"
+  },
+  "iii": {
+    "terminologic": null,
+    "iso6391": "ii",
+    "name": "Sichuan Yi; Nuosu"
+  },
+  "ijo": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Ijo languages"
+  },
+  "iku": {
+    "terminologic": null,
+    "iso6391": "iu",
+    "name": "Inuktitut"
+  },
+  "ile": {
+    "terminologic": null,
+    "iso6391": "ie",
+    "name": "Interlingue; Occidental"
+  },
+  "ilo": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Iloko"
+  },
+  "ina": {
+    "terminologic": null,
+    "iso6391": "ia",
+    "name": "Interlingua (International Auxiliary Language Association)"
+  },
+  "inc": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Indic languages"
+  },
+  "ind": {
+    "terminologic": null,
+    "iso6391": "id",
+    "name": "Indonesian"
+  },
+  "ine": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Indo-European languages"
+  },
+  "inh": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Ingush"
+  },
+  "ipk": {
+    "terminologic": null,
+    "iso6391": "ik",
+    "name": "Inupiaq"
+  },
+  "ira": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Iranian languages"
+  },
+  "iro": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Iroquoian languages"
+  },
+  "isl": {
+    "bibliographic": "ice",
+    "iso6391": "is",
+    "name": "Icelandic"
+  },
+  "ita": {
+    "terminologic": null,
+    "iso6391": "it",
+    "name": "Italian"
+  },
+  "jav": {
+    "terminologic": null,
+    "iso6391": "jv",
+    "name": "Javanese"
+  },
+  "jbo": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Lojban"
+  },
+  "jpn": {
+    "terminologic": null,
+    "iso6391": "ja",
+    "name": "Japanese"
+  },
+  "jpr": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Judeo-Persian"
+  },
+  "jrb": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Judeo-Arabic"
+  },
+  "kaa": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Kara-Kalpak"
+  },
+  "kab": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Kabyle"
+  },
+  "kac": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Kachin; Jingpho"
+  },
+  "kal": {
+    "terminologic": null,
+    "iso6391": "kl",
+    "name": "Kalaallisut; Greenlandic"
+  },
+  "kam": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Kamba"
+  },
+  "kan": {
+    "terminologic": null,
+    "iso6391": "kn",
+    "name": "Kannada"
+  },
+  "kar": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Karen languages"
+  },
+  "kas": {
+    "terminologic": null,
+    "iso6391": "ks",
+    "name": "Kashmiri"
+  },
+  "kat": {
+    "bibliographic": "geo",
+    "iso6391": "ka",
+    "name": "Georgian"
+  },
+  "kau": {
+    "terminologic": null,
+    "iso6391": "kr",
+    "name": "Kanuri"
+  },
+  "kaw": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Kawi"
+  },
+  "kaz": {
+    "terminologic": null,
+    "iso6391": "kk",
+    "name": "Kazakh"
+  },
+  "kbd": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Kabardian"
+  },
+  "kha": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Khasi"
+  },
+  "khi": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Khoisan languages"
+  },
+  "khm": {
+    "terminologic": null,
+    "iso6391": "km",
+    "name": "Central Khmer"
+  },
+  "kho": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Khotanese; Sakan"
+  },
+  "kik": {
+    "terminologic": null,
+    "iso6391": "ki",
+    "name": "Kikuyu; Gikuyu"
+  },
+  "kin": {
+    "terminologic": null,
+    "iso6391": "rw",
+    "name": "Kinyarwanda"
+  },
+  "kir": {
+    "terminologic": null,
+    "iso6391": "ky",
+    "name": "Kirghiz; Kyrgyz"
+  },
+  "kmb": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Kimbundu"
+  },
+  "kok": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Konkani"
+  },
+  "kom": {
+    "terminologic": null,
+    "iso6391": "kv",
+    "name": "Komi"
+  },
+  "kon": {
+    "terminologic": null,
+    "iso6391": "kg",
+    "name": "Kongo"
+  },
+  "kor": {
+    "terminologic": null,
+    "iso6391": "ko",
+    "name": "Korean"
+  },
+  "kos": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Kosraean"
+  },
+  "kpe": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Kpelle"
+  },
+  "krc": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Karachay-Balkar"
+  },
+  "krl": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Karelian"
+  },
+  "kro": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Kru languages"
+  },
+  "kru": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Kurukh"
+  },
+  "kua": {
+    "terminologic": null,
+    "iso6391": "kj",
+    "name": "Kuanyama; Kwanyama"
+  },
+  "kum": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Kumyk"
+  },
+  "kur": {
+    "terminologic": null,
+    "iso6391": "ku",
+    "name": "Kurdish"
+  },
+  "kut": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Kutenai"
+  },
+  "lad": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Ladino"
+  },
+  "lah": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Lahnda"
+  },
+  "lam": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Lamba"
+  },
+  "lao": {
+    "terminologic": null,
+    "iso6391": "lo",
+    "name": "Lao"
+  },
+  "lat": {
+    "terminologic": null,
+    "iso6391": "la",
+    "name": "Latin"
+  },
+  "lav": {
+    "terminologic": null,
+    "iso6391": "lv",
+    "name": "Latvian"
+  },
+  "lez": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Lezghian"
+  },
+  "lim": {
+    "terminologic": null,
+    "iso6391": "li",
+    "name": "Limburgan; Limburger; Limburgish"
+  },
+  "lin": {
+    "terminologic": null,
+    "iso6391": "ln",
+    "name": "Lingala"
+  },
+  "lit": {
+    "terminologic": null,
+    "iso6391": "lt",
+    "name": "Lithuanian"
+  },
+  "lol": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Mongo"
+  },
+  "loz": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Lozi"
+  },
+  "ltz": {
+    "terminologic": null,
+    "iso6391": "lb",
+    "name": "Luxembourgish; Letzeburgesch"
+  },
+  "lua": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Luba-Lulua"
+  },
+  "lub": {
+    "terminologic": null,
+    "iso6391": "lu",
+    "name": "Luba-Katanga"
+  },
+  "lug": {
+    "terminologic": null,
+    "iso6391": "lg",
+    "name": "Ganda"
+  },
+  "lui": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Luiseno"
+  },
+  "lun": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Lunda"
+  },
+  "luo": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Luo (Kenya and Tanzania)"
+  },
+  "lus": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Lushai"
+  },
+  "mac": {
+    "terminologic": "mkd",
+    "iso6391": "mk",
+    "name": "Macedonian"
+  },
+  "mad": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Madurese"
+  },
+  "mag": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Magahi"
+  },
+  "mah": {
+    "terminologic": null,
+    "iso6391": "mh",
+    "name": "Marshallese"
+  },
+  "mai": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Maithili"
+  },
+  "mak": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Makasar"
+  },
+  "mal": {
+    "terminologic": null,
+    "iso6391": "ml",
+    "name": "Malayalam"
+  },
+  "man": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Mandingo"
+  },
+  "mao": {
+    "terminologic": "mri",
+    "iso6391": "mi",
+    "name": "Maori"
+  },
+  "map": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Austronesian languages"
+  },
+  "mar": {
+    "terminologic": null,
+    "iso6391": "mr",
+    "name": "Marathi"
+  },
+  "mas": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Masai"
+  },
+  "may": {
+    "terminologic": "msa",
+    "iso6391": "ms",
+    "name": "Malay"
+  },
+  "mdf": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Moksha"
+  },
+  "mdr": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Mandar"
+  },
+  "men": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Mende"
+  },
+  "mga": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Irish, Middle (900-1200)"
+  },
+  "mic": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Mi'kmaq; Micmac"
+  },
+  "min": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Minangkabau"
+  },
+  "mis": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Uncoded languages"
+  },
+  "mkd": {
+    "bibliographic": "mac",
+    "iso6391": "mk",
+    "name": "Macedonian"
+  },
+  "mkh": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Mon-Khmer languages"
+  },
+  "mlg": {
+    "terminologic": null,
+    "iso6391": "mg",
+    "name": "Malagasy"
+  },
+  "mlt": {
+    "terminologic": null,
+    "iso6391": "mt",
+    "name": "Maltese"
+  },
+  "mnc": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Manchu"
+  },
+  "mni": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Manipuri"
+  },
+  "mno": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Manobo languages"
+  },
+  "moh": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Mohawk"
+  },
+  "mon": {
+    "terminologic": null,
+    "iso6391": "mn",
+    "name": "Mongolian"
+  },
+  "mos": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Mossi"
+  },
+  "mri": {
+    "bibliographic": "mao",
+    "iso6391": "mi",
+    "name": "Maori"
+  },
+  "msa": {
+    "bibliographic": "may",
+    "iso6391": "ms",
+    "name": "Malay"
+  },
+  "mul": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Multiple languages"
+  },
+  "mun": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Munda languages"
+  },
+  "mus": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Creek"
+  },
+  "mwl": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Mirandese"
+  },
+  "mwr": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Marwari"
+  },
+  "mya": {
+    "bibliographic": "bur",
+    "iso6391": "my",
+    "name": "Burmese"
+  },
+  "myn": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Mayan languages"
+  },
+  "myv": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Erzya"
+  },
+  "nah": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Nahuatl languages"
+  },
+  "nai": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "North American Indian languages"
+  },
+  "nap": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Neapolitan"
+  },
+  "nau": {
+    "terminologic": null,
+    "iso6391": "na",
+    "name": "Nauru"
+  },
+  "nav": {
+    "terminologic": null,
+    "iso6391": "nv",
+    "name": "Navajo; Navaho"
+  },
+  "nbl": {
+    "terminologic": null,
+    "iso6391": "nr",
+    "name": "Ndebele, South; South Ndebele"
+  },
+  "nde": {
+    "terminologic": null,
+    "iso6391": "nd",
+    "name": "Ndebele, North; North Ndebele"
+  },
+  "ndo": {
+    "terminologic": null,
+    "iso6391": "ng",
+    "name": "Ndonga"
+  },
+  "nds": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Low German; Low Saxon; German, Low; Saxon, Low"
+  },
+  "nep": {
+    "terminologic": null,
+    "iso6391": "ne",
+    "name": "Nepali"
+  },
+  "new": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Nepal Bhasa; Newari"
+  },
+  "nia": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Nias"
+  },
+  "nic": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Niger-Kordofanian languages"
+  },
+  "niu": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Niuean"
+  },
+  "nld": {
+    "bibliographic": "dut",
+    "iso6391": "nl",
+    "name": "Dutch; Flemish"
+  },
+  "nno": {
+    "terminologic": null,
+    "iso6391": "nn",
+    "name": "Norwegian Nynorsk; Nynorsk, Norwegian"
+  },
+  "nob": {
+    "terminologic": null,
+    "iso6391": "nb",
+    "name": "Bokmål, Norwegian; Norwegian Bokmål"
+  },
+  "nog": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Nogai"
+  },
+  "non": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Norse, Old"
+  },
+  "nor": {
+    "terminologic": null,
+    "iso6391": "no",
+    "name": "Norwegian"
+  },
+  "nqo": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "N'Ko"
+  },
+  "nso": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Pedi; Sepedi; Northern Sotho"
+  },
+  "nub": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Nubian languages"
+  },
+  "nwc": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Classical Newari; Old Newari; Classical Nepal Bhasa"
+  },
+  "nya": {
+    "terminologic": null,
+    "iso6391": "ny",
+    "name": "Chichewa; Chewa; Nyanja"
+  },
+  "nym": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Nyamwezi"
+  },
+  "nyn": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Nyankole"
+  },
+  "nyo": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Nyoro"
+  },
+  "nzi": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Nzima"
+  },
+  "oci": {
+    "terminologic": null,
+    "iso6391": "oc",
+    "name": "Occitan (post 1500); Provençal"
+  },
+  "oji": {
+    "terminologic": null,
+    "iso6391": "oj",
+    "name": "Ojibwa"
+  },
+  "ori": {
+    "terminologic": null,
+    "iso6391": "or",
+    "name": "Oriya"
+  },
+  "orm": {
+    "terminologic": null,
+    "iso6391": "om",
+    "name": "Oromo"
+  },
+  "osa": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Osage"
+  },
+  "oss": {
+    "terminologic": null,
+    "iso6391": "os",
+    "name": "Ossetian; Ossetic"
+  },
+  "ota": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Turkish, Ottoman (1500-1928)"
+  },
+  "oto": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Otomian languages"
+  },
+  "paa": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Papuan languages"
+  },
+  "pag": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Pangasinan"
+  },
+  "pal": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Pahlavi"
+  },
+  "pam": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Pampanga; Kapampangan"
+  },
+  "pan": {
+    "terminologic": null,
+    "iso6391": "pa",
+    "name": "Panjabi; Punjabi"
+  },
+  "pap": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Papiamento"
+  },
+  "pau": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Palauan"
+  },
+  "peo": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Persian, Old (ca.600-400 B.C.)"
+  },
+  "per": {
+    "terminologic": "fas",
+    "iso6391": "fa",
+    "name": "Persian"
+  },
+  "phi": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Philippine languages"
+  },
+  "phn": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Phoenician"
+  },
+  "pli": {
+    "terminologic": null,
+    "iso6391": "pi",
+    "name": "Pali"
+  },
+  "pol": {
+    "terminologic": null,
+    "iso6391": "pl",
+    "name": "Polish"
+  },
+  "pon": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Pohnpeian"
+  },
+  "por": {
+    "terminologic": null,
+    "iso6391": "pt",
+    "name": "Portuguese"
+  },
+  "pra": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Prakrit languages"
+  },
+  "pro": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Provençal, Old (to 1500)"
+  },
+  "pus": {
+    "terminologic": null,
+    "iso6391": "ps",
+    "name": "Pushto; Pashto"
+  },
+  "qaa-qtz": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Reserved for local use"
+  },
+  "que": {
+    "terminologic": null,
+    "iso6391": "qu",
+    "name": "Quechua"
+  },
+  "raj": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Rajasthani"
+  },
+  "rap": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Rapanui"
+  },
+  "rar": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Rarotongan; Cook Islands Maori"
+  },
+  "roa": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Romance languages"
+  },
+  "roh": {
+    "terminologic": null,
+    "iso6391": "rm",
+    "name": "Romansh"
+  },
+  "rom": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Romany"
+  },
+  "ron": {
+    "bibliographic": "rum",
+    "iso6391": "ro",
+    "name": "Romanian; Moldavian; Moldovan"
+  },
+  "rum": {
+    "terminologic": "ron",
+    "iso6391": "ro",
+    "name": "Romanian; Moldavian; Moldovan"
+  },
+  "run": {
+    "terminologic": null,
+    "iso6391": "rn",
+    "name": "Rundi"
+  },
+  "rup": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Aromanian; Arumanian; Macedo-Romanian"
+  },
+  "rus": {
+    "terminologic": null,
+    "iso6391": "ru",
+    "name": "Russian"
+  },
+  "sad": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Sandawe"
+  },
+  "sag": {
+    "terminologic": null,
+    "iso6391": "sg",
+    "name": "Sango"
+  },
+  "sah": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Yakut"
+  },
+  "sai": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "South American Indian (Other)"
+  },
+  "sal": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Salishan languages"
+  },
+  "sam": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Samaritan Aramaic"
+  },
+  "san": {
+    "terminologic": null,
+    "iso6391": "sa",
+    "name": "Sanskrit"
+  },
+  "sas": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Sasak"
+  },
+  "sat": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Santali"
+  },
+  "scn": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Sicilian"
+  },
+  "sco": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Scots"
+  },
+  "sel": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Selkup"
+  },
+  "sem": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Semitic languages"
+  },
+  "sga": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Irish, Old (to 900)"
+  },
+  "sgn": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Sign Languages"
+  },
+  "shn": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Shan"
+  },
+  "sid": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Sidamo"
+  },
+  "sin": {
+    "terminologic": null,
+    "iso6391": "si",
+    "name": "Sinhala; Sinhalese"
+  },
+  "sio": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Siouan languages"
+  },
+  "sit": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Sino-Tibetan languages"
+  },
+  "sla": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Slavic languages"
+  },
+  "slo": {
+    "terminologic": "slk",
+    "iso6391": "sk",
+    "name": "Slovak"
+  },
+  "slk": {
+    "bibliographic": "slo",
+    "iso6391": "sk",
+    "name": "Slovak"
+  },
+  "slv": {
+    "terminologic": null,
+    "iso6391": "sl",
+    "name": "Slovenian"
+  },
+  "sma": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Southern Sami"
+  },
+  "sme": {
+    "terminologic": null,
+    "iso6391": "se",
+    "name": "Northern Sami"
+  },
+  "smi": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Sami languages"
+  },
+  "smj": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Lule Sami"
+  },
+  "smn": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Inari Sami"
+  },
+  "smo": {
+    "terminologic": null,
+    "iso6391": "sm",
+    "name": "Samoan"
+  },
+  "sms": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Skolt Sami"
+  },
+  "sna": {
+    "terminologic": null,
+    "iso6391": "sn",
+    "name": "Shona"
+  },
+  "snd": {
+    "terminologic": null,
+    "iso6391": "sd",
+    "name": "Sindhi"
+  },
+  "snk": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Soninke"
+  },
+  "sog": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Sogdian"
+  },
+  "som": {
+    "terminologic": null,
+    "iso6391": "so",
+    "name": "Somali"
+  },
+  "son": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Songhai languages"
+  },
+  "sot": {
+    "terminologic": null,
+    "iso6391": "st",
+    "name": "Sotho, Southern"
+  },
+  "spa": {
+    "terminologic": null,
+    "iso6391": "es",
+    "name": "Spanish; Castilian"
+  },
+  "sqi": {
+    "bibliographic": "alb",
+    "iso6391": "sq",
+    "name": "Albanian"
+  },
+  "srd": {
+    "terminologic": null,
+    "iso6391": "sc",
+    "name": "Sardinian"
+  },
+  "srn": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Sranan Tongo"
+  },
+  "srp": {
+    "terminologic": null,
+    "iso6391": "sr",
+    "name": "Serbian"
+  },
+  "srr": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Serer"
+  },
+  "ssa": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Nilo-Saharan languages"
+  },
+  "ssw": {
+    "terminologic": null,
+    "iso6391": "ss",
+    "name": "Swati"
+  },
+  "suk": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Sukuma"
+  },
+  "sun": {
+    "terminologic": null,
+    "iso6391": "su",
+    "name": "Sundanese"
+  },
+  "sus": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Susu"
+  },
+  "sux": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Sumerian"
+  },
+  "swa": {
+    "terminologic": null,
+    "iso6391": "sw",
+    "name": "Swahili"
+  },
+  "swe": {
+    "terminologic": null,
+    "iso6391": "sv",
+    "name": "Swedish"
+  },
+  "syc": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Classical Syriac"
+  },
+  "syr": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Syriac"
+  },
+  "tah": {
+    "terminologic": null,
+    "iso6391": "ty",
+    "name": "Tahitian"
+  },
+  "tai": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Tai languages"
+  },
+  "tam": {
+    "terminologic": null,
+    "iso6391": "ta",
+    "name": "Tamil"
+  },
+  "tat": {
+    "terminologic": null,
+    "iso6391": "tt",
+    "name": "Tatar"
+  },
+  "tel": {
+    "terminologic": null,
+    "iso6391": "te",
+    "name": "Telugu"
+  },
+  "tem": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Timne"
+  },
+  "ter": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Tereno"
+  },
+  "tet": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Tetum"
+  },
+  "tgk": {
+    "terminologic": null,
+    "iso6391": "tg",
+    "name": "Tajik"
+  },
+  "tgl": {
+    "terminologic": null,
+    "iso6391": "tl",
+    "name": "Tagalog"
+  },
+  "tha": {
+    "terminologic": null,
+    "iso6391": "th",
+    "name": "Thai"
+  },
+  "tib": {
+    "terminologic": "bod",
+    "iso6391": "bo",
+    "name": "Tibetan"
+  },
+  "tig": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Tigre"
+  },
+  "tir": {
+    "terminologic": null,
+    "iso6391": "ti",
+    "name": "Tigrinya"
+  },
+  "tiv": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Tiv"
+  },
+  "tkl": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Tokelau"
+  },
+  "tlh": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Klingon; tlhIngan-Hol"
+  },
+  "tli": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Tlingit"
+  },
+  "tmh": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Tamashek"
+  },
+  "tog": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Tonga (Nyasa)"
+  },
+  "ton": {
+    "terminologic": null,
+    "iso6391": "to",
+    "name": "Tonga (Tonga Islands)"
+  },
+  "tpi": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Tok Pisin"
+  },
+  "tsi": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Tsimshian"
+  },
+  "tsn": {
+    "terminologic": null,
+    "iso6391": "tn",
+    "name": "Tswana"
+  },
+  "tso": {
+    "terminologic": null,
+    "iso6391": "ts",
+    "name": "Tsonga"
+  },
+  "tuk": {
+    "terminologic": null,
+    "iso6391": "tk",
+    "name": "Turkmen"
+  },
+  "tum": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Tumbuka"
+  },
+  "tup": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Tupi languages"
+  },
+  "tur": {
+    "terminologic": null,
+    "iso6391": "tr",
+    "name": "Turkish"
+  },
+  "tut": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Altaic languages"
+  },
+  "tvl": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Tuvalu"
+  },
+  "twi": {
+    "terminologic": null,
+    "iso6391": "tw",
+    "name": "Twi"
+  },
+  "tyv": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Tuvinian"
+  },
+  "udm": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Udmurt"
+  },
+  "uga": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Ugaritic"
+  },
+  "uig": {
+    "terminologic": null,
+    "iso6391": "ug",
+    "name": "Uighur; Uyghur"
+  },
+  "ukr": {
+    "terminologic": null,
+    "iso6391": "uk",
+    "name": "Ukrainian"
+  },
+  "umb": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Umbundu"
+  },
+  "und": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Undetermined"
+  },
+  "urd": {
+    "terminologic": null,
+    "iso6391": "ur",
+    "name": "Urdu"
+  },
+  "uzb": {
+    "terminologic": null,
+    "iso6391": "uz",
+    "name": "Uzbek"
+  },
+  "vai": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Vai"
+  },
+  "ven": {
+    "terminologic": null,
+    "iso6391": "ve",
+    "name": "Venda"
+  },
+  "vie": {
+    "terminologic": null,
+    "iso6391": "vi",
+    "name": "Vietnamese"
+  },
+  "vol": {
+    "terminologic": null,
+    "iso6391": "vo",
+    "name": "Volapük"
+  },
+  "vot": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Votic"
+  },
+  "wak": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Wakashan languages"
+  },
+  "wal": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Walamo"
+  },
+  "war": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Waray"
+  },
+  "was": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Washo"
+  },
+  "wel": {
+    "terminologic": "cym",
+    "iso6391": "cy",
+    "name": "Welsh"
+  },
+  "wen": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Sorbian languages"
+  },
+  "wln": {
+    "terminologic": null,
+    "iso6391": "wa",
+    "name": "Walloon"
+  },
+  "wol": {
+    "terminologic": null,
+    "iso6391": "wo",
+    "name": "Wolof"
+  },
+  "xal": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Kalmyk; Oirat"
+  },
+  "xho": {
+    "terminologic": null,
+    "iso6391": "xh",
+    "name": "Xhosa"
+  },
+  "yao": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Yao"
+  },
+  "yap": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Yapese"
+  },
+  "yid": {
+    "terminologic": null,
+    "iso6391": "yi",
+    "name": "Yiddish"
+  },
+  "yor": {
+    "terminologic": null,
+    "iso6391": "yo",
+    "name": "Yoruba"
+  },
+  "ypk": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Yupik languages"
+  },
+  "zap": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Zapotec"
+  },
+  "zbl": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Blissymbols; Blissymbolics; Bliss"
+  },
+  "zen": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Zenaga"
+  },
+  "zgh": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Standard Moroccan Tamazight"
+  },
+  "zha": {
+    "terminologic": null,
+    "iso6391": "za",
+    "name": "Zhuang; Chuang"
+  },
+  "zho": {
+    "bibliographic": "chi",
+    "iso6391": "zh",
+    "name": "Chinese"
+  },
+  "znd": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Zande languages"
+  },
+  "zul": {
+    "terminologic": null,
+    "iso6391": "zu",
+    "name": "Zulu"
+  },
+  "zun": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Zuni"
+  },
+  "zxx": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "No linguistic content; Not applicable"
+  },
+  "zza": {
+    "terminologic": null,
+    "iso6391": null,
+    "name": "Zaza; Dimili; Dimli; Kirdki; Kirmanjki; Zazaki"
+  }
+}
 },{}],4:[function(require,module,exports){
-module.exports = [ "ačkoli", "ahoj", "ale", "anebo", "ano", "asi", "aspoň", "během", "bez", "beze", "blízko", "bohužel", "brzo", "bude", "budeme", "budeš", "budete", "budou", "budu", "byl", "byla", "byli", "bylo", "byly", "bys", "čau", "chce", "chceme", "chceš", "chcete", "chci", "chtějí", "chtít", "chut'", "chuti", "co", "čtrnáct", "čtyři", "dál", "dále", "daleko", "děkovat", "děkujeme", "děkuji", "den", "deset", "devatenáct", "devět", "do", "dobrý", "docela", "dva", "dvacet", "dvanáct", "dvě", "hodně", "já", "jak", "jde", "je", "jeden", "jedenáct", "jedna", "jedno", "jednou", "jedou", "jeho", "její", "jejich", "jemu", "jen", "jenom", "ještě", "jestli", "jestliže", "jí", "jich", "jím", "jimi", "jinak", "jsem", "jsi", "jsme", "jsou", "jste", "kam", "kde", "kdo", "kdy", "když", "ke", "kolik", "kromě", "která", "které", "kteří", "který", "kvůli", "má", "mají", "málo", "mám", "máme", "máš", "máte", "mé", "mě", "mezi", "mí", "mít", "mně", "mnou", "moc", "mohl", "mohou", "moje", "moji", "možná", "můj", "musí", "může", "my", "na", "nad", "nade", "nám", "námi", "naproti", "nás", "náš", "naše", "naši", "ne", "ně", "nebo", "nebyl", "nebyla", "nebyli", "nebyly", "něco", "nedělá", "nedělají", "nedělám", "neděláme", "neděláš", "neděláte", "nějak", "nejsi", "někde", "někdo", "nemají", "nemáme", "nemáte", "neměl", "němu", "není", "nestačí", "nevadí", "než", "nic", "nich", "ním", "nimi", "nula", "od", "ode", "on", "ona", "oni", "ono", "ony", "osm", "osmnáct", "pak", "patnáct", "pět", "po", "pořád", "potom", "pozdě", "před", "přes", "přese", "pro", "proč", "prosím", "prostě", "proti", "protože", "rovně", "se", "sedm", "sedmnáct", "šest", "šestnáct", "skoro", "smějí", "smí", "snad", "spolu", "sta", "sté", "sto", "ta", "tady", "tak", "takhle", "taky", "tam", "tamhle", "tamhleto", "tamto", "tě", "tebe", "tebou", "ted'", "tedy", "ten", "ti", "tisíc", "tisíce", "to", "tobě", "tohle", "toto", "třeba", "tři", "třináct", "trošku", "tvá", "tvé", "tvoje", "tvůj", "ty", "určitě", "už", "vám", "vámi", "vás", "váš", "vaše", "vaši", "ve", "večer", "vedle", "vlastně", "všechno", "všichni", "vůbec", "vy", "vždy", "za", "zač", "zatímco", "ze", "že" ];
-},{}],5:[function(require,module,exports){
-module.exports = [ "af", "alle", "andet", "andre", "at", "begge", "da", "de", "den", "denne", "der", "deres", "det", "dette", "dig", "din", "dog", "du", "ej", "eller", "en", "end", "ene", "eneste", "enhver", "et", "fem", "fire", "flere", "fleste", "for", "fordi", "forrige", "fra", "få", "før", "god", "han", "hans", "har", "hendes", "her", "hun", "hvad", "hvem", "hver", "hvilken", "hvis", "hvor", "hvordan", "hvorfor", "hvornår", "i", "ikke", "ind", "ingen", "intet", "jeg", "jeres", "kan", "kom", "kommer", "lav", "lidt", "lille", "man", "mand", "mange", "med", "meget", "men", "mens", "mere", "mig", "ned", "ni", "nogen", "noget", "ny", "nyt", "nær", "næste", "næsten", "og", "op", "otte", "over", "på", "se", "seks", "ses", "som", "stor", "store", "syv", "ti", "til", "to", "tre", "ud", "var" ];
+'use strict';
+
+module.exports = require('./lib/franc');
+
+},{"./lib/franc":7}],5:[function(require,module,exports){
+module.exports={
+  "Latin": {
+    "spa": " de|os |de | la|la | y | a |es |ón |ión|rec|ere|der| co|e l|el |en |ien|cho|ent|ech|ció|aci|o a|a p| el|a l|al |as |e d| en|na |ona|s d|da |nte| to|ad |ene|con| pr| su|tod| se|ho |los| pe|per|ers| lo|o d| ti|cia|n d|cio| es|ida|res|a t|tie|ion|rso|te |do | in|son| re| li|to |dad|tad|e s|est|pro|que|men| po|a e|oda|nci| qu| un|ue |ne |n e|s y|lib|su | na|s e|nac|ia |e e|tra| pa|or |ado|a d|nes|ra |se |ual|a c|er |por|com|nal|rta|a s|ber| o |one|s p|dos|rá |sta|les|des|ibe|ser|era|ar |ert|ter| di|ale|l d|nto|hos|del|ica|a a|s n|n c|oci|imi|io |o e|re |y l|e c|ant|cci| as|las|par|ame| cu|ici|ara|enc|s t|ndi| so|o s|mie|tos|una|bre|dic|cla|s l|e a|l p|pre|ntr|o t|ial|y a|nid|n p|a y|man|omo|so |n l| al|ali|s a|no | ig|s s|e p|nta|uma|ten|gua|ade|y e|soc|mo | fu|igu|o p|n t|hum|d d|ran|ria|y d|ada|tiv|l e|cas| ca|vid|l t|s c|ido|das|dis|s i| hu|s o|nad|fun| ma|rac|nda|eli|sar|und| ac|uni|mbr|a u|die|e i|qui|a i| ha|lar| tr|odo|ca |tic|o y|cti|lid|ori|ndo|ari| me|ta |ind|esa|cua|un |ier|tal|esp|seg|ele|ons|ito|ont|iva|s h|d y|nos|ist|rse| le|cie|ide|edi|ecc|ios|l m|r e|med|tor|sti|n a|rim|uie|ple|tri|ibr|sus|lo |ect|pen|y c|an |e h|n s|ern|tar|l y|egu|gur|ura|int|ond|mat|l r|r a|isf|ote",
+    "eng": " th|the| an|he |nd |and|ion| of|of |tio| to|to |on | in|al |ati|igh|ght|rig| ri|or |ent|as |ed |is |ll |in | be|e r|ne |one|ver|all|s t|eve|t t| fr|s a| ha| re|ty |ery| or|d t| pr|ht | co| ev|e h|e a|ng |ts |his|ing|be |yon| sh|ce |ree|fre|ryo|n t|her|men|nat|sha|pro|nal|y a|has|es |for| hi|hal|f t|n a|n o|nt | pe|s o| fo|d i|nce|er |ons|res|e s|ect|ity|ly |l b|ry |e e|ers|e i|an |e o| de|cti|dom|edo|eed|hts|ter|ona|re | no| wh| a | un|d f| as|ny |l a|e p|ere| en| na| wi|nit|nte|d a|any|ted| di|ns |sta|th |per|ith|e t|st |e c|y t|om |soc| ar|ch |t o|d o|nti|s e|equ|ve |oci|man| fu|ote|oth|ess| al| ac|wit|ial| ma|uni| se|rea| so| on|lit|int|r t|y o|enc|thi|ual|t a| eq|tat|qua|ive| st|ali|e w|l o|are|f h|con|te |led| is|und|cia|e f|le | la|y i|uma|by | by|hum|f a|ic | hu|ave|ge |r a| wo|o a|ms |com| me|eas|s d|tec| li|n e|en |rat|tit|ple|whe|ate|o t|s r|t f|rot| ch|cie|dis|age|ary|o o|anc|eli|no | fa| su|son|inc|at |nda|hou|wor|t i|nde|rom|oms| ot|g t|eme|tle|iti|gni|s w|itl|duc|d w|whi|act|hic|aw |law| he|ich|min|imi|ort|o s|se |e b|ntr|tra|edu|oun|tan|e d|nst|l p|d n|ld |nta|s i|ble|n p| pu|n s| at|ily|rth|tho|ful|ssi|der|o e|cat|uca|unt|ien| ed|o p|h a|era|ind|pen|sec|n w|omm|r s",
+    "por": "os |de | de| a | e |o d|to |ão | di|ent|da |ito|em | co|eit|as |dir|es |ire|rei| se|ção|ade|a p|dad|e d|s d|men|nte|do |s e| pr| pe|dos| to| da|a a|o e| o |o a|ess|con|tod|que| qu|te |e a| do|al |res|ida|m d| in| ou|er |sso| na| re| po|a s| li|uma|cia|ar |pro|e e|a d| te|açã|a t| es| su|ou |ue |s p|tos|a e|des|ra |com|no |ame|ia |e p|tem|nto| pa|is |est|tra|ões|na |s o|oda|das|ser|soa|s n|pes|o p|s a|o s|e o| em| as| à |o o|ais|ber|ado|oa |o t|e s|man|sua|ua | no| os|a c|ter|çõe|erd|lib|rda|s s|nci|ibe|e n|ica|odo|so |nal|ntr|s t|hum|ura| ao|ona|ual| so|or |ma |sta|o c|a n|pre|ara|era|ons|e t|r a|par|o à| hu|ind|por|cio|ria|m a|s c| um|a l|gua|ran| en|ndi|o i|e c|raç|ion|nid|aci|ano|soc|e r|oci| ac|und|sen|nos|nsi|rec|ime|ali|int|um |per|nac| al|m o|r p| fu|ndo|ont|açõ| ig|igu|fun|nta| ma|uni|cçã|ere| ex|a i| me|ese|rio|l d|a o|s h|pel|ada|pri|ide|am |m p|pod|s f|ém |a f|io |ode|ca |ita|lid|tiv|e f|vid|r e|esp|nda|omo|e l|naç|o r|ant|a q|tad|lic|iva| fa|ver|s l|ial|cla|ngu|ing| ca|mo |der| vi|eli|ist|ta |se |ati|ios|ido|r o|eci|dis| un|e i|r d|ecç|o q|s i|qua|ênc|a m|seu|sti|nin|uer|rar|cas|aos|ens|gué|ias|sid|uém|tur|dam|sse|ao |ela|l e|for|tec|ote| pl|ena| tr|m c|tro| ni|ico|rot",
+    "ind": "an |ang| da|ng | pe|ak | ke| me|ata| se|dan|kan| di| be|hak|ber|per|ran|nga|yan|eng| ya| ha|asa|gan|men|ara|nya|n p|n d|n k|a d|tan| at|at |ora|ala|san| ba|ap |erh|n b|rha|ya | ma|g b|a s|pen|eba|as |aan|uk |ntu| or|eti|tas|aka|tia|ban|set| un|n s|ter|n y| te|k m|tuk|bas|iap|lam|beb|am | de|k a|keb|n m|i d|unt|ama|dal|ah |ika|dak|ebe|p o|sa |pun|mem|n h|end|den|ra |ela|ri |nda| sa|di |ma |a m|n t|k d|n a|ngg|tau|man|gar|eri|asi| ti|un |al |ada|um |a p|lak|ari|au | ne|neg|a b|ngs|ta |ole|leh|ert|ers|ida|k h|ana|gsa|dar|uka|tid|bat|sia|era|eh |dap|ila|dil|h d|atu|sam|ia |i m| in|lan|aha|uan|tu |ai |t d|a a|g d|har|sem|na |apa|ser|ena|kat|uat|erb|erl|mas|rta|ega|ung|nan|emp|n u|kum|l d|g s| hu|ka |ent|pat|mba|aga|nta|adi| su|eni|uku|n i|huk|ind|ar |rga|i s|aku|ndi|sua|ni |rus|han|si |car|nny| la|in |u d|ik |ua |lah|rik|usi|emb|ann|mer|ian|gga|lai|min|a u|lua|ema|emu|arg|dun|dip|a t|mat|aya|rbu|aru|erk|rka|ini|eka|a k|rak|kes|yat|iba|nas|rma|ern|ese|s p|nus| pu|anu|ina| ta|mel|mua|kel|k s|us |ndu|nak|da |sya|das|pem|lin|ut |yar|ami|upu|seo|aik|eor|iny|aup|tak|ipe|ing|tin| an|dik|uar|ili|g t|rse|sar|ant|g p|a n|aks|ain| ja|t p| um|g m|dir|ksa|umu|kep|mum|i k|eca|rat|m p|h p|aba|ses|m m",
+    "fra": " de|es |de |ion|nt |et |tio| et|ent| la|la |e d|on |ne |oit|e l|le | le|s d|e p|t d|ati|roi| dr|dro|it | à | co|té |ns |te |e s|men|re | to|con| l’|tou|que| qu|les| so|des|son| pe|ons| un|s l|s e| pr|ue | pa|e c|t l|ts |onn| au|e a|eme|e e| li|ont|ant|out|ute|t à|res|ers| sa|ce | a |tre|per|a d|cti|er |lib|ité| en|ux | re|en |rso|à l| ou| in|lle|un |nat|ou |nne|n d|une| d’| se|par|nte|us |ur |s s|ans|dan|a p|r l|pro|its|és |t p|ire|e t|s p|sa | dé|ond|é d|a l|nce|ert|aux|omm|nal|me | na| fo|iqu| ce|rté|ect|ale|ber|t a|s a| da|mme|ibe|san|e r| po|com|al |s c|qui|our|t e| ne|e n|ous|r d|ali|ter| di|fon|e o|au | ch|air|ui |ell| es|lit|s n|iss|éra|tes|soc|aut|oci|êtr|ien|int|du |est|été|tra|pou| pl|rat|ar |ran|rai|s o|ona|ain|cla|éga|anc|rs |eur|pri|n c|e m|s t|à u| do|ure|bre|ut | êt|age| ét|nsi|sur|ein|sen|ser|ndi|ens|ess|ntr|ir | ma|cia|n p|st |a c| du|l e| su|bli|ge |rés| ré|e q|ass|nda|peu|ée |l’a| te|a s|tat|il |tés|ais|u d|ine|ind|é e|qu’| ac|s i|n t|t c|n a|l’h|t q|soi|t s|cun|rit| ég|oir|’en|nta|hom| on|n e| mo|ie |ign|rel|nna|t i|l n| tr|ill|ple|s é|l’e|rec|a r|ote|sse|uni|idé|ive|s u|t ê|ins|act| fa|n s| vi|gal| as|lig|ssa|pré|leu|e f|lic|dis|ver| nu|ten|ssi|rot|tec|s m|abl",
+    "deu": "en |er |der| un|nd |und|ein|ung|cht| de|ich|sch|ng | ge|ie |che|ech| di|die|rec|gen|ine|eit| re|ch | da|n d|ver|hen| zu|t d| au|ht | ha|lic|it |ten|rei| be|in | ve| in| ei|nde|auf|den|ede|zu |n s|uf |fre|ne |ter|es | je|jed|n u| an|sei|and| fr|run|at | se|e u|das|hei|s r|hte|hat|nsc|nge|r h|as |ens| al|ere|lle|t a| we|n g|rde|nte|ese|men| od|ode|ner|g d|all|t u|ers|te |nen| so|d d|n a|ben|lei| gr| vo|wer|e a|ege|ion| st|ige|le |cha| me|haf|aft|n j|ren| er|erk|ent|bei| si|eih|ihe|kei|erd|tig|n i|on |lun|r d|len|gem|ies|gru|tli|unt|chu|ern|ges|end|e s|ft |st |ist|tio|ati| gl|sta|gun|mit|sen|n n| na|n z|ite| wi|r g|eic|e e|ei |lie|r s|n w|gle|mei|de |uch|em |chl|nat|rch|t w|des|n e|hre|ale|spr|d f|ach|sse|r e| sc|urc|r m|nie|e f|fen|e g|e d| ni|dur|dar|int| du|geh|ied|t s| mi|alt|her|hab|f g|sic|ste|taa|aat|he |ang|ruc|hli|tz |eme|abe|h a|n v|nun|geg|arf|rf |ehe|pru| is|erf|e m|ans|ndl|e b|tun|n o|d g|n r|r v|wie|ber|r a|arb|bes|t i|h d|r w|r b| ih|d s|igk|gke|nsp|dig|ema|ell|eru|n f|ins|rbe|ffe|esc|igu|ger|str|ken|e v|gew|han|ind|rt | ar|ieß|n h|rn |man|r i|hut|utz|d a|ls |ebe|von|lte|r o|rli|etz|tra|aus|det|hul|e i|one|nne|isc|son|sel|et |ohn|t g|sam| fa|rst|rkl|ser|iem|g v|t z|err",
+    "jav": "ng |an |ang| ka|ing|kan| sa|ak |lan| la|hak| ha| pa| ma|ngg|ara|sa |abe|ne | in|n k|ant| ng|tan|nin| an|nga|ata|en |ran| ba|man|ban|ane|hi |n u|ong|ra |nth|ake|ke |thi| da|won|uwo|ung|ngs| uw|asa|gsa|ben|sab|ana|aka|beb|a k|g p|nan|nda|adi|at |awa|san|ni |dan|g k|pan|eba| be|e k|g s|ani|bas| pr|dha|aya|gan|ya |wa |di |mar|n s| wa|ta |a s|g u| na|e h|arb|a n|a b|a l|n n| ut|yan|n p|asi|g d|han|ah |g n| tu| um|as |wen|dak|rbe|dar| di|ggo|sar|mat|k h|a a|iya| un|und|eni|kab|be |art|ka |uma|ora|n b|ala|n m|ngk|rta|i h| or|gar|yat|kar|al |a m|n i|na |g b|ega|pra|ina|kak|g a|a p|tum|nya|kal|ger|gge| ta|kat|i k|ena|oni|kas| pe|dad|aga|g m|duw|k k|uta|uwe| si| ne|adh|pa |n a|go |and|i l| ke|nun|nal|ngu|uju|apa|a d|t m|i p|min|iba|er | li|anu|sak|per|ama|gay|war|pad|ggu|ha |ind|taw|ras|n l|ali|eng|awi|a u| bi|we |bad|ndu|uwa|awe|bak|ase|eh | me|neg|pri| ku|ron|ih |g t|bis|iji|i t|e p| pi|aba|isa|mba|ini|a w|g l|ika|n t|ebu|ndh|ar |sin|lak|ur |mra|men|ku | we|e s|a i|liy| ik|ayo|rib|ngl|ami|arg|nas|yom|wae|ut |kon|ae |rap|aku| te|dil|tin|rga|jud|umu| as|rak|bed|k b|il |kap|h k|jin|k a| nd|e d|i s| lu|i w|eka|mum|um |uha|ate| mi|k p|gon|eda| ti|but|n d|r k|ona|uto|tow|wat|gka|si |umr|k l|oma",
+    "vie": "ng |̣c |́c | qu| th|à |nh | ng|̣i | nh|và| va|̀n |uyê| ph| ca|quy|ền|yề|̀i | ch|̀nh| tr| cu|ngư|i n|gươ|ườ|́t |ời| gi|ác| co|̣t |ó |c t|ự |n t|cá|ông| kh|ượ|ợc| tư| đư|iệ|đươ|ìn|́i | ha|có|i đ|gia| đê|pha| mo|ọi|mọ|như|n n|củ| ba|̣n |̉a |ủa|n c|̀u |̃ng|ân |ều|ất| bi|tự|hôn| vi|g t| la|n đ|đề|nhâ| ti|t c| đô|ên |bả|hiê|u c| tô|do |hân| do|ch |́ q|̀ t| na|́n |ay | hi|àn|̣ d|ới|há| đi|hay|g n| mô|ốc|uố|n v|ội|hữ|thư|́p |quô| ho|̣p |nà|ào|̀ng|̉n |ị |́ch|ôn |̀o |khô|c h|i c|c đ| hô|i v|tro| đa|́ng|mộ|i t|ột|g v|ia |̣ng|ản|ướ|ữn|̉ng|h t|hư |ện|n b|ộc|ả |là|c c|g c| đo|̉ c|n h|hà|hộ| bâ|ã |̀y | vơ|̣ t|̉i |iế| cô|t t|g đ|ức|iên| vê|viê|vớ|h v|ớc|ực|ật|tha|̉m |ron|ong|áp|g b|hươ| sư|a c|sự|̉o |ảo|h c|ể |o v|uậ|a m|ế |iá|̀ c|cho|qua|hạ|ục| mi|̀ n|phâ|c q|côn|o c|á |i h|ại| hơ|̃ h| cư|n l|bị| lu|bấ|cả|ín|h đ| xa|độ|g h|c n|c p|thu|ải|ệ | hư|́ c|o n| nư|ốn|́o |áo|xã|oà|y t|hả|tộ|̣ c| tâ|thô| du|m v|mì|ho |hứ|ệc|́ t|hợ|án|n p|cũ|ũn|iể|ối|tiê|ề |hấ|ợp|hoa|y đ|chi|o h|ở |ày|̉ t|đó|c l|về|̀ đ|i b|kha|c b| đâ|luâ|ai |̉ n|đố|ết|hự|tri|p q|nươ|dụ|hí|g q|yên|họ|́nh| ta| bă|c g|n g|thê|o t|c v|am |c m|an ",
+    "ita": " di|to | de|ion| in|la |e d|di |ne | e |zio|re |le |ni |ell|one|lla|rit|a d|o d|del|itt|iri|dir| co|ti |ess|ent| al|azi|tto|te |i d|i i|ere|tà | pr|ndi|e l|ale|o a|ind|e e|e i|gni|nte|con|i e|li |a s| un|men|ogn| ne|uo | og|idu|e a|ivi|duo|vid| es|tti| ha|div| li|a p|no |all|pro|za |ato|per|sse|ser| so|i s| la| su|e p| pe|ibe|na |a l| il|ber|e n|il |ali|lib|ha |che|in |o s|e s| qu|o e|ia |e c| ri|nza|ta |nto|he |oni|o i| o |sta|o c|nel| a |o p|naz|e o|so | po|o h|gli|i u|ond|i c|ers|ame|i p|lle|un |era|ri |ver|ro |el |una|a c| ch|ert|ua |i a|ssi|rtà|a e|ei |dis|ant| l |tat|a a|ona|ual| le|ità|are|ter| ad|nit| da|pri|dei|à e|cia| st| si|nal|est|tut|ist|com|uni| ed|ono| na|sua|al |si |anz| pa| re|raz|gua|ita|res|der|soc|man|o o|ad |i o|ese|que|enz|ed | se|io |ett|on | tu|dic|à d|sia|i r|rso|oci|rio|ari|qua|ial|pre|ich|rat|ien|tra|ani|uma|se |ll |eri|a n|o n| um|do |ara|a t|zza|er |tri|att|ico|pos|sci|i l|son|nda|par|e u|fon| fo|nti|uzi|str|utt|ati|sen|int|nes|iar| i |hia|n c|sti|chi|ann|ra | eg|egu|isp|bil|ont|a r| no|rop| me|opr|ost| ma|ues|ica|sso|tal|cie|sun|lit|ore|ina|ite|tan| ra|non|gio|d a|e r|dev|i m|l i|ezz|izi| cu|nno|rà |a i|tta|ria|lia|cos|ssu|dal|l p| as|ass|opo|ve |eve",
+    "tur": " ve| ha|ve |ler|lar|ir |in |hak| he|her|bir|er |an |arı|eri|ya | bi|ak |r h|eti|ın |iye|yet| ka|ası|ını| ol|tle|eya|kkı|ara|akk|etl|sın|esi|na |de |ek | ta|nda|ini| bu|ile|rın|rin|vey|ne |kla|e h|ine|ır |ere|ama|dır|n h| sa|ına|sin|e k|le | ge|mas|ınd|nın|ı v| va|lan|lma|erk|rke|nma|tin|rle| te|nin|akl|a v|da | de|let|ill|e m|ard|en |riy|aya|nı | hü| şa|e b|k v|kın|k h| me|mil|san| il|si |rdı|e d|dan|hür|var|ana|e a|kes|et |mes|şah|dir| mi|ret|rri| se|ola|ürr|irl|bu |mak| ma|mek|n e|kı |n v|n i|lik|lle| ed| hi|n b|a h| ba|nsa| iş|eli|kar| iç|ı h|ala|li |ulu|rak|evl|e i|ni |re |r ş|eme|etm|e t|ik |e s|a b|iş |n k|hai|nde|aiz| eş|izd|un |olm|hiç|zdi|ar |unm|ma | gö|ilm|lme|im |n t|tir|dil|mal|e g|i v| ko|lun|e e|mel|ket|ık |n s|ele|la |el |r v|ede|şit|ili|eşi|yla|a i| an|anı| et|rı |ahs| ya|sı |edi|siy|t v|i b|se |içi|çin|bul|ame| da|miş|may|tim|a k|tme|r b|ins|yan|nla|mle| di|eye|ger|ye |uğu|erd|din|ser| mü|mem|vle| ke|nam|ind|len|eke|es | ki|n m|it | in| ku|rşı|a s|arş| ay|eml|lek|oru|rme|kor|rde|i m| so|tür|al |lam|eni|nun| uy|ken|hsı|i i|a d|ri |dev|ün |a m|r a|mey|cak|ıyl|maz|e v|ece|ade|iç |şma|mse|te |tün|ims|kim|e y|şı |end|k g|ndi|alı| ce|lem|öğr|ütü|k i|r t| öğ|büt|anl| bü",
+    "pol": " pr|nie| i |ie |pra| po|ani|raw|ia |nia|wie|go | do|ch |ego|iek|owi| ni|ści|ci |a p|do |awo| cz|ośc|ych| ma|ek |rze| na|prz| w |wo |ej | za|noś|czł|zło|eni|wa | je|łow|i p|wol|oln| lu|rod| ka| wo|lno|wsz|y c|ma |ny |każ|ażd|o d|stw|owa|dy |żdy| wy|rzy|sta|ecz| sw|dzi|i w|e p|czn|twa|na |zys|ów |szy|ub |lub|a w|est|kie|k m|wan| sp|ają| ws|e w|pow|pos|nyc|rac|spo|ać |a i|cze|sze|neg|yst|jak| ja|o p|pod|acj|ne |ńst|aro|mi | z |i i|nar| ko|obo|awa| ro|i n|jąc|zec|zne|zan|dow| ró|iej|zy |zen|nic|ony|aw |i z|czy|no |nej|o s|rów|odn|cy |ówn|odz|o w|o z|jeg|edn|o o|aki|mie|ien|kol| in|zie|bez|ami|eńs|owo|dno| ob| or| st|a s|ni |orz|o u|ym |stę|tęp|łec|jed|i k| os|w c|lwi|ez |olw|ołe|poł|cji|y w|o n|wia| be|któ|a j|zna|zyn|owe|wob|ka |wyc|owy|ji | od|aln|inn|jes|icz|h p|i s|się|a o|ją |ost|kra|st |sza|swo|war|cza|roz|y s|raz|nik|ara|ora|lud|i o|a z|zes| kr|ran|ows|ech|w p|dów|ą p|pop|a n|tki|stk|gan|zon|raj|e o|iec|i l| si|że |eka| kt| de|em |tór|ię |wni|lni|ejs|ini|odo|dni|ełn|kow|peł|a d|ron|dek|pie|udz|bod|nan|h i|dst|ieg|taw|z p|z w|zeń|god|iu |ano|lar| to|y z|a k|ale|kla|trz|zaw|ich|e i|ier|iko|dzy|chn|w z|by |ków|adz|ekl|ywa|ju |och|kor|sob|ocz|oso|u p|du |tyc|tan|ędz| mi|e s| ta|ki ",
+    "gax": "aa |an |uu | ka|ni |aan|umm|ii |mma|maa| wa|ti |nam| fi|ta |tti| na|saa|fi | mi|rga|i k|a n| qa|dha|iyy|oot|in |mir|irg|raa|qab|a i|a k|kan|akk|isa|chu|amu|a f|huu|aba|kka| ta|kam|a a| is|amn|ami|att|ach|mni|yaa| bi|yuu|yyu|ee |wal|miy|waa|ga |ata|aat|tii|oo |a e|moo| ni| ee|ba | ak|ota|a h|i q| ga| dh|daa|haa|a m|ama|yoo|a b|i a|ka |kaa| hi|sum|aas|arg|man| hu| uu|u n| yo| ar| ke| ha|ees| ba|uf |i i|taa|uuf|iin|ada|a w|i f|ani|rra|na |isu| ad|i w|a u|nya|irr|da |hun|hin|ess| ho| ma|i m|und|i b|bar|ana|een|mu |is |bu |f m| ir| sa|u a|add|aad| la|i d|n h|eeg|i h|sa |hoj|abu| ya|kee|al |udh|ook|goo|ala|ira|nda|itt|gac|as |n k|mum|see|rgo|uum|ra |n t|n i|ara|muu|ums|mat|nii|sii|ssa|a d|a q| da|haw|a g|yya|asu|eef|u h|tum|biy| mo|a t|ati|eny|gam|abs|awa|roo|uma|n b|n m|u y|a s|sat|baa|gar|n a|mmo|nis| qo|nna| ku|eer| to|kko|bil|ili|lis|bir|otu|tee|ya |msa|aaf|suu|n d|jii|n w|okk|rka|gaa|ald|un |rum| ye|ame| fu|mee|yer|ero|amm|era|kun|i y|oti|tok|ant|ali|nni| am|lda|lii|n u|lee|ura|lab|aal|tan|laa|i g|ila|ddu|aru|u m|oji|gum|han|ega| se|ffa|dar|faa|ark|n y|hii|qix|gal|ndi| qi|asa|art|ef |uud| bu|jir| ji|arb|n g|chi|tam|u b|dda|bat|di |kar|lam|a l| go|bsi|sad|oka|a j|egu|u t|bee|u f|uun",
+    "swh": "a k|wa |na | ya| ku|ya | na| wa|a m| ha|i y|a h|a n|ana|ki |aki|kwa| kw|hak| ka| ma|la |a w|tu |li |a u|ni |i k|a a|ila| ki|ali|a y|ati|za |ili|ifa| mt|ke | an|kil|kat|mtu|ake|ote|te |ka |ika|ma |we |a s|yo |fa |i n|ata|e k|ama|zi |amb|u a|ia |u w| yo|azi|kut|ina|i z|asi| za|o y|uhu|yak|au |ish|mba|e a|u k|hur|ha |tik|wat| au|uru| bi|sha|mu |ara|u n| as|hi | hi|ru |aif|tai|cha|ayo|a b|hal| uh| ch|yot|i h| zi|awa|chi|atu|e n|ngi|u y|mat|shi|ani|eri| am|uli|ele|sa |ja |e y|a t|oja|o k|nch|i a|a j| nc|ima| sh|ami| ta|end|any|moj|i w|ari|ham|uta|ii |iki|ra |ada|wan|wak|nay|ye |uwa| la|ti |eza|o h|iri|iwa|kuw|iwe| wo|fan| sa|she|bu |kan|ao |jam|wen|lim|i m|her|uto|ria| ja| ni|kam|di | hu|zo |a l|da |kaz|ahi|amu|wot|o w|si |dha|bin|ing|adh|a z|bil|e w|nya|kup|har|ri |ang|aka|sta|aji|ne |kus|e m|zim|ini|ind|lin|kul|agu|kuf|ita|bar|o n|uu |iyo|u h|nad|maa|mwe|ine|gin|nye|nde|dam|ta | nd|ndi|rik|asa| ba|rif|uni|nga|hii|lez|bo |azo|uzi|mbo|sil|ush|tah|wam|ibu|uba|imu| ye|esh| ut|taa|aar|wez|i s|e b| si|ala|dhi|eng|aza|tak|hir|saw|izo|kos|tok|oka|yan|a c|wal|del|i b|pat| um|ndo|zwa|mam|a i|guz|ais|eli|mai|laz|ian|aba|man|ten|zin|ba |nda|oa |u m|uku|ufu| mw|liw|aha|ndw|kuh|ua |upa| el|umi|sia",
+    "sun": "an |na |eun| ka|ng | sa|ana|ang| di|ak | ha|nga|hak|un |ung|keu|anu| ba| an|nu |a b| bo| je|a h|ata|asa|jeu|ina| ng|ara|nan|awa|gan|ah |sa |a k| na|n k|kan|aha|a p|a s|ga |ban| ma|a n|ing|oga|bog|sar| pa| ku|man|a a|ha |san|ae |bae|din|g s|aga|sah|ra |tan|n s| pe|ala| si|kat|ma |per| ti|aya|sin| at| pi| te|n a|aan|lah|pan|gar|n n|u d|ta |eu |ari|kum|ngs|a m|n b|n d|ran|a d|gsa|wa |taw|k h|ama|ku |ike|n p|eba|bas| ja|al |a t|ika|at |beb|kab|pik|asi|atu|nda|una|a j|nag|e b|n h|en |g k|oh |aba|ila|rta|aku|boh|ngg|abe|art|ar |n j|di |ima|um |ola|geu|usa|aca|sak|adi|k a|udu|teu|car|tin| me| ay|h k| po|eh |u s|aka|rim|ti |sac|k n|ngt|jen|awe|ent|u a|uma|teh|law|ur |h s|dan|bar|uku|gaw|aru|ate|iba|dil|pol|aja|ieu|ere|jal|nar| hu|n t|nya|pa |are|upa|mas|ake|ut |wan| ge|kal|nus| so|ngk|ya |yan|huk| du|tun| mi|mpa|isa|lan|ura|u m|uan|ern|ena|nte|rup|tay|n m| ke|ka |han|und|us |h b|kud|ula|tut| tu| ie|hna|kaw|u k|lak|gam|mna|umn|g d| nu|yun|ri |ayu|wat| wa|eri|g n|a u|i m|u p| ta|du |dit|umu|k k|ren|mba|rik|gta| be|ali|h p|h a|eus|u n|alm|il | da|sas|ami|min|lma|ngu|nas|yat|rak|amp|mer|k j|sab|mum| ra|rua|ame|ua |ter|sal|ksa|men|kas|nge|k d|ona| bi|bis|sio|ion|nal|taa| de|uh |gal|dip|we |bad",
+    "ron": " de|și | și|re | în|are|te |de |ea |ul |rep|le |ept|dre|e d| dr|ie |în |e a|ate|ptu| sa|tul| pr|or |e p| pe|la |e s|ori| la| co|lor| or|ii |rea|ce |au |tat|ați| a | ca|ent| fi|ale|ă a|a s| ar|ers|per|ice| li|uri|a d|al | re|e c|ric|nă |i s|e o|ei |tur| să|lib|con|men|ibe|ber|rso|să |tăț|sau| ac|ilo|pri|ăți|i a|i l|car|l l|ter| in|ție|că |soa|oan|ții|lă |tea|ri |a p| al|ril|e ș|ană|in |nal|pre|i î|uni|ui |se |e f|ere|i d|e î|ita| un|ert|ile|tă |a o| se|i ș|pen|ia |ele|fie|i c|a l|ace|nte|ntr|eni| că|ală| ni|ire|ă d|pro|est|a c| cu| nu|n c|lui|eri|ona| as|sal|ând|naț|ecu|i p|rin|inț| su|ră |e n| om|ici|nu |i n|oat|ări|l d| to|tor| di| na|iun| po|oci|tre|ni |ste|soc|ega|i o|gal| so| tr|ă p|a a|n m|sta|va |ă î|fi |res|rec|ulu|nic|din|sa |cla|nd | mo| ce| au|ara|lit|int|i e|ces|uie|at |rar|rel|iei|ons|e e|leg|nit|ă f| îm|a î|act|e l|ru |u d|nta|a f|ial|ra |ă c| eg|ță | fa|i f|rtă|tru|tar|ți |ă ș|ion|ntu|dep|ame|i i|reb|ect|ali|l c|eme|nde|n a|ite|ebu|bui|ât |ili|toa|dec| o |pli|văț|nt |e r|u c|ța |t î|l ș|cu |rta|cia|ane|țio|ca |ită|poa|cți|împ|bil|r ș| st|omu|ăță|țiu|rie|uma|mân| ma|ani|nța|cur|era|u a|tra|oar| ex|t s|iil|ta |rit|rot|mod|tri|riv|od |lic|rii|eze|man|înv|ne |nvă|a ș|cti",
+    "fuc": "de | e |e n|nde| ha|la |e e|akk| ka| nd|ina| wa|al |hak|na |ndi| in|kke|ɗo |di |ii |aad|ade|um |ko |i h|ala| mu|lla| ne| jo|mum|wal|ji | fo|all|eɗɗ|neɗ| le|kal|e h| ko|taa|re | ng|aaw|aa |e k|e w|ee |jog|ley|e m|laa|ke |ɗɗo|e l|eed|nnd|aag|ol | ta|kee|gu |o k|ogi|ond|le |eji|waa|am |dee|nga|a j|ti |gal|m e|awa|e d|ɗe | wo|ɓe |eej|gii|ede|gol| re|aan|i e| go|agu|e t|ann|eyd|fot|oti|ɗee|naa| de| po|pot|maa|oto|ydi|enn|i n| he|ni |een|taw|e j|goo|a k|to |dim|e f|a i|der| aa|ele| fa|o n|ngu|oot|dir| ba|er |a f|ndo|ima|ay | sa|ota|ka |oor|a n|won|ngo|i k|tee|a e| ja|e ɓ|o f|i w| to|wa |i f|ren|hay|and|a w|awi|ore|o t|eyɗ|ma |nan|yɗe|o e|kam|i m|too|fof|e y|hee|aak| do|eel|of |nka|ñaa|e g|e s|l e|ira| la|e i|tin|e r|aar|ani| ɓe| te|are|ral|a t| so|dii|e p| na|o w| ho|oo |ooj| ña|en |gaa|kaa| yi|so | mo|und|nng|faw|nge| ma|aam|woo|awo| ya|dow|u m|i l|e b| mb|ita|ude|o h|igg|ɗi |o i| li|nda|e a|lig| o | nj|baa|haa|tal|tuu|tii| tu|aaɗ|a h| no| di| fe|iiɗ|ama|inn|iin|iti|den|yan| da|go | hu|ank|guu|do |mii| ke|l n|a d|bel|imɓ|je |jey|yim|no |ugn|uug|ano|ine|non|nee|lit|lli|njo|edd| je|ŋde|aŋd|jaŋ|mɓe|ow | su|ent|wit|alt|i a|ago| ɗe|l h| ɗu|y g|gna|m t|nna|a a| ɓa|ɓam|amt|ind|ɗɗa|tde|aga|eɗe",
+    "hau": "da | da|in |a k|ya |an |a d|a a| ya| ko| wa| a |sa |na | ha|a s|ta |kin|wan|wa | ta| ba|a y|a h|n d|n a|iya|ko |a t|ma |ar | na|yan|ba | sa|asa| za| ma|a w|hak|ata| ka|ama|akk|i d|a m| mu|su |owa|a z|iki|a b|nci| ƙa| ci| sh|ai |kow|anc|nsa|a ƙ|a c| su|shi|ka | ku| ga|ci |ne |ani|e d|uma|‘ya|cik|kum|uwa|ana| du| ‘y|ɗan|ali|i k| yi|ada|ƙas|aka|kki|utu|n y|a n|hi | ra|mut| do| ad|tar| ɗa|nda| ab|man|a g|nan|ars|and|cin|ane|i a|yi |n k|min|sam|ke |a i|ins|yin|ki |nin|aɗa|ann|ni |tum|za |e m|ami|dam|kan|yar|en |um |n h|oka|duk|mi | ja|ewa|abi|kam|i y|dai|mat|nna|waɗ|n s|ash|ga |kok|oki|re |am |ida|sar|awa|mas|abu|uni|n j|una|ra |i b| ƙu|dun|a ‘|cew|a r|aba|ƙun|ce |e s|a ɗ|san|she|ara|li |kko|ari|n w|m n|buw|aik|u d|kar| ai|niy| ne|hal|rin|bub|zam|omi| la|rsa|ubu|han|are|aya|a l|i m|zai|ban|o n|add|n m|i s| fa|bin|r d|ake|n ‘|uns|sas|tsa|dom| ce|ans| hu|me |kiy|ƙar| am|ɗin| an|ika|jam|i w|wat|n t|yya|ame|n ƙ|abb|bay|har|din|hen|dok|yak|n b|nce|ray|gan|fa |on | ki|aid| ts|rsu| al|aye| id|n r|u k|ili|nsu|bba|aur|kka|ayu|ant|aci|dan|ukk|ayi|tun|aga|fan|unc| lo|o d|lok|sha|un |lin|kac|aɗi|fi |gam|i i|yuw|sun|aif|aja| ir|yay|imi|war| iy|riy|ace|nta|uka|o a|bat|mar|bi |sak|n i| ak|tab|afi|sab",
+    "bos": " pr| i |je |rav| na|pra|na |da |ma |ima| sv|a s|nje|a p| da| po|anj|a i|vo |va |ko |ja | u |ako|o i|no | za|e s|ju |avo| im|ti |sva|ava|i p|o n|li |ili|i s|van|ost| ko|vak|ih |ne |a u| sl|nja|koj| dr| ne|jed| bi|i d|ije|stv|u s|lob|im |slo| il|bod|obo| ra|sti|pri| je| su|vje|om |a d|se |e i| ob|a n|i i| se|dru|enj| os|voj|cij|e p|a b|su |o d|uje|u p|raz|i n|a o| od|lo |u o|ova|u i|edn|i u| nj|ovo|jen|lju|ni |oje|nos|a k|ran|dje|iti|o p|aci|žav|a j|i o|e o|pre|pro|bra|nih|ji | ka|e d|jeg|og |sta| tr|tre|bud|u n|drž|u z|rža|bit|svo|ija|elj|reb|e b|mij|jem|avn|pos| bu|ka |aju| iz|ba |ve |rod|de |aro|e u|iva|a z|em |šti|ilo|eni|lje|ći |red|bil|jel|jer| ni|odn|m i|du |tva|nar|gov| sa|oji| do|tu |vim|u d| st|o k|e n|a t|za |nim| dj| sm|ući|ičn|dna|i m|oda|vno|eba|ist|nac|e k|čno|nak|ave|tiv|eđu|nov|olj|sno|ani|aln|an |nom|i b|stu|nst|eno|oj |osn|a r|ovj|nap|smi|nog|čov|oja|nju|ara|nu |dno|ans|ovi|jan|edi|m s| kr|h p|tup| op| čo|iko|jek|tvo| vj| mi|tel|vu |obr|živ|tit|o o|una|odu| mo| ov|kri|ego|din|rug|nik|rad|pod|nji|sam|sto|lja|dst|rim|ite|riv| te|m n|vol|i v|e t|vni|akv|itu|g p| ta|ašt|zaš|svi|ao |te |o s|ak |mje|a č|odr|udu|kla|i t|avi|tno|nič| vr|nic|dni|u u|ina| de|oba|od |jih|st ",
+    "hrv": " pr| i |je |rav|pra|ma | na|ima| sv|na |ti |a p|nje| po|a s|anj|a i|vo |ko |da |vat|va |no | za|i s|o i|ja |avo| u | im|sva|i p| bi|e s|ju |tko|o n|li |ili|van|ava| sl|ih |ne |ost| dr|ije| ne|jed|slo| ra|u s|lob|obo| os|bod| da| ko|ova|nja|koj|i d|atk|iti| il|stv|pri|om |im | je| ob| su| ka|i i|i n|e i|vje|i u|se |dru|bit|voj|ati|i o|ćen|a o|o p|a b|a n|ući| se|enj|sti|a u|edn|dje|lo |ćav| mo|raz|u p| od|ran|ni |rod|a k|su |aro|drć|svo|ako|u i|rća|a j|mij|ji |nih|eni|e n|e o| nj|pre|pos|ćiv|oje|eno|e p|nar|oda|nim|ovo|aju|ra |ći |og |nov|iva|a d|nos|bra|bil|i b|avn|a z|jen|e d|ve |ora|tva|jel|sta|mor|u o|cij|pro|ovi|za |jer|ka |sno|ilo|jem|red|em |lju|osn|oji| iz|aci| do|lje|i m| ni|odn|nom|jeg| dj|vno|vim|elj|u z|o d|rad|o o|m i|du |uje| sa|nit|e b| st|oj |tit|a ć|dno|e u|o s|u d|eću|ani|dna|nak|nst|stu| sm|e k|u u|an |gov|nju|juć|aln|m s|tu |a r|ćov|jan|u n|o k|ist|ću |te |tvo|ans|šti|nu |ara|nap|m p|nić|olj|bud| bu|edi|ovj|i v|pod|sam|obr|tel| mi|ina|zaš|e m|ašt| vj|ona|nji|jek| ta|duć|ija| ćo|tup|h p|oja|smi|ada| op|oso|una|sob|odu|dni|rug|udu|ao |di |avi|tno|jim|itu|itk|će |odr|ave|meć|nog|din|svi| ći|kak|kla|rim|akv|elo|štv|ite|vol|jet|opć|pot|tan|ak |nic|nac|uće| sk| me|ven",
+    "nld": "en |de |an | de|van| va| en| he|ing|cht|der|ng |n d|n v|et |een| ge|ech|n e|ver|rec|nde| ee| re| be|ede|er |e v|gen|den|het|ten| te| in| op|n i| ve|lij| zi|ere|eli|zij|ijk|te |oor|ht |ens|n o|and|t o|ijn|ied|ke | on|eid|op | vo|jn |id |ond|in |sch| vr|aar|n z|aan| ie|rde|rij|men|ren|ord|hei|hte| we|eft|n g|ft |n w|or |n h|eef|vri|wor| me|hee|al |t r|of |le | of|ati|g v|e b|eni| aa|lle| wo|n a|e o|nd |r h|voo| al|ege|n t|erk| da| na|t h|sta|jke|at |nat|nge|e e|end| st|om |e g|tie|n b|ste|die|e r|erw|wel|e s|r d| om|ij |dig|t e|ige|ter|ie |gel|re |jhe|t d| za|e m|ers|ijh|nig|zal|nie|d v|ns |d e|e w|e n|est|ele|bes| do|g e|che|vol|ge |eze|e d|ig |gin|dat|hap|cha|eke| di|ona|e a|lke|nst|ard| gr|tel|min| to|waa|len|elk|lin|eme|jk |n s|del|str|han|eve|gro|ich|ven|doo| wa|t v|it |ove|rin|aat|n n|wet|uit|ijd|ze | zo|ion| ov|dez|gem|met|tio|bbe|ach| ni|hed|st |all|ies|per|heb|ebb|e i|toe|es |taa|n m|nte|ien|el |nin|ale|ben|daa|sti| ma|mee|kin|pen|e h|wer|ont|iet|tig|g o|s e| er|igd|ete|ang|lan|nsc|ema|man|t g|is |beg|her|esc|bij|d o|ron|tin|nal|eer|p v|edi|erm|ite|t w|t a| hu|rwi|wij|ijs|r e|weg|js |rmi|naa|t b|app|rwe| bi|t z|ker|ame|eri|ken| an|ar | la|tre|ger|rdi|tan|eit|gde|g i|d z|oep",
+    "srp": " pr| i |rav|pra| na|na |ma | po|je | sv|da |a p|ima|ja |a i|vo |nje|va |ko |anj|ti |i p| u |ako|a s| da|avo|i s|ju |ost| za|sva|o i|vak| im|e s|o n|ava| sl|nja| ko|no |ne |li |om | ne|ili| dr|u s|slo|koj|a n|obo|ih |lob|bod|im |sti|stv|a o| bi| il| ra|pri|a u|og | je|jed|e p|enj|ni |van|u p|nos|a d|iti|a k|edn|i u|pro|o d|ova| su|ran|cij|i i|sta|se | os|e i|dru| ob|i o|rod|aju|ove| de|i n| ka|aci|e o| ni| od|ovo|i d|ve | se|eni|voj|ija|su |u i|žav|avn|uje| st|red|m i|dna|a b|odi|ara|drž|ji |nov|lju|e b|rža|tva|što|u o|oja| ov|a j|odn|u u|jan|poš|jen| nj|nim|ka |ošt|du |raz|a z| iz|sno|o p|vu |u n|u d|šti|osn|e d|pre|u z|de |ave|nih|bit|aro|oji|bez|tu |gov|lje|ičn| sa|lja|svo|lo |za |vno|e n|eđu| tr|nar| me|vim|čno|oda|ani|đen|nac|nak|an |to |tre|ašt| kr|stu|nog|o k|m s|tit|aln|nom|oj |pos|e u|reb| vr|olj|dno|iko|ku |me |nik| do|ika|e k|jeg|nst|tav|em |i m|sme|o s|dni|bra|nju|šen|ovi|tan|te |avi|vol| li|zaš|ilo|rug|var|kao|ao |riv|tup|st |živ|ans|eno|čov|štv|kla|vre|bud|ena| ve|ver|odu|međ|oju|ušt| bu|kom|kri|pod|ruš|m n|i b|ba |a t|ugi|edi| mo|la |u v|kak| sm|ego|akv|o j|rad|dst|jav|del|tvo| op|nu |por|vlj|avl|m p|od |jem|oje| čo|a r|sam|i v|ere|pot|o o|šte|rem|vek|svi| on|rot|e r",
+    "ckb": " he| û |ên | bi| ma|in |na | di|maf|an |ku | de| ku| ji|xwe|her| xw|iya|ya |kes|kir|rin|iri| ne|ji |bi |yên|afê|e b|de |tin|e h|iyê|ke |es |ye | we|er |di |we |ê d|i b| be|erk|ina| na| an|î û|yê |eye|î y|kî |rke|nê |diy|ete|eke|ber|hem|hey| li| ci|wek|li |n d|fê | bê| te|ne |yî | se|net|rî |tew|yek|sti|af | ki|re |yan|n b|kar|hev|e k|aza|n û|wî | ew|i h|n k|û b|î b| mi| az|dan| wî|ekî|î a|a m|zad|e d|mir|bin|est|ara|iro|nav|ser|a w|adi|rov|n h|anê|tê |ewe|be |ewl|ev |mû | ya|tî |ta |emû| yê|ast|wle| tê|n m| bo|wey|s m|bo | tu|n j|ras| da| me|din|î d|ê h|n n|n w|ing|st | ke| ge|în |ar | pê|iye|îna|bat|r k|ema|cih|ê b|wed|û m|dî |û a|vak|ê t|ekh|par| ye|vî |civ|n e|ana|î h|ê k|khe|geh|nge|ûna|fên|ane|av |î m|bik|eyê|eyî|e û| re|man|erb|a x|vê |ê m|iva|e n|hî |bûn|kê | pa|erî|jî |end| ta|ela|nên|n x|a k|ika|f û|f h|î n|ari|mî |a s|e j|eza|tên|nek| ni|ra |ehî|tiy|n a|bes|rbe|û h|rwe|zan| a |erw|ov |inê|ama|ek |nîn|bê |ovî|ike|a n| ra|riy|i d|anî|û d|e e|etê|ê x|yet|aye|ê j|tem|e t|erd|i n|eta|ibe|a g|u d|xeb|atê|i m|tu | wi|dew|mal|let|nda|ewa| ên|awa|e m|a d|mam|han|u h|a b|pêş|ere| ba|lat|ist| za|bib|uke|tuk|are|asî|rti|arî|i a|hîn| hî|edi|nûn|anû|qan| qa| hi| şe|ine|n l|mên|ûn |e a",
+    "yor": "ti | ní|ó̩ | è̩|ní | lá|̩n |o̩n|é̩ |wo̩|àn | e̩|kan|an |tí | tí|tó̩| kò|ò̩ |̩tó| àw| àt|è̩ |è̩t|e̩n|bí |àti|lát|áti| gb|lè̩|s̩e| ló| ó |àwo|gbo|̩nì|n l| a | tó|í è|ra | s̩|n t|ò̩k|sí |tó |̩ka|kò̩|ìyà|o̩ | sí|ílè|orí|ni |yàn|dè |̩‐è|ì k|̩ à|èdè| or|ún |ríl|è̩‐|í à|jé̩|‐èd|àbí|̩ò̩|ò̩ò|tàb|nì |í ó|n à| tà|̩ l|jo̩| ti|̩e |̩ t| wo|nìy|í ì|ó n| jé| sì|ló |kò |n è|wó̩| bá|n n|sì | fú|̩ s|í a|rè̩|fún| pé| òm|̩ni|gbà| kí| èn|ènì|in |òmì|ìí |ba |nir|pé |ira|mìn|ìni|n o|ràn|ìgb| ìg|bá |e̩ | rè|̩ n|kí |n e|un |gba|̩ p|í ò|nú | o̩|nín|gbé|yé | ka|ínú|a k|fi | fi|mo̩|bé̩|o̩d|dò̩|̩dò|ó s|i l|̩ o|̩ ì|wà |í i|i ì|hun|bò |i ò|dá |bo̩|o̩m|̩mo|̩wó|bo |áà |̩ k|ó j|ló̩|àgb|ohu| oh| bí| ò̩|bà |ara|yìí|ogb|írà|n s|ú ì| ìb|pò̩|í k| lè|bog|i t|à t|óò |yóò|kó̩|gé̩|à l|ó̩n|rú |lè | yó|̩ ò|̩ e|a w|̩ y|ò̩r|̩ f| wà|ò l|í t|ó b|i n|ó̩w|̩gb|yí |í w|ìké|̩ a|láà|wùj|àbò|i è|ùjo|fin|é̩n|n k|í e|i j|ú à| ìk|òfi| òf| ar|i s|mìí|ìír| mì| ir|rin|náà| ná|jú |̩ b| yì|ó t|̩é̩| i |̩ m|fé̩|kàn|rí |ú è|à n|wù |s̩é|é à| mú| èt|áyé|í g|̩kó|̩dá|è̩d|àwù|è̩k| ìd|irú|í o|i o|i à|láì|í n|ípa| kú|níp| ìm|a l|ké̩|bé |i g|de |ábé|ìn |báy|̩è̩|ígb|wò̩|níg|mú |láb| àà|n f|è̩s|̩ w|ùn |i a|ayé|èyí| èy|mó̩|á è| ni|n b| wó|je̩| ìj|gbá|ò̩n|ó̩g",
+    "uzn": "lar|ish|an |ga |ar | va| bi|da |va |ir | hu|iga|sh |uqu|shi|bir|quq|huq|gan| bo| ha|ini|ng |a e|r b| ta|lis|ni |ing|lik|ida|oʻl|ili|ari|nin|on |ins| in|adi|nso|son|iy | oʻ|lan| ma|dir|hi |kin|har|i b|ash| yo|boʻ| mu|dan|uqi|ila|ega|qla|r i|qig|oʻz| eg|kla|a b|qil|erk|ki | er|oli|nli|at | ol|gad|lga|rki|oki|i h|a o| qa|yok|lig|osh|igi|ib |las|n b|atl|n m| ba|ara| qi|ri | sh|iya|ala|lat|in |ham|bil|a t|a y|bos|r h|siy|n o|yat|inl|ik |a q|cha|a h| et|eti|nis|a s|til|ani|h h|i v|mas|tla|osi|asi| qo|ʻli|ati|i m|rni|im |uql|arn|ris|qar|a i|gi | da|n h|ha |sha|i t|mla|rch| xa|i o|li |hun|bar|lin|ʻz |arc|rla| bu|a m|a a| as|mum| be| tu|aro|r v|ikl|lib|taʼ|h v|tga|tib|un |lla|mda| ke|shg| to|n q|sid|n e|mat|amd|shu|hga| te|tas|ali|umk|oya|hla|ola|aml|iro|ill|tis|iri|rga|mki|irl| ya|xal|dam| de|gin|eng|rda|tar|ush|rak|ayo| eʼ| so|ten|alq| sa|ur | is|imo|r t| ki|mil| mi|era|zar|hqa|aza|k b| si|nda|hda|kat|ak |oʻr|n v|a k|or |rat|ada|ʻlg|miy|tni|i q|shq|oda|shl|bu |dav|nid|y t|ch |asl|sos|ilg|aso|n t|atn|sin|am |ti |as |ana|rin|siz|yot|lim|uni|nga|lak|n i|a u|qon|i a|h k|vla|avl|ami|dek| ja|ema|a d|na | em|ekl|gʻi|si |i e|ino| ka|uch|bor|ker| ch|lma|liy|a v|ʼti|lli|aka|muh|rig|ech|i y|uri|ror",
+    "ibo": "a n|e n|ke | na|na | ọ | bụ| n |nwe|ere|ọ b|re |nye| nk|ya |la | nw| ik| ma|ye |e ọ|ike|a o|nke|a m|ụ n| ya|a ọ|ma |bụl|ụla| on| a |e i|kik|iki|ka |ony|ta |bụ |kwa| nd|a i|i n|di |a a|wa |wer|do | mm|dụ |e a|ha | ga|any| ob|ndi| ok|he |e m|e o|a e|ọ n|ite|rụ |hi |mma|ga‐|wu |ara| dị|aka|che|oke|we |o n| ih|n o|adụ|mad|obo|bod|a g|odo| ka| ez|te |hị |be |ụta|dị | an|zi | oh|a‐e|akw|gba|i m|me | ak|u n|nya|ihe|ala|ohe|ghi|ri | ọz|her|ra |weg| nt| iw| mb|ba |pụt| si|ro |oro|iwu|chi|a‐a|rị |ụ i|ụ ọ| eb|iri|ebe|ụrụ|zọ | in|a y|ezi|e ị|kpa|le |ile|ịrị|n e|kpe|mba| ha|bi |sit|e e|inw|nil|asị| en|mak|a u| ni|apụ|chị|i i|ghị|i ọ|i o|si | e |ide|o i|e y|ụ m|a s|u o|kwu|ozu|yer|ru |enw|ụ o|ọzọ|gid|hụ |n a|ahụ|nkw|sor|egh|edo|a ụ|tar|n i|toz|ị o|pa |i a| me|ime|uru|kwe| mk|tu |ama|eny|uso|de | im|ọ d|osi|hed|a d| kw|mkp|wet| ọr| ọn|obi|ọrụ| ịk| to|gas| ch|ịch|nha|ọnọ|nọd| nc| al|n ụ|ị m| us|nọ |u ọ|nch| o |eta|n u| ot|otu|sir|sịr| nh|a k|ali|o m| ag| gb|e s|ọta|nwa|ị n|lit|ega|ji |ọdụ|e k|ban|e g|ị k|esi|agb|eme|hu |ikp|zu |pe |nta|na‐|chọ|u a|a b|uch|n ọ|onw|ram|kwụ|ekọ|i e| nọ| ug|ọch|u m|gwu|a h|zụz|ugw|meg|ị e|nat|e h|dịg|o y|kpu|pụr|cha|zụ |hịc|ich| ng|ach| og|wap|wan|ịgh|uwa| di| nn|i ị",
+    "ceb": "sa | sa|ng |ang| ka|an | pa|ga | ma|nga|pag| ng|a p|on |kat|a k|ug |od | ug|g m| an|ana|n s|ay |ung|ata|ngo|a m|atu|ala|san|ag |tun|g s|g k|god|d s|a s|ong|mga| mg|g p|n u|yon|a a|pan|ing|usa|tan|tag|una|aga|mat|ali|g u|han|nan| us|man|y k|ina|non|kin| na|syo|lan|a b|asa|nay|n n|a i|awa| ta|taw|gaw|nsa|a n|nas| o |ban|agp|isa|dun|was|iya| gi|asy|adu|ini|bis| ad|ili|o s| bi|g a|nah|nag|a t| ki|lin|lay|ahi|sam|al |wal| di|nal|asu| ba|ano|agt| wa|ama|yan|a u| iy|kan|him|n k|gan|ags|n a|kag| un|ya |kas|gpa|g t| su|aha|wha|agk|awh|gka|a g|kal|l n|gla|gsa|sud|gal|imo|ud |d u|ran|uka|ig |aka|aba|ika|g d|ara|ipo|ngl|g n|uns|n o|kau|i s|y s|og |uta|d n|li | si|gik|g i|mta|ot |iin| la| og|o a|ayo|ok |awo|aki|kab|aho|n m|hat|o p|gpi|a w|apa|lip|ip | hu| ga|a h|uba|na | ti|bal|gon|la |ati|wo |ad |hin|sal|gba|buh| bu| ub|uha|agb|hon|ma |nin|uga|t n|ihi| pi|may| pu|mak|ni | ni|d a|pin|abu|agh|ahu|uma|as |dil|say| in|at |ins|lak|hun|ila|mo |s s|sak|amt|o u|pod|ngp|tin|a d|but|ura|lam|aod|t s|bah|ami|aug|mal|sos|os |k s| il|tra| at|gta|bat|aan|ulo|iha|ha |n p| al|g b|lih|kar|lao|agi|amb|mah|ho |sya|ona|aya|ngb|in |inu|a l| hi|mag|iko|it |agl|mbo|oon|tar|o n|til|ghi|rab|y p| re|yal|aw |nab|osy|dan",
+    "tgl": "ng |ang| pa|an |sa | sa|at | ka| ng| ma|ala|g p|apa| na|ata|pag|pan| an| at|ay |ara|ga |a p|tan|g m|mga| mg|n n|pat| ba|n a|aya|na |ama|g k|awa|kar|a k|lan|rap|gka|nga|n s|g n|aha|g b|a a| ta|agk|gan|tao|asa|aka|yan|ao |a m|may|man|kal|ing|a s|nan|aga| la|ban|ali|g a|ana|y m|kat|san|kan|g i|ong|pam|mag|a n|o a|baw|isa|wat| y |lay|g s|y k|in |ila|t t| ay|aan|o y|kas|ina|t n|ag |t p|wal|una|yon| o | it|nag|lal|tay|pin|ili|ans|ito|nsa|lah|kak|any|a i|nta|nya|to |hay|gal|mam|aba|ran|ant|agt|on |t s|agp| wa| ga|gaw|han|kap|o m|lip|ya |as |g t|hat|y n|ngk|ung|no |g l|gpa|wa |lag|gta|t m|kai|yaa|sal|ari|lin|a l|pap|ahi| is| di|ita| pi|pun|agi|ipi|mak|a b|y s|bat|yag|ags|o n|aki|tat|pah|la |gay|hin| si|di |i n|sas|iti|a t|t k|mal|ais|s n|t a|al |ipu|ika|lit|gin| ip|ano|gsa|alo|nin|uma|hal|ira|ap |ani|od |i a|gga|y p|par|tas|ig |sap|ihi|nah|ini| bu|ngi|syo|o s|nap|o p|a g| ha|uka|a h|aru|a o|mah|iba|asy|li |usa|g e|uha|ipa|mba|lam|kin|kil|duk|n o|iga| da|dai|aig|igd|gdi|pil|dig|pak| tu|d n|sam|nas|nak|ba |ad |lim|sin|buh|ri |lab|it |tag|g g|lun|ain|and|nda|pas|kab|aho|lig|nar|ula| ed|edu| ib|git|ma |mas|agb|ami|agg|gi |sar|i m|siy|g w|api|pul|iya|amb|nil|agl|sta|uli|ino|abu|aun|ayu| al|iyo",
+    "hun": " sz| a |en | va|és | és|min|ek | mi| jo|jog|ind|an |nek|sze|ság| az|gy |sza|nde|ala|az |den|a v|val|ele| el|oga|mél|egy| eg|n a|ga |zab| me|zem|emé|aba|int|van|bad|tel|tet| te|ak |tás|ény|t a| ne|gye|ély|tt |n s|ben|ség|zet|lam|meg|nak|ni | se|ete|sen|agy|let|lyn|s a|yne|ra |z e|et | al|mel|kin|k j|eté|ok |tek| ki|vag|re |n m|oz |hoz|ez |s s|ett|gok|ogy| kö|mbe|es |em |nem|ely| le|ell|emb|hog|k a|atá|köz|nt | ho|yen|hez|el |z a|len|dsá|ásá|tés|ads|k m| ál| em|a s|nte|a m|szt|a t|áll|ás |y a|ogo|sem|a h|enk|nye|ese|nki|ágo|t s|lap|ame|ber|ló |k é|nyi|ban|mén|s e|i m|t m| vé|lla|ly |ébe|lat|ág |ami|on |mze|n v|emz|fel|a n|lő |a a|eki|eri|yes| cs|lle|tat|elő|nd |i é|ég |ésé|lis|yil|vet|át |kül|ért| ke|éte|rés|l a|het|szo|art|alá| ny|tar|koz| am|a j|ész|enl|elé|ól |s k|tár|s é|éle|s t|lem|sít|ges|ott| fe|n k|tko|zás|t é|kel|ja | ha|aló|zés|nlő|ése|ot |ri |lek|más|tő |vel|i j|se |ehe|tes|eve|ssá|tot|t k|olg|eze|i v|áza|leh|n e|ül |tte|os |ti |atk|zto|e a|tos|ány|ána|zte|fej|del|árs|k k|kor|ége|szá|t n| bi|zat|véd|nev|elm|éde|zer|téb|biz|rra|ife|izt|ere|at |ll |k e|ny |sel| né|ába|lt |ai |sül|ház|kif|t e| ar|leg|d a|is |i e|arr|t t|áso|it |ető|al | má|t v| bá|bár|a é|esü|lye|m l| es|nyo",
+    "azj": " və|və |ər |lar| hə|in |ir | ol| hü| bi|hüq|üqu|quq|na |lər|də |hər| şə|bir|an |lik| tə|r b|mal|lma|ası|ini|r h|əxs|şəx|ən |arı|qla|a m|dir|aq |uqu|ali| ma|una|ilə|ın |yət| ya|ara|ikd|əri|ar |əsi|əti|r ş|rin|yyə|n h| az|dən|nin|ərə|tin|iyy|mək|zad| mü|sin| mə|ni |nda|ət |ndə|aza|rın|ün |ını|ə a|i v|nın|olu|qun| qa| et|ilm|lıq|ə y|ək |lmə|lə |kdi|ind|ına|olm|lun|mas|xs |sın|ə b| in|n m|q v|nə |əmi|n t|ya |da | bə|tmə|dlı|adl|bər| on|əya|ə h|sı |nun|maq|dan|inə|etm|un |ə v|rlə|n b|si |raq| va|ə m|n a|ınd|rı |anı| öz|əra|nma|n i|ama|a b|irl|ala|li |ins|bil|ik | al| di|ığı|ə d|lət|il |ələ|ə i|ıq |nı |nla|dil|müd|n v|ə e|unm|alı| sə|xsi|ə o|uq |uql|nsa|ətl| də|ili|üda|asi| he|ola|san|əni|məs| da|lan| bu|tər|həm|dır|kil|iş |u v| ki|min|eyn|mi |yin| ha|sos|heç|bu |eç | ed|kim|lığ|alq|xal| as|sia|osi|r v|q h|rə |yan|i s| əs|daf|afi| iş|ı h|fiə| ta|ə q|ıql|a q|yar|sas|lı |ill|mil|əsa|liy|tlə|siy|a h|məz|tün|ə t| is|ist|iyi| so|n ə|al |ifa|ina|lıd|ı o|ıdı|əmə|ır |ədə|ial| mi|əyi|miy|çün|n e|iya|edi| cə| bü|büt|ütü|xil|üçü|mən|adə|t v|a v|axi|dax|r a|onu| üç|seç| nə| se|man|ril|sil|əz |iə |öz |ılı|aya|qan|i t|şər|təm|ulm|rəf|məh| xa|ğın| dö| ni|sti|ild|amə|qu |nam|n o|n d|var|ad |zam|tam|təh",
+    "ces": " pr| a |ní | ne|prá|ráv|ost| sv| po|na |ch |ho | na|nos|o n| ro|ání|ti |vo |neb|ávo|má |bo |ebo| má|kaž| ka|ou |ažd| za| je|dý |svo|ždý| př|a s| st|sti|á p| v |obo|vob| sp|bod| zá|ých|pro|rod|ván|ení|né |ý m|ého| by| ná|spo|ně |o p|mi |í a|ter|roz|ová|to | ja| li|áro|nár|by |jak|a p|a z|ny | vš|kte|i a|lid|ím |o v|í p|u p|mu |at | vy|odn| so| ma|a v| kt|í n|zák|li |oli|ví |kla|tní|pod|stá|en |do |t s|mí |je |em |áva| do|byl| se|být|í s|rov| k |čin| ve|ýt |í b|it |dní|vše|pol|o s| bý|tví|nýc|stn|nou|ejn|sou|ran|ci |vol|se |nes|a n|pří|eho|ným|tát|va |ním|mez|ají|i s|stv|ké |ích|ečn|žen|e s|vé |ova|své|ým |kol|du |u s|jeh|kon|ave|ech|eré|nu | ze|i v|o d|í v|hra|ids|m p|ému|ole|y s| i |maj|o z| to|aby|sta| ab|m a|pra| ta|chn| ni|že |ovn|ako|néh|len|dsk|rac|lad|chr| že|vat| os|sob|aké|i p|smí|esm|st |i n|m n|a m|lně|lní|při|bez|dy |áln|ens|zem|t v|čen|leč|kdo|ými| ji|oci|i k| s |í m|jí | či|áv |ste|och| oc|vou|ákl| vz|rav|odu|nez|inn|ský|nit|ivo|a j|u k|iál| me|ezi|ské|ven|stu|u a|tej|oln|slu|zen|í z|y b|oko|zac|níc|jin|ky |a o|řís|obe|u v|tak|věd|oje| vý|ikd|h n| od|čno|oso|ciá|h p| de|a t|ům |soc|jíc|odů|něn|adn|tup|dů |děl|jno|kéh|por|ože|hov|aci|nem|é v|rok|i j|u o|od |ího|vin|odi",
+    "plt": "ny |na |ana| ny|y f|a n|sy |aha|ra |a a| fa|n n|y n|a m|an | fi|tra|any| ma|han|nan|ara|y a| am|ka |in |y m|ami|olo| ts|lon|min| mi| sy| na|a t| ol|fan| ha|a i|man|iza| iz|ina|ona|y h|aka|o a|ian|a h|reh|etr|a s|het|on |a f|ire|fah|tsy|mba| ar| hi|zan|ay |ndr|y o|ira|y t| an|ehe|o h|afa|y i|ren|ran| zo|ena|amb|dia|ala|amp|zo |ika| di|tan|y s|y z| az|ia |m p|rin|jo |n j| jo| dr|zy |ry |a d|ao |and|dre|haf|nen|mpi|rah| ka|eo |n d| ir|ho |am |rai|fa |elo|ene|oan|omb| ta| pi| ho|ava|azo|dra|itr|iny|ant|tsi|zon|asa|tsa| to|ari|ha |a k|van|n i|fia|ray| fo|mbe|ony|sa |isy|azy|o f|lal|ly |ova|lom| vo|nat|fir|sam|oto|zay|mis|ham|bel| ra|a r|ban|kan|iha|nin|a e|ary|ito| he| re| no|ita|voa|nam|fit|iar| ko|tok|isa|fot|no |otr|mah|aly|har|y v|y r| sa|o n|ain|kam|aza|n o|oka|ial|ila|ano|atr|oa | la|y l|eri|y d|ata|hev|sia|pia|its|reo| ao|pan|anj|aro|tov|nja|o s|fam|pir| as|ty |nto|oko|y k|sir|air|tin|hia|ais|mit|ba | it| eo|o t|mpa|kon|a z|a v|ity|ton|rak|era|ani|ive|mik|ati|tot|vy |hit|hoa|aho|ank|ame|ver|vah|tao|o m|ino|dy |dri|oni|ori| mo|hah|nao|koa|ato|end|n t| za|eha|nga|jak|bar|lah|mia|lna|aln|va | mb|lan| pa|aov|ama|eve|za |dro|ria|to |nar|izy|ifa|adi|via|aja| va|ind|n k|idi|fiv|rov|vel",
+    "mad": "an |eng|ban|ng | sa| ka|dha| ba|ren|ak |ang| se| ha|hak| dh|na | pa|se |adh|a s|aba|n s|ara|ngg|are|ha |aga|sa | or|ore|asa|sar|ana| ma|aan|a k|ale|gi | ag|gad|a b|n o|n k|eba|ala|ra |gan| ke|dhu|ota|aja|bas|n b|ka |man|tab|dhi|beb|sab|ama|ako|abb|at |ggu|nga| ta|pan|wi |huw|uwi|eka|ata|a d|san| ot|agi|lak|hal|ba |bba|i h|ong|em |kab|g a|lem|a o| pe| na|ane|par|ngs|nge|gar|a a|tan|gsa|a p|ran|i s|k h|n p|uy |guy|ken|n a|al |ada| ga|apa|pon|e d| e |nek| an|g s|ta |kaa|on |kal|a m|ssa|ona|abe|kat| la|a e|e e|sal|ate|jan|ri |nan|lab|asi|sad|i p|e a|lan|aka|a h|ari| bi|ena|si |daj| ng|ton|e k|har|oss|gen|i k|g k|car|ase|ano|era|kon| be|nya|n d|nag|bad|ar |epo| da|mas| kl| al|n t|mat|nos|n n|ela|g e|a n|k k|uwa|adi|pad|ggi|uan|i d|ne | so|hi |sae|oan|wan|as |le |gap|ter|yat|om |kla|k a|e b|ina|ah |k s|koa|i a|ega|neg|n h|m p|aha| as| ja|abi|ma |kas|bi | mo|aon| di|one| ep|per|aya|e s|nto|te |bat|epa|nda|n e| ca|int|pam|di |ann| ra|aen|k d|amp|a t|nta|and|e p|rga|pen|yar|mpo|ste|dra|ok |oko|ila|g p|k b|i b|set|to |isa|nao|nna|n m|ett| a |bis|hid|bin|i m|nas| ho|kar|t s| po|dil| to|aju|ika|kom|arg|ant|raj|a l|das|tto|ost|mos|lae|ga |rek|idh|tad|hig|en |rny|arn|ndh|eta|adu| dr|jat|jua|gam",
+    "nya": "ndi|ali|a k|a m| ku| nd|wa |na |nth| mu| al|yen|thu|se |ra |nse|hu |di |a n|la | pa|mun| wa|nga|unt| la|a u|u a|e a|ons|za | ma| lo|iye|ace|ce |a l|idw|ang| ka|kha|liy|ens|li |ala|ira|ene|pa |i n|we |e m|ana|dwa|era|hal|ulu|lo |ko |dzi| ci|yo |o w|iko|ga |a p|chi| mo|lu |o l|o m|oyo|ufu| um|moy|zik| an|ner|and|umo|ena| uf|dan|iri|ful|a a|ka |to |hit|nch| nc|a c|ito|fun|dwe| da|kuk|wac| dz|e l|a z|ape|kap|u w|e k|ere|ti |lir| za|pen|tha|aye|kut|mu |ro |ofu|ing|lid| zo|amu|o c|i m|mal|kwa|mwa|o a|eza|i p|o n|so |i d|lin|nso| mw|iro|zo | a |ati| li|i l|a d|ri |edw|kul|una|uti|lan|a b|iki|i c|alo|i k| ca|lam|o k|dza|ung|o z|mul|ulo|uni|gan|ant|nzi| na|nkh|e n|san|oli|wir|tsa|u k|ome|ca |gwi|unz|lon|dip|ipo|yan|gwe|pon|akh|uli|aku|mer|ngw|cit| po| ko|kir|mba|ukh|tsi|bun|iya|ope|kup|bvo|han| bu|pan|ame|vom|ama| ya|siy| am|rez|u n|zid|men|osa|ao |pez|i a| kw| on|u o|lac|ezo|aka|nda|hun|u d|ank|diz|ina|its|adz| kh|ne |nik|e p|o o|ku |phu|eka| un|eze|mol|ma | ad|pat|oma|ets|wez|kwe|kho|ya |izo|sa |o p|kus|oci|khu|okh|ans|awi|izi|zi |ndu|iza|no |say| si|i u|aik|jir|ats|ogw|du |mak|ukw|nji|mai|ja |sam|ika|aph|sid|isa|amb|ula|osi|haw|u m| zi|oye|lok|win|lal|ani| ba|si | yo|e o|opa|ha |map|emb",
+    "qug": "una|ta | ka|na |ka |ash|cha|a k|ari|ish|kun|kta|ana|pak|hka|shk|apa|mi |ach|hay|akt|shp|man|ak | ch| ha|rin|ata|tak|lla|ita|ami|ama|aku|har| pa|pas|ayñ|yñi|ina| ma| ru|uku|sh |hpa|run|all|kuy|aka|an | tu|tuk|yta|chi|chu|a c|ñit|in |nak|a h|nka|ris|tap|kan| ki|ayt|pi | sh|pa |i k|a p|nap|kam|kaw|pay|nam|ayp|aws|iri|wsa|a s|ank|nta|uy |a t|hin|a m|ay | li|ant|lia|kay|nat|a r|shi|iak|lak|uya| wa|yuy|say|kis|y r|ypa|hun|a a| yu|n t|tam| ti|yay|n k| ya|a w|hpi|lli| al|api|yku|un |ipa|a i|iku|ayk|shu| sa|ush|pir|ich|kat|hu |huk| il|ill|kas|a y|rik|yac|a l| ku|kac|hik|tan|wan|ypi|ink|ika| ni|ila|ima|i c|yll|ayl| wi|mac|nis| ta|i y|kus|tin|n s|i p|yan|llu|la |iks|tik|kpi| pi|awa|may|lan|li | ri|kll|yas|kin|kak|aya|ksi|k h|aym|war|ura| ay|lat|ukt|i t|iya|ull|mas|sha|kir|uch|h k|nch|akp|uma|pip|han|kik|iki|riy|aki| ii|i s|n p|h m|kar|nal|y h|tac| su|nac|mak|n m|nki|k a|mam|iwa|k t|k k|i m|yma| ña|wil|asi|nmi|kap|pal|sam|pam|k i|k l|i i|pan|sum|i w| hu|his| mu|iia|mun|k m|u t|pik|was|ik |ma |hat|k r|akl|huc| im|mal|uyk|imi|n y|anc|y k|a n|iñi| iñ|wak|unk|yka| mi|iña|a u|has|ywa| ak|llp|ian|ha |tar|rmi|i a|arm|las|ati|pur|sak|ayw|hap|yar|uti|si |iyt|uri|kim| ar|san|h p|akk|iy |wat|wpa|y i|u k",
+    "kin": "ra | ku| mu|se |a k|ntu|nga|tu |umu|ye |li | um|mun|unt|a n|ira| n |ere|wa |we | gu|mu |ko |a b|e n|o k|e a|a u|a a|u b|e k|ose|uli|aba|ro | ab|gom|e b|ba |ugu| ag|omb|ang| ib|eng|mba|o a|gu | ub|ama| by| bu|za |ihu|ga |e u|o b| ba|kwi|hug|ash|ren|yo |ndi|e i| ka| ak| cy|iye| bi|ora|re |gih|igi|ban|ubu| nt| kw|di |gan|a g|a m|aka|nta|aga| am|a i|ku |iro|i m|ta |ka |ago|byo|ali|and|ibi|na |uba|ili| bw|sha|cya|u m|yan|o n| ig|ese|no |obo|ana|ish|kan|sho| we|era|ya |aci|wes|ura|i a|uko|e m|n a|o i|kub|uru|hob|ber|ran|bor| im|ure|u w|wo |cir|gac|ani|bur|u a|o m|ush| no|e y| y |rwa|eke|nge|ara|wiy|uga|zo |ne |ho |bwa|yos|anz|aha|ind|mwe|teg|ege|are|ze |n i|rag|ane|u n|ge |mo |u k|bul| uk|bwo|bye|iza|age|ngo|u g|gir|ger|zir|kug|ite|bah| al| ki|uha|go |mul|ugo|n u|tan|guh|y i| ry|gar|bih|iki|atu|ha |mbe|bat|o g|akw|iby|imi|kim|ate|abo|e c|aho|o u|eye|tur|kir| ni|je |bo |ata|u u| ng|shy|a s|gek| ru|iko| bo|bos|i i| gi|nir|i n|gus|eza|nzi|i b|kur| ya|o r|ung|rez|ugi|ngi|nya| se|mat|eko|o y| in|uki| as|any|bis|ako|gaz|imw|rer|bak|ige|mug|ing|byi|kor|eme|nu | at|bit| ik|hin|ire|kar|shi|yem|yam| yi|gen|tse|ets|ihe|hak|ubi|key|rek|icy| na|bag|yer| ic|eze|awe|but|irw| ur|fit|ruk|ubw|rya|uka|afi",
+    "zul": "nge|oku|lo | ng|a n|ung|nga|le |lun| no|elo|wa |la |e n|ele|ntu|gel|tu |we |ngo| um|e u|thi|uth|ke |hi |lek|ni |ezi| ku|ma |nom|o n|pha|gok|nke|onk|a u|nel|ulu|oma|o e|o l|kwe|unt|ang|lul|kul| uk|a k|eni|uku|hla| ne| wo|mun| lo|kel|ama|ath|umu|ho |ela|lwa|won|zwe|ban|elw|ule|a i| un|ana|une|lok|ing|elu|wen|aka|tho|aba| kw|gan|ko |ala|enz|o y|khe|akh|thu|u u|na |enk|kho|a e|zin|gen|i n|kun|alu|mal|lel|e k|nku|e a|eko| na|kat|lan|he |hak| ez|o a|kwa|o o|ayo|okw|kut|kub|lwe| em|yo |nzi|ane|obu| ok|eth|het|ise|so |ile|nok| ba|ben|eki|nye|ike|i k|isi| is|aph|esi|nhl|mph| ab|fan|e i|isa| ye|nen|ini|ga |zi |fut| fu|uba|ukh|ka |ant|uhl|hol|ba |and|do |kuk|abe|za |nda| ya|e w|kil|the| im|eke|a a|olo|sa |olu|ith|kuh|o u|ye |nis| in|ekh|e e| ak|i w|any|khu|eng|eli|yok|ne |no |ume|ndl|iph|amb|emp| ko|i i| le|isw|zo |a o|emi|uny|mel|eka|mth|uph|ndo|vik| yo|hlo|alo|kuf|yen|enh|o w|nay|lin|hul|ezw|ind|eze|ebe|kan|kuz|phe|kug|nez|ake|nya|wez|wam|seb|ufa|bo |din|ahl|azw|fun|yez|und|a l|li |bus|ale|ula|kuq|ola|izi|ink|i e|da |nan|ase|phi|ano|nem|hel|a y|hut|kis|kup|swa|han|ili|mbi|kuv|o k|kek|omp|pho|kol|i u|oko|izw|lon|e l| el|uke|kus|kom|ulo|zis|hun|nje|lak|u n|huk|sek|ham| ol|ani|o i|ubu|mba| am",
+    "swe": " oc|och|ch |er |ing|för|tt |ar |en |ätt|nde| fö|rät|ill|et |and| rä| en| ti| de|til|het|ll |de |om |var|lig|gen| fr|ell|ska|nin|ng |ter| ha|as | in|ka |att|lle|der|sam| i |und|lla|ghe|fri|all|ens|ete|na |ler| at|ör |den| el|av | av| so|igh|r h|nva|ga |r r|env|la |tig|nsk|iga|har|t a|som|tti| ut|ion|t t|a s|nge|ns |a f|r s|män|a o| sk| si|rna|isk|an | st|är |ra | vi| al|t f| sa|a r|ati| är| me| be|n s| an|tio|nna|lan|ern|t e|med| va|ig |äns| åt|sta|ta |nat| un|kli|ten| gr|vis|äll| la|one|han|änd|t s|stä|t i|ner|ans|gru| ge|ver| må| li|lik|ihe|ers|rih|r a| re|må |sni|n f|t o| mä| na|r e|ri |ad |ent|kla|det| vä|run|rkl|da |h r|upp|dra|rin|igt|dig|n e|erk|kap|tta|ed |d f|ran|e s|tan|uta|nom|lar|gt |s f| på| om|kte|lin|r u|vid|g o|änn|erv|ika|ari|a i|lag|rvi|id |r o|s s|vil|r m|örk|ot |ndl|str|els|ro |a m|mot| mo|i o|på |r d|on |del|isn|sky|e m|ras| hä|r f|i s|a n|nad|n o|gan|tni|era|ärd|a d|täl|ber|nga|r i|enn|nd |n a| up|sin|dd |örs|je |itt|kal|n m|amt|n i|kil|lse|ski|nas|end|s e| så|inn|tat|per|t v|arj|e f|l a|rel|t b|int|tet|g a|öra|l v|kyd|ydd|rje| fa|bet|se |t l|lit|sa |när|häl|l s|ndr|nis|yck|h a|llm|lke|h f|arb|lmä|nda|bar|ckl|v s|rän|gar|tra|re |ege|r g|ara|ess|d e|vär|mt |ap ",
+    "lin": "na | na| ya|ya |a m| mo|a b|to | ko| bo|li |o n| li|i n| pe|i y|a y|a n|ngo|ki | ba| ma|kok|pe |la |a l|zal|oki|ali|nso|oto|ala|ons|so |mot|a k|nyo|eng|kol|go |nge| ny|yon|o e|ang|eko|te |o y|oko|olo|ma |iko|a e|e m|e b|lik|ko |o a|ako|ong| ye|mak|ye |isa| ek|si |lo |aza|sal|ama| te|bat|o p|oyo|e n| az|a p|ani|sen|o m|ela|ta |amb|i k|ban|ni | es|yo |mi |mba|osa| oy|aka|lis|i p|eli|a t|mok|i m|ba |mbo| to| mi|isi|bok|lon|ato|ing|o b| nd|ota|bot| ez|ge |nga|eza|o t|nde|ka |bo |gel|kan|e k|lam|sa |ese|koz| po|den|ga |oba|omb|oli|yan|kop|bon|mos|e e|kob|oka|kos|bik|lin|po |e a| lo| bi|kot|‘te|ngi|sam| ‘t|omi|e y|ti |i b| el|elo|som|lok|esa|gom|ate|kam|i t|ika|a s|ata|kat|ati|wa |ope|oza|iki|i e| ka|bom|tal|o l|bek|zwa|oke|pes| se|bos|o o|ola|bak|lak|mis|omo|oso|nza| at|nda|bal|ndi|mu |mob|osu|e t|asi|bis|ase|i l|ele|sus|usu|su |ozw|and|mol|tel|lib|mbi|ami| nz|ne |ene|kel|aye|emb|yeb|nis|gi |obo|le |kum|mal|wan|a ‘|pon| ep|baz|tan|sem|nya|e l| ta|gis|opo|ana|ina|tin|obe| ti|san| ak|mab|bol|oku|u y|mat|oti|bas|ote|mib|ebi|a o|da |bi | mb|lel|tey|ibe|eta|boy|umb|e p|eni|za |be |mbe|bwa|ike|se | et|ibo|eba|ale|yok|kom| en|i a|mik|ben|i o| so|gob|bu |son|sol|sik|ime|eso|abo| as|kon|eya|mel",
+    "som": " ka|ay |ka |an |uu |oo |da |yo |aha| iy|ada|aan|iyo|a i| wa| in|sha| ah| u |a a| qo|ama| la|hay|ga |ma |aad| dh| xa|ah |qof|in | da|a d|aa |iya|a s|a w| si| oo|isa|yah|eey|xaq|ku | le|lee| ku|u l|la |taa| ma|q u|dha|y i|ta |aq |eya|sta|ast|a k|of |ha |u x|kas|wux| wu|doo|sa |ara|wax|uxu| am|xuu|inu|nuu|a x|iis|ala|a q|ro |maa|o a| qa|nay|o i| sh| aa|kal|loo| lo|le |a u| xo| xu|o x|f k| ba|ana|o d| uu|iga|a l|yad|dii|yaa|si |a m|gu |ale|u d|ash|ima|adk|do |aas| ca|o m|lag|san|dka|xor|adi|add| so|o k| is|lo | mi|aqa|na | fa|soo|baa| he|kar|mid|dad|rka|had|iin|a o|aro|ado|aar|u k|qaa| ha|ad |nta|o h|har|axa|quu| sa|n k| ay|mad|u s| ga|eed|aga|dda|hii|aal|haa|n l|daa|xuq|o q|o s|uqu|uuq|aya|i k|hel|id |n i| ee|nka| ho|ina|waa|dan|nim|elo|agu|ihi|naa|mar|ark|saa|riy|rri|qda|uqd| bu|ax |a h|o w|ya |ays|gga|ee |ank| no|n s|oon|u h|n a|ab |haq|iri|o l| gu|uur|lka|laa|u a|ida|int|lad|aam|ood|ofk|dhi|dah|orr|eli| xi|ysa|arc|rci|to |yih|ool|kii|h q|a f| ug|ayn|asa| ge|sho|n x|siy|ido|a g|gel|ami|hoo|i a|jee|n q|agg|al | di| ta|e u|o u| ji|goo|a c|sag|alk|aba|sig| mu|caa|aqo|u q|ooc|oob|bar|ii |ra |a b|ago|xir|aaq| ci|dal|oba|mo |iir|hor|fal|qan| du|dar|ari|uma|d k|ban|y d|qar|ugu| ya|xay|a j",
+    "hms": "ang|gd |ngd|ib | na|nan|ex |id | ji|ad |eb |nl |b n|d n| li|ud |jid| le|leb| ga|ot |anl|aot|d g|l l|b l| me|ob |x n|gs |ngs|mex|nd |d d| ne|jan|ul | ni|nja| nj| gu| zh|lib|l n|ong| gh|gao|b j|b g|nb |l g|end|gan| ad| je|jex|ngb|gb |han|el | sh| da|ub |d j|d l|t n| nh|nha|b m|is |d z|x g| ya|oul|l j| wu|she|il |nex| ch|b y|d s|gue|gho|uel|wud|d y| gi|d b|hob|nis|s g| zi| yo|lie|es |nx |it |aob|gia|ies| de|eib|you| ba| hu|ian|zib|d m|s j|oud|b d|chu|ol |ut | do|t j|nen|hud|at |s n|hen|iad|ab |enl| go|dao| mi|t g|zha|b z|enb|x j| ze|eit|hei|d c|nt |b s| se|al | xi|inl|hao| re| fa|d h|gua|yad|ren| ho|anb|gx |ngx|ix |nib|x z|and|b h|b w|fal| xa|d x|t l|x m|don|gou|bao|ant|s z|had|d p|yan|anx|l d|zhe|hib| pu|ox | du|hui|sen|uib|uan|lil|dan|s m| di| we|gha|xin|b x|od |zhi|pud| ju| ng|oub|xan| ge|t z|hub|t h|hol|t m|jil|hea|x l| ma|eud|jul|enx|l z|l s|b a| lo| he|nga|d r|zen| yi|did|hon|zho|gt |heb|ngt|os |d a|s l|aos| si|dei|dud|b b|geu|wei|d w|x c|x b|d k|dou|l h|lou| bi|x a|x d|b c| sa|s a| bo|eut|blo| bl|nia|lol|t w|bad|aod| qi|ax |deb| ja|eab| nd|x s|can|pao| pa|gl |ngl|che|sat|s y|l m|t s|b f|heu|s w| to|lia| ca|aox|unb|ghu|ux | cu|d f|inb|iel| pi|jib|t p|x x|zei|eul|l t|l y|min|dad",
+    "ilo": "ti |iti|an |nga|ga | ng| pa| it|en | ka| ke| ma|ana| a | ti|pan|ken|agi|ang|a n|a k|aya|gan|n a|int|lin|ali|n t|a m|dag|git|a a|i p|teg|a p| na|nte|man|awa|kal|da |ng |ega|ada|way|nag|n i| da|na |i k|sa |n k|ysa|n n|no |a i|al |add|aba| me|i a|eys|nna|dda|ngg|mey| sa|pag|ann|ya |gal| ba|mai| tu|gga|kad|i s|yan|ung|nak|tun|wen|aan|nan|aka| ad|enn| ag|asa| we|yaw|i n|wan|nno|ata| ta|l m|i t|ami|a t| si|ong|apa|kas|li |i m|ina| an|aki|ay |n d|ala|gpa|a s|g k|ara|et |n p|at |ili|eng|mak|ika|ama|dad|nai|g i|ipa|in | aw|toy|oy |ao |yon|ag |on |aen|ta |ani|ily|bab|tao|ket|lya|sin|aik| ki|bal|oma|agp|ngi|a d|y n|iwa|o k|kin|naa|uma|daa|o t|gil|bae|i i|g a|mil| am| um|aga|kab|pad|ram|ags|syo|ar |ida|yto|i b|gim|sab|ino|n w| wa| de|a b|nia|dey|n m|o n|min|nom|asi|tan|aar|eg |agt|san|pap|eyt|iam|i e|saa|sal|pam|bag|nat|ak |sap|ed |gsa|lak|t n|ari|i u| gi|o p|nay|kan|t k|sia|aw |g n|day|i l|kit|uka|lan|i d|aib|pak|imo|y a|ias|mon|ma | li|den|i g|to |dum|sta|apu|o i|ubo|ged|lub|agb|pul|bia|i w|ita|asy|mid|umi|abi|akd|kar|kap|kai| ar|gin|kni| id|ban|bas|ad |bon|agk|nib|o m|ibi|ing|ran|kda|din|abs|iba|akn|nnu|t i|isu|o a|aip|as |inn|sar| la|maa|nto|amm|idi|g t|ulo|lal|bsa|waw|kip|w k|ura|d n|y i",
+    "uig": "ish| he|ini|ing|nin|gha|ng |ili| we|we |sh |in | bo|quq|oqu|ni |hoq| ho|ush|shi|lik|qil|bol|shq|en |lis|qa |hqa|n b|hem| qi|ki |dem|iy | ad|ade|igh|e a|em |han|liq|et |ge |uq |nda|din| te| bi|idi|let|qan|nli|ige|ash|tin|ha |kin|iki|her|de | er| ba|and|iti|olu|an | dö|döl|aq |luq| ya|me |lus|öle|mme|emm| qa|daq|rki|lgh|erq|erk|shk|esh|rqa|iq |uqi|ile|rim|i w|er |ik |yak|aki|ara|a h| be|men| ar|du |shu|uql|hri|hi |qlu|q h|inl|lar|da |i b|ime| as|ler|etl|nis| öz|ehr|lin|e q|ar |ila| mu|len| me|qi |asi|beh|a b|ayd|q a|bir|bil| sh|che|rli|ke |bar|hke|yet|éli|shl|tni|u h|ek |may|e b| ké|h h| ig|ydu|isi|ali|hli|k h| qo|iri|emd|ari|e h|ida|e t|tle|rni| al|siy|lid|olm|iye|anl| tu|iqi|lma|ip |mde|e e|tur|a i|uru|i k|raw|hu |mus|kil| is|i a|ir |éti|r b|özi|ris|asa|i h|sas| je|he | ch|qig|bas|n q|alg|ett|les| xi|tid| él|tes|ti |awa|ima|nun|a a| xe| bu|hil|n h| xa|adi|dig|anu|uni|mni| sa|arl|rek|ére| hö|kér| ji|min|i q|tis|rqi| iy|elq|xel|p q| qe|y i|i s|lig| ma|iya|i y|siz|ani| ki|qti| de|q w|emn|met|jin|niy|i i|tim|irl| ti|rin|éri|i d|ati|si |tew|i t|tli|eli|e m|rus|oli|ami|gen|ide|ina|chi|dil|nay|ken|ern|n w| to|ayi| ij|elg|she|tti|arq|hek|e i|n a|zin|r a|ijt|g b|atn|qar|his|uch|lim|hki|dik",
+    "hat": "ou |an | li|on |wa |yon| po|li |pou|te | yo|oun| mo|un |mou|ak | na|en |n p|nan|tou|syo| dw| to|yo | fè|dwa| ak| ki|ki | pa| sa|out| la| ko| ge|ut |n s|gen| de|se |asy|èt |i p|n d| a | so|n l|a a|fè |n k| se|pa |e d|u l| re|ite|sa | ch|kon|n n|e l|t p|ni |cha|a p|nn |ans|pi |t m| ka| an|nm |fèt|i s|son|man| me|n m|n a|e p|swa|sou|e k|hak|òt |n y|men|i l|epi| pe|ote|san| ep|i k| si|yen|eyi|a l| ap|i a|yi |pey|je |n t|e a|k m|e s| ni|lib|e n|i t|lit|ran|lè |enn|al |a s| pr|a f|ns | lò|ap |lòt|enm|k l|n e|t l|kla|anm|e y|a k| ma|e t|ay |i m|ali| lè|è a|ye |a y|ant| os| ba|i g| tè|aso|u t|a n| pw|ras| pè|n f|nas|ka |n g|osw| ta|dek|i d|pwo|e m| di| vi|la |i n|u s|sos|bli| te|o t| tr|lwa|ète|a t|le |u y|i f|tan|a c|lar|a m|ete|ara|t k| pi|ibè|bèt|re |osy|de |ati|ke |res|tis|i y|tè |nen| fa|ekl|ze |nal|ons|ksy|ini|che| le|e r|a d| en|aye|he |o p|alw| kò|lal| no|esp|a g|ava|kou|las|way|u f|isy| za| ok|oke|kal|ken|sye|ta |onn|k k|nje|pra|van|esi|pès|kot|ret|sya|n v|lek|jan|ik |a b|eks|wot|è n|di |òl |tra|u k|i r|nou| as|k a|u d|ist|èso|ib | ne|iti|ti |is |y a|des|è l|a r|ont| ke|nsa|pat|rit|sit|pòt|ona|ab |è s| sw|ond|ide| ja|rav|t a|ri |bon|viv| sè|pre|vay|k p|l l|kòm|i o| ra|era|fan|dev",
+    "aka": "a n| wɔ| no|no | dɛ|dɛ |na |dzi|mu | a |nyi|ra |a ɔ|wɔ |ara|a a| ny|yɛ | mu| na|bia|iar|a w|an |ndz|ma | bi|ho |dze|e n| ho| nd|oa |noa|man|ino|zi | ob|yi |zin|obi| ne|ne |a d|u n|a m|yim|ana|ama|tse|n n|o n|ze | an|ɔ n| mb| am| hɔ|ɛ ɔ|ɔn | ɔy|ɔyɛ|ɛ o|n a|aa |nya|ɔma|yin|bi | as| n |hɔn|naa|ɛ n|a o|ɛ w|ye |o a|mpa|i n|o m| on|do |ina|imp|bɔ | ma|ɛ a| do|e a|tsi|pa |nny|se |a h| ɔm|i a|ua |i m|ɔwɔ|aho|o b|ase|n e|i d|ɔ d|nye| ba|edz|eny|o d|u a| wo|uw |kuw| ad|ɛm |kwa|wan|abɔ|ɔdz|ets| ɔw|m n|mba|uma| nk| ed|ya |sen|nam|odz|mbr|o h| fa|adz| kw|o k| yi|a b|am | en|dwu|wum| ɔn|ɛ m|o w|gye|asa| ts|ɛ d|ba |nko|ia |hyɛ|w n| dz|ena|som|onn| so| da|kor| nh|fo |amb|w a|so |ɔts|bra|sua|i h|hod|ɔ a| ab|fa |o e|sa |m a|wɔm|set| ku|om |fah|ban|wɔa|a k|sia|yam|ee |er |any|e m|a e|ayɛ| gy|ow |o o|ɛɛ | bɔ|fi | nw|nhy|r n|sɛm|ony|ada| ns|nwo|oma|ɛ b| pɛ| nt| aw| yɛ|wom|en |ber| be| nn|yɛɛ|rɛ |mam|dɛm|n b|u k|ɔ h|e b|n m|das|a f|n d|u b|e d|or |pɛ |i w|u o|ɔna|hwe| ah|m d|aso|a y|ea | mp|hwɛ| ɔd|wur|hye|yeh|adɛ|nts|aad|ehy|ɔfa|gyi|iyi|kã |amu|dwe| ɔt|otu| ak|i b|mbo|r a|edw|pɛr|e f|asu|mas|ar | ɔs|wɔw|awu|daw| fi|bu |wɔd|ata|ɛ h|yer|asɛ|ɔ m|tum|in |nsa| ɔf| ky|da |gua|row|eyi|yie|oro|rbɔ|imn|urb|mny",
+    "hil": "nga|ang| ka|ga |ng | sa|an |sa | ng| pa| ma|ag |on |san|pag| an|ung|kag|a p|n s|a k|n n|a m|ata|kat| ta|gan|g p|ay |tar|g k|ags|run|ala|aru|gsa|tag|a s|g m| mg|mga|n k|a t|od |kon|g s|a n|ing|a i|man|g t|agp|tan| si|n a|y k|mag|gpa|may|hil|pan|ya |ahi|la |g a|sin|gin|ina|aya|ana|ili| pu|han|g i|yon|nan| in|way|uko|gka| gi|aha| uk|ilw|lwa|asa|apa|kas|syo|at |ban|lin|iya|kah|n p| na|o n|lan|a a|in |ngk|g n|ini|aba|pat|pun|a g|ali|o s| iy|yan|agt|tao|ngs|gba|kab|wal|ngo|al |nag|agk|o m|ni |i s|aga|ano| wa|isa|abu|kal|a h|dap|ong|a d|mat| tu|gso|no |aho|aki|sod|agb| da|asy|ila|d k|pas| hi|agh|d s|n m|na |lal|yo |di |til| la|o k|s n|non|gay|sal|a b|god|ao |ati|aan|uha| is|ka |aka|asu|ngb|o a|ama|ato|atu|uga|paa|but|una|n u|bah|uan|iba| di| ba|pah|bat| du|ulo|os |y s|nah| ko|aag|agi|sil|gi |i m|hay|yag|gon|y n|sta|n d|ot |oha|tun|ida| pr| su|a l|uta|m s| al|do |uli|sug|n t|as |lon|sul|og |pam|pro|him|gua|alo|lig| bi|bis|asi|ula|ton|ksy|gtu|a e|k s| ib|n b|maa|ugu|ko |lib|ron|i a|hi |hin|tek|lab|abi|ika|mak|bot|aoh|ok | hu|ghi|ind|ote|tok|i n|t n|g e|eks|dal|uma|ubo|tum|hat|to |ado|kin| ed|rot|ho |ndi|inu|ibu|y a|nta|ad |gko|lah|duk|abo|iko|nda|aro|gal|mo |g o| bu|int| o |n o|aay|da |gsu",
+    "sna": "wa |a k|ana|ro |na | ku| mu|nhu|dze|hu |a m| zv|mun|oku|chi|a n|aka|dzi|ka |zer|ero| ch|che|se |unh|odz|rwa|ra |kod|zvi| ne| pa|kan| we| dz| no|ika|va |iri| an|kut|nyi|o y|yik|van|nek|ese|eko|zva|idz|e a| ka|ane|ano|ngu|eku|cha|ung| yo|ri |ake|ke |ach|udz|iro|a z|u w| va|ira|wes|ang|ech|nge|i p|eng|yok|nok|edz|o i|irw|ani|ino|uva|ich|nga|ti |zir|anh|rir|ko |dza|o n|wan|wo |tan|sun|ipi|dzw|eny|asi|hen|zve|kur|vak|a p|sha|unu|zwa|ita|kwa|e k|rud|nun|uru|guk|a c|a d| ya|a y|bat|pas|ezv|ta |e n|uti| kw|o k|o c|o m|ara| ma|si |ga |uko|ata|ose|ema|dzo|uch|hip|kuv|no |rus|hec|omu|i z|wak|o r|kus|kwe|ere|re | rw| po|o a|mwe|yak|mo |usu|isi|za |sa |e z|uta|gar| in|hin|nem|pac|kuc|we |ete| ye|twa|pos|o d|a i|hur|get|ari|ong|pan|erw|uka|rwo|vo | ak|tem|zo |emu|emo|oru| ha|uit|wen|uye|kui| uy|vin|hak|kub|i m|a a|kud| se| ko|yo |and|da |nor|sin|uba|a s|a u| ic|zvo|mut|mat|nez|e m|a w|adz|ura|eva|ava|pi |a r|era|ute|oko|vis| iy|ha |u a|han|cho|aru|asa|fan|aan|pir|ina|guv|ush|ton| hu|uny|enz|ran|yor|ted|ait|hek| ny|uri|hok|nen|osh| ac|ngi|muk|ngo|o z|azv|kun|nid|uma|i h|vem|a h|mir|usa|o p|i n|a v|i k|amb|zan|nza|kuz|zi |kak|ing|u v|ngw|mum|mba|nir|sar|ewo|e p|uwa|vic|i i|gwa|aga|ama|go |yew|pam",
+    "xho": "lo |lun|oku|nge|elo|ntu|tu |e n|ele| ku|nye|ye |nga|ung|la | ng|lek|a n|o n|yo |o l|e u|nel|gel|a k|ko |ho |ulu|ke | ne| na|lul|we |le |wa |ngo| kw|ule|kub| no|a u|onk| um|nke|o e| lo|ela|kun|ama|any|unt|ang|eko|uba|elu|ezi|mnt| wo|a i|eyo|alu|lel|umn|lwa|kwe|olu|ba | uk|kuk|won|ukh|une|uku|gok|nok|enz| un|khu| ok|the|e k|zwe|kan|eki|aph|ane|uny|ile|o z|aku|ley|lok| ez|het|eth|ath|oka|pha|sel|ala|o y|kul|akh|kil|enk| in|esi|o k| yo|use|hul|u u|tho|obu|wen|ana|nku|khe|o o|e a|na |kho|ban|a e|ise|ent|gan|uth|ni |kel| zo|he |izw|o w|hi |elw|nam|ing|eli|fun|za |lwe|eng|ya |kwa|fan|isa|o a|ndl|ntl|ayo|eni|gen|hus|uhl|iph|tha|nzi|isw|sa |phi|aba|ben|und|ume|thi|ha |alo|ka |ink|hla|lal|wan|i k| lw|i n|bel| ba|o u|azi|e o|swa|ngu|bal|pho| ab|man|kut|emf|e i|mfa|a a|e e|een|int|uph|eka|ebe|seb|lan|nee|zi |o i|mal|sha|sek|dle|ziz|mth|nen|zel| se|okw|tya|ike|lin|tla|ene|sis|ima|ase|yal|ubu| ak|ant|sen|olo|wak| ko|a o|mfu|ezo|sid|nay|oko| ub|ulo|zo |do |isi|wez|iso|han|nte| ph|zim| ya|ga |li | le|iba|ham|ube|kup|aza|jik| ul| en|eem|phu| ol|and|imf| es|o s| im|kuf|u k|kwi|nak|ma |nan|ety|kuh|kus|yol| am|hel|idi| so|lis| nj|nje|jen|tsh|aka|zin|kuz|‐ji|no |ufu|ale|ong| el|bo |a y|e l|men|yen|lum",
+    "min": "an |ak |ang| ma| da| ka| sa|ara| ha|yo |nyo|hak| ba|ran|dan|man|nan|ng | pa| di|kan|ura| na|ata|asa|ok |nda|ala| pu|pun|uak|ntu|n d|k m| ti|ah |o h|n s|k u|n k| ur| un|tua|n b|and|unt| ta|uny|n p|tio|iok|ama|pan|ek |ban|jo |n m|k h|k d|ado|nga|aan|g p|tan|aka|ind|at |dak|dap|o p|tau|pek|uan| at|amo|mar|ape|au |kat|mo |sas|ari|asi|di |o s|ia |ngg|bas|ika|sam|am |lia|o d|san|gan|sia|tar|n n| jo| su|anu|lam|gar|o t| in|par|sua|dek|sar|k s|ri |o m|ana|bat|asu|ko |ai | la|ant|dal|lak|aga|alu|iah|o u|n a|tu |k a|adi|rad|i m|mal|dok|usi|aku|i d|k k|al |aro|eka|neg|ega|ato|to | ne|mam|o b|eba|ian|beb|n u|um |si |aba|rat|uah|ro |mas|ila|a d|ali|uka|ard|kam|ti |atu|nus|dar|ami|n t|sa |in |amp|kal|car|lan|aha|kab|so |rde|un |i k|gsa|das|ngs|aca|yar|ka |ati|ar | an|uku|ras| ko|sya|mat|k n|aya|nta|lo |any|sur|kaa|dil|kar|o a|u d|k t|pam|dia|ra |iba|lai|i t|lah| bu|mpa|kum|abe|n h|ili|nny| as|u p|aki|amb|sac|as |k b|h d|uli|ajo|a n|raj|n i|dua|ndu|k p|i p|itu|lin|han|huk|o k|rik|a b| li|ik |ggu|jam|bai|a a|i a|nia| ad|i j| hu|gam|sal|aso|ngk|sad|apa|ann| mu|ony|dik|bad|ain|did|min|l d|ada|bul|rga|tin|ga |ani|alo| de|arg|ahn|sio|hny|n l|sti|awa|uju|per|bak| pe|tik|ans| pi|a s| um|bag|ndi|anj|mba",
+    "afr": "ie |die|en | di| en|an |ing|ng |van| va|te |e v|reg| re|n d| ge|ens|et |e r|e e| te| be|le |ver|een| in|ke | ve| he|eg |het|lke|lik|n h|de |nie|aan|t d|id |men| vr|nde|eid|e o| aa|in |of |der|hei|om |g v| op| ni|e b| el|al |and|elk|er | me|ord|e w|g t| to| of|ers| we| sa| vo|ot |erk|n v|vry|ge |kee|asi|tot| wa|sie|ere| om|aar|sal|dig|wor|egt|gte|rdi|rd |at |nd |e s|ede|ige| de| ’n|n a|eni| wo|e g| on|n s|’n |e t|erd|ns |oor|bes|ond|se |ska|aak|nig|lle|yhe|ryh|is |eli|esk|ien|sta|vol|ele|e m| vi|ik |r d|vir|edi|kap|g e|ir |es |sy |ang|din| st|ewe|gem|gel|g o| is|el |e i|op |ker|ak |uit|ike|nse|hie|ur |eur| al|e a|nas|e n|nge|ier|n o|wer|e d|ap | hu|ale|rin| hi|eme|deu|min|wat|n e|s o| as| so|as |e h|del|d v|ter|ten|gin|end|kin|it | da| sy|per|re |n w|ges|wet|ger|e k|oed|s v|nte|s e|ona|nal|waa|d t|ees|soo| ma|d s|ies|tel|ema|d e|red|ite| na|ske|ely|lyk|ren|nsk|d o|oon|t e|eke|esi|ese|eri|hul| gr|ig |sio|man|rde|ion|n b|n g|voo|hed|ind|tee| pe|rso|t v|s d|all|n t|rse|n i|eem|d w|ort|ndi|daa|maa|t g|erm|ont|ent|ans|ame|yke|ari|n m|lan|voe|n ’|nli|rkl|r m|sia|ods|ard|iem|g s|wee|r e|l g|taa|sek|bar|gti|n n|lin|sen|t o|t a|raa|ene|opv|pvo|ete| ty|arb| sl|igh|dee|g a|str|nsl|sel|ern|ste",
+    "lua": "ne |wa | ne|a m| ku|a k| mu|di | bu|a b| di|e b|tu |nga|bwa|ntu| bw|udi|a d|e m|i b| ba| ma|shi|adi|u b|a n|la |ons|mun|i n|ung|nsu|ga |yi |ya |na |unt| dy|idi|e k|buk|mu |ika|esh|su |u m|ku |nde|any| bi|lu |nyi|end|yon|dik|ba | ci| ka|ang|u n|u y| mw|ka |i m| yo|we |oke|tun|de |kes|hi |kok|mwa| kw|e n|ban|dya|sha|u d|ken|kwa|ji |ha |wen|dit| ud|a a| an|mwe|itu| pa|le | a | wa|nji|kan|kum|ibw|bwe|a c|ant|ena|yen|mba|did|e d|ala|u u|ish|mak|bul|i a|nda|enj|u a|ila|pa |ako|ans|uke|ana|nso|amb|hin|umw|kal|uko|i k|bad|aka|ela|ele|u w|u k|du |ja |bu | mi|ind|ndu|kwi| ns|mbu|atu|bud|dil|ile|sun|eng|ula|enz|nan|nsh|kad|alu| cy|bis|kud|lon|u c|gan|dib|da |dye|bid| by|ukw|i d|aa |ngu|a p|sam|isa| aa|ilu| na|aba|lel|ye |dim|cya|kub|so |ond|kus|mat|nge|e c| bo|aku|bak|mus|ta |umb|ulo|elu|man|iki|mon|ngi|abu|mud|kuk|omb| mo|und|diy|kwe|umu|mal| ke|ush|gil|uba|imu|dis|wil|wu |san|gad|uka|bon|ma |aci|mik|wik| me|pan|iku|nza|ben|ulu|ifu|iba|kak|ata|som|ong|e a|apa| tu|o b|umo|bya|utu|uja|yan| be|ke |akw|ale|ilo|uku|cil|tup|kul|cik|kup|upe|bel|amw|ona| um|iko|awu|and|za |ike|a u|ima|muk| ya|mum|me |map|ita|iye|ole|lum|wab|ane| lu|nu |kis|mbe|kab|ine|bum|lam|pet| ad|fun|ama| mb|isu|upa|ame|u p|ubi",
+    "fin": "en |ise|ja |ist| ja|on |ta |sta|an |n j|ais|sen|n o|keu|ike|oik|lis| va|ell|lla|n t|uks| on|ksi| oi|n k| ka|aan|een|la |lli|kai|a j| ta|sa |in |mis| jo|a o|ään|än |sel|n s|kse|a t|a k|tai|us |tta|ans|ssa|kun|den|tä |eus|nen|kan|nsa|apa|all|est| se|eis|ill|ien|see|taa| yh|jok|n y|vap|a v|ttä|oka|n v|ai |itt|aa |aik|ett|tuk|ti |ust| ku|isi|stä|ses| tä| tu|lai|n p|sti|ast|n e|n m|tää|sia|unn|ä j|ude|ä o|ste|si |tei|ine|per|a s|ia |kä |äne| mi|maa| pe|a p|ess|a m|ain|ämä|tam|yht| ju|jul|yks|hän|ä t| hä|utt|ide|et |llä|val|sek|stu|n a|lä |ami|hmi| ke|ikk|lle|iin|sä |euk|täm|ihm|tee| ih|lta|pau| sa|isk|mää|ois|un |tav|ten|dis|hte|n h|iss|ssä|a h|ava| ma|a y| ei| te| si| ol|ekä|sty|alt|toi|att|oll|tet| jä| ra|vat| mu|iel| to|mai|sal|isu|a a|kki|at |suu|n l|väl|ää |uli|tun|tie|eru| yk|etu|vaa|rus|muk| he|ei |a e|kie|sku|eid|iit| su|nna|sil|oma|min| yl|lin|aut|uut|sko| ko|tti|le |sie|kaa|a r| ri|sii|nno|eli|tur|saa|aat|lei|oli|na | la|oon|urv|lma|rva|ite|mie|vas|ä m| ed|tus|iaa|itä|ä v|uol|yle| al|lit|suo|ama|joi|unt|ute|i o|tyk|n r|ali|lii|nee|paa|avi|omi|oit|jen|kää|voi|yhd|ä k| ki|eet|eks| sy|ity|ilö|ilm|oim|ole|sit|ita|uom|vai|usk|ala|hen|ope| pu|auk|pet|oja|i s|rii|uud|hdi|äli|va | om",
+    "run": "ra |we |wa | mu|e a|se | n |a k|ira|ntu|tu | ku| um|ko |a i|mu |iri|mun|hir|ye |unt|ing|ash|ere|shi|a n|umu|zwa| bi|gu |ege|a a|za |teg|ama|e k|go |uba|aba|ngo|ora|o a|ish| ba| ar|ung|a m| we|e n|na |sho|ese|nga| ab|e m|mwe|ugu| kw|ndi| gu|ate|kwi|wes|riz|ger|u w| at|di |gih|iza|n u|ngi|ban|yo |ka |e b|a b| am| ca|ara|e i|obo|hob|ri |u b|can|nke|ro |bor| in|bah|ahi|ezw|a u|gir|ke |igi|iki|iwe|rez|ihu|hug|aku|ari|ang|a g|ank|ose|u n|o n|rwa|kan| ak|nta|and|ngu| vy|aka|n i|ran| nt| ub|kun|ata|i n|kur|ana|e u| ko|gin|nye|re | ka|any|ta |uko|amw|iye| zi|ga |ite| ib|aha| ng|era|o b|ako|o i| bu|o k|o u|o z| ig|o m|ho |mak|sha| as| iv|ivy|n a|i b|izw|o y| uk|ubu|aga|ba |kir|vyi|aho| is|nya|gan|uri| it| im|u m|kub|rik|hin|guk|ene|bat|nge|jwe|imi| y |vyo|imw|ani|kug|u a|ina|gek|ham|i i|e c|ze |ush|e y|uru|bur|amb|ibi|agi|uza|zi |eye|u g|gus|i a| nk|no |abi|ha |rah|ber|eme|ras|ura|kiz|ne |tun|ron| zu|ma |gen|wo |zub|w i|kor|zin|wub|ind| gi|y i|ugi|je |iro|mbe| mw|bak| ma|ryo|eka|mat| ic|onk|a z| bo|ika|eko|ihe|ukw|wir|bwa| ry| ha|bwo| ag|umw|yiw|tse| ya|he |eng| ki|nka|bir|ant|aro|gis|ury|twa| yo|bik|rek|ni | ah| bw|uro|mw |tan|i y|nde|ejw| no|zam|puz|ku |y a|a c|bih|ya |mur|utu|eny|uki|bos",
+    "slk": " pr| a |prá|ráv| po|ie |ch |ost| ro|ho | na|vo |ani|na | ne|nos|ažd|kto|kaž| ka|má |né |ávo|om | má|ebo|ti | v | al|ale|leb|bo | je| za|ých|o n|ždý|dý |ia | sl|mi |ova|sti|nie|van|to |eni|ne |áva|lob|ého|slo|rod|tor|rov| sp| zá|á p|o v|a p| kt|ý m| sv|voj|bod|obo|nia| ná| vy|ej |je |ať |o p|a v|a s|áro|a z| sa| ma|a n|e a|e s|mu |mie|kla|nár|svo|spo| by|ovn|by |roz|sa |ľud|iť |odn| vš|ov |i a|néh|vše|o s|va |o a| ľu|oci|pre|nu |a m|u a|ený|e v|ný |nes|a k|zák|pod|ným| do|u p| k |u s|áci|ajú|byť|yť |nýc|eho|ran|pol|tát|stn|jeh|a r|šet|ými|lad|čin|ému|a o|edz|ť s|kon|stv|oré| sú| ni|e z|pri|och|ny |štá|sť |oje|vna|tre|u k| či|ko |é p|maj|smi|a a|etk|nak|ým |med|dov|prí| ob|iu |uds|osť|esm|e b|m a|hra|i s|rác|bez|vať|chr|e p| ab|jú | št|žen| ho|čen| de|i p|ť v| vo|dsk|pro|nom| in|ou |du |že |aby|est| bo|ré |bol| so|nú |olo|kej|áln| oc|obe|ky |dzi|dom|áv |por|lne|rav|aké|ens|pra|ok | že|tné| ta|ako|res| vz|i k|ami| tr| ak|ní |len|o d|del|ský|cho|ach|ivo|h p|ože|iál|inn|slu|kra|loč|očn|ju | os|anu|oju|voľ|ákl|str|é s|ené| ži|niu|sta| st|ved|tvo| me|dno|m p|de |ké |kým|ikt|stu|é v|i v|vyh| to|v a|odu|hoc|a t|ím |ly |hov|y s|soc|júc|ú p|odi|vod|liv|aní|ciá| ve|rej|ku |ci |ske|sob|čno|oso",
+    "tuk": "lar| we|we | bi|yň |ary|ada|da | he| ha|an |yny|kla|dam|de | ad|yna|er |na | ýa|ir |dyr|iň |bir|r b|ydy|ler|ara|am |yr |ini|lan|r a|kly|lyd| öz|mag|nyň|öz |her|gyn|aga|en |ryn|akl|ala|dan|hak|eri|ne |uku|ar |r h|ga |ny |huk| de|ili|ygy|li |kuk|a h|nda|asy|len| ed|bil|atl|ine|edi|niň|lyg| hu| ga|e h|nde|dil|ryň|aza|zat|a g|‐da|a‐d|eti|ukl| gö|ly | bo|tly|gin| az|lma|ama|hem|dir|ykl|‐de|e d|ile|ýan|a d|ýet|ýa‐|ynd|lyk|aýy|e a|ünd|ge | go|egi|ilm|sy |ni |etm|em‐|lme|m‐d|aly|any| be|tle|syn|rin|y b|let|mak|a w|a ý|den|äge|ra | äh|mäg| du|n e|bol|meg|ele|ň h| et|igi|ň w|im |iýa| ýe| di|r e|ek | ba|ak |esi|ril|a b|in |p b|deň|etl|agy| bu| je|bu |e ö|y d| hi|mez| es|ard| sa|ähl|e b|yly| ka|esa|mek| gu|n a|e t|lik| do|e g|sas|ill|nma|ň a|ram|ola|hal|y w|ýar| ar|anm|mel|iri|siý|ndi|ede|gal|end|mil|rla|göz| ma|n b|e ý|öňü|ňün|n h| tu|hiç|yýe| ge|my |iç | öň|n ý|tla|ň ý|lin|rda|al |lig|gar| mi|i g|dal|rle|mal|kan|gat|tme|sin|and|ň g|gor| ta|öwl|ýle|y g|e w|ora|tiň|ekl| yn|alk|döw| dö|ere|m h| me|dur| er|asi|tut|at |çin|irl|umy|eli|erk|nme|wle|gur|a ö|aýa| çä|nun| ki|ras|aml|up |ýaş|tyn| aý|ry |ň d|baş|ip |gi |z h|kin|z ö|n w|ter|inm|eýl|i ý|kim|nam|eň |beý|dol| se| te|r d|utu|gyý|ez |umu|mum",
+    "dan": "er |og | og|der| de|for|en |et |til| fo| ti|ing|de |nde|ret| re|hed|il |lig| ha|lle|den| en|ed |ver|els|und|ar | fr| me|se |lse|and|har|gen|ede|ge |ell|ng |at | af|nne|le |nge|e f|ghe|e o|igh|es |af |enn| at|ler| i |ske|hve|e e|r h|ne |enh|t t|ige|esk| el| be|ig |tig|fri|or |ska|nin|e s|ion| er|nhv|re |men|r o|e a| st|ati| sk| in|l a|tio| på|ett|ens|al |tti|med|r f|om |end|r e|del|g f|ke | so|på |eli|g o| an|r r|ns | al|nat|han| ve|r s|r a| un| he|t f|lin| si|r d|ter|ere|nes|det|e r| ud|ale|sam|ihe|lan|tte|rin|rih|ent|ndl|e m|isk|erk|ans|t s|kal| na|som|hol|lde|ind|e n|ren|n s|ner|kel|old|dig|te |ors|e i| hv|sni|sky|ene|vær| li| sa|s f|d d|ers|ste|nte|mme|ove|e h|nal|ona|ger| gr|age|g a|vil|all|e d|fre|tel|s o|g h|t o|t d|r i|e t| om|arb|d e|ern|r u| væ|d o|res|g t|klæ|øre|n f| vi| må|ven|sk | la|gte|kab|str|n m|rel|e b|run|rbe|bej|t i|ejd|kke|t e|g d|rkl|ilk|gru|ved|bes| da|nd | fu|lær|æri|rdi|ærd|ld |t m|dli|fun|sig| mo|sta|nst|rt |od | ar| op|vis|igt|ære|tet|t a|emm|g e|mod|rho|ie |g u|ker|rem| no|n h| fa|rsk|orm|e u|s s|em |d h| ge|ets|e g|g s|per| et|lem| tr|i s|da |dre|n a|des|dt |kyt|rde|ytt|eri|hen|erv|l e|rvi|ffe|off|isn|r t| of|ken|l h|rke|g i|tal|må |r k|lke|gt |t v|t b",
+    "als": "të | të|dhe|he | dh|në |ë d|e t| e |et |ë t|imi|për|ejt|dre|rej| pë| dr| në|it |gji|sht|ve |jit|ë p| gj|ith| sh| i | li|het|e p| nj|t t|ër |ë n|in | ve|me |jtë|e n| ka|ara|e d|ush|n e|tet| pa|jer|hku|a t|re |ën |ë s|sh | ku|së |t d|ë m|kus|mit|lir|ka |ë k|jë |se | si| që| ba|etë|që |ë b|si |ë g|eri|thk|nje|eve|e k|e s|jet|ose|bas|ohe| os|ra | mb|iri|h k|min|shk|ash|rim|ndë| nd|një|jta|e m| me|eti|do | du|es |rë |e l|mi |anë|tar|t n| as|dër|hte|end|tën|vet|uar|und|ësi|kom|tje|duh|ndi|at |ave| ko|ri |ta |ë v|shm| de|ar |omb|i d| kë|i p|jes| ng|uhe|nga|i n|en |ë e|ga | ar|e a|ës |hme|bar| pe|htë|ë l|ur |ë i|isë|ime|sim|ris|tës|art|ëm |cil|tim|tyr|ësh| ma|shë|or |t a|kët|gje| ci|r n|e v|par|nuk|ëta|rgj|i i|ish|uk | nu|ë r|are| je|ë c| pu|atë|lim|lli| ës|ë a|i t|mar|ore| së|tit|lar|per|t p|rat|ite|inë|t s|riu|ke |ërg|a n|edh| pr|esi|irë|ërk| po|hë |ë j|i s|a e|ht |mba|roh|im |ari|e b|lit|ti |asn|tav|snj|t e|ik |tij|k d|qër|hëm|ras|res|otë|nal|mun| an|kla|ven|e q|tat|t i| fa|ij | tj|igj|te |ali|bro| di|roj| ti|uri|ojë|ë q|çdo|det|n p| pl|ekl|ind|erë|vep|dek|nim|ive|ror|sho|hoq|oqë|ëri|pri|r d|shp|esë|le |a d|shi| mu|dis|r t|ete| t |ë f|ëzo|zim| çd|mbr| re|e f|jen|i m|iut|n k|tha|s s|lot",
+    "nob": "er | og|og |en | de|for|til|ing|ett| ti|et | ha| fo| re|ret|il |het|lle|ver|tt |ar |nne| en|om |ell|ng |har| me|enn|ter|de |lig| fr| so|r h|ler|av |le |den|and| i | er|som| å |hve|or |t t|ne | el|els|re | av|se |esk|enh|nge|ska|nde|e o|ete|gen|ke |lse|ghe|ten|men| st|r s|fri|igh|ig | be|e e|nhv|r r|tte|ske|te | på| ut| sk|al | in|sjo|på |der|e s|ner|rin|jon|t o|unn|e f|han|asj|tig|ed |es |g f|sam|ent|tti|ene|nes|med|ge | al|r o|ens|r e|eli|isk|lin| ve|nin|g o| sa| an|t f|itt|lik|end|kal|r f|t s|rih|ihe|nas|nte|e r|ns | si|lan|g s|mme|ige|l å|erk|dig| gr|n s|ren|r a|all| na|kte|erd|ere|e m|und|r u|res|tel|ste|gru|inn|lær|ers| un|det|t e|arb|ale|del|ekt|ven|t i|g e|bei|eid|e a|n m|e d| ar|rbe|e g| bl|ans|klæ| li| he|g t|æri|sky|run|rkl| la|sta|sni|kke|m e|rt |mot| mo|e n|tat|at |e h|e b|ove|e t|jen|t d|str| må|r m|n e|ors|rel|ker| et|n a|bes|one| vi|nn |g r|e i|kap|sk |ot |ndi|nnl|i s| da|s o| no|id |ger|g h|vis|n o|bar|s f|ndl|t m|g a|opp|t a|dis|nal|r d|per|dre|ona|ære|rdi|da |ute|nse|bli|ore|tet|rit| op|kra|eri|hol|old| kr|ytt|kyt|ffe|emm|g d|l f| om|isn| gj|å d|ser|r b| di| fa|n t|r k|lt |set| sl|dom|rvi|me |l e|gre|å s|må | tr|nd |m s|g i|ikk|n h| at|tes|vil|dli|g b|d d| hv|rav",
+    "suk": "na | mu| bu| na|a b|ya |hu |a n|we | gu|nhu|a g| ba|a m|ili|wa | ya|li |unh| bo|mun|ali|bul|han|bo |i m|ilw|uli|ang|lil|la |i b|e n|ga | wi|kil|mu | al| se|u a|ge |kge|ekg|sek|lwe|ose|le |lo |bi |ulu|e y|kwe|ila|and|e b|i n|yo |ng’|a s|nga| ns|si |abi|nsi|ina|lin|aki|se |ban| ly| gw|dak|lu |ngi|gil|a w|o g|akw|u b|ile|anh|ka |ilo|a l|ubi|e g| nu|o n|ja |gan| ng| ma|lya|nul|g’w|ani|ndi|u m|iya|wiy| ji|jo | ka|yab|lwa|ada|o b|e k| ad|gwi|ho |gub| ku|ing|o a|o l|ula|ika|a i|u n|dik|iha|shi|ayo|gun| ja|ha |biz|o j|lag|ma |wen| sh|ele|ung|o s|gi |gul|mo |lan|iwa|a k|ala|iki|jil|ola|ji |a a|yak| li|nil|iza|agi|aha|man|bos|iga|kuj| ha|ana| lu| gi|iti| mh|uga|uyo|win| ga|za |a y|ki | nd|oma|ene|o w|a u|mah|yos|sol|hay| mi|iko|ong|aga|iku|gwa|i a|ndu|pan|u g|e i| ab|ujo|ida|nya|ibi|duh|but|i y|u w|iji|nhy| we|nik|aya|uhu|nda| il|je |abo|aji|lel|ubu|nay|ba |lug|lon|ale|mil|da |a j|dul|o m|mha|aka|e u|g’h|udu|lyo|e m|e a|gik|bus|bal|sha|wit|twa|ngh|nek|wig| um|okw|any|uma|ima|uso|bud|’we| ij|hil|bil|a h|imo|ita|no | ih|gut|nha|ne |iso|ulo|uno|yom|’ha|u l|elo|eki|wel|hya|ngu|omb|som|mbi|i g|o i|u i|bak| is|ugu| yi|utu|eni|tum|umo|u s|tog|inh|’wi|lit|waj|e j|ule|jiw|u u|kub|kul|lik|uto| uy|upa",
+    "sag": "tî | tî|na | na| ng|a n|ngb|gö |ngö|nga|nî | lo|lo |zo |bi |la |gbi|ang| sô|sô |î l|gan|ö t| zo|o n| wa|a t|îng|i t|ngü|gü | al|lîn| nd|a l|ê t| kû|äng|î n| te|wal|ala|alî|î k|ë t|î m|â t|î â|ô a|î b| mb|ûê |gâ |örö|ngâ|kûê| lê|o k|a â|e n|ko |î s| kö|ter|dör|köd|ödö|ï n|a k|lêg|gë |ôko|ëpë|mû |pëp| pë|o a|êgë|eke|yek|ke |ü t|î t| ay|o t|bên|ê n|rê |pëe|ra |ëe |erê|rö |tï |kua|aye| nî| ôk|ua |a z|ä t| âl|â n|ïng|î d|ö n|âng|ênî| am|î z|ten|âla| yâ|ê a|mbê|a m|û n|a y|ne |ene|rä |î g|a s|bê | ku|arä|ndi|ga |diä|ëng|iä | du| ân|amû|dut|öng|yâ |utï|ro |önî|lï |a p| gï|oro|lë |î a| âm|ndo| sê|ngô|do |i n|o s|ndö|âra|e t| bê|gba|ûng| mä|sâr| sï|î p| gb|ö k|e a|yê |a a| âk|dö |ara|ba |ï t| tö|a w|zar|tön|î w|war|ndâ|a g|ana|në |ênd| të|ta |ban| lë|zön|î f|nzö| sâ|sï |tën|o w| nz|sên| âz| da| za|îrî| në|nën|ate|ä s|bâ | at|o l|ënë|o ô|fa | kp| ma|o p| mû|kân|a b|bat|ata|ô n|se | kâ|alë| ko|ông|da |ë s|üng|ë n|ibê|rös|mbë|bët|ëtï|âmb|mbâ|ïgî|mba|gî |tän| po|bûn|gï |amb|ü n|gbï|ôi |gôi| af|rë |erë|lê | as|afa|âzo|i p|sor| ad|i s| ba|gïg|ä n|bät|dë |ö â|kûe|ûe |kpä|päl|älë|e z|ätä|ö w|ngi| yê|köt|ötä|tä |ê s|kod| hï|hal|hïn|lëz|ëzo|ngä|gän|odë|ö m|mar|sär|pä |ärä|îan|rän|bîa|a h|gi |bor|du ",
+    "nno": " og|og | de| ha|er |en |ar |til| ti|lle|ett|il |ret|om |et | re|le |har|enn| me| al|all| fr|ne |tt |re | å | i |nne|and|ing|ska| sk|men| fo|det|den|ver|for|ell|t t|dom| so|de |e s| ve| ei|ere| på|al |an |e o|e h|fri|sam| sa|l å|på |leg| el|ler|som|ein|ei |nde|av | st|dei|or |ten|esk|kal|gje|n s|tte|je |ske|rid|r r|i s|te |nes| gj|eg |ido|med|e f|r s|st |ke |jon| in|r f|sjo|asj|nas|ter|unn|ed |kje|han|ona| er|t o|t e|g f|ski|e m|ast|ane|e t| av| gr|lan|ste|tan|å f| na|der| sl|t s|seg|n o|r k|nga|ge | an|g o|at |na |ern|nte|ng | ut|lik|e a|bei|gru|e i|arb|kil|g s|lag|eid|r a|e d|g d| si| få|ame|a s|e r|rbe|jen|n m|r d|n e|nn |e n|erd| tr| må| bl| mo|ren|run|nin|bli|kra| kr| at|ege|n i|me |nsk|ins|år |frå|in |lov|v p|end|mot|ale|e v|å a|få |rav|int|nal| ar|sta|e k|t f|ome| la|ot |t a|sla| ik|nle|itt| li| kv|id |kkj|ikk| lo|nad|å v|tta| fa| se|gen|ld |å s|kan|g t| ka|r l|god|n a|lin|jel|ild|dig|ha |l d|kap|ve |ndr|g i|g a|inn|var|rna|r m|r g|a o|dre|d a|n t|ag |kår|mål|ig |va |i d|t m|e e|n d|tyr| om|g e|eve|då |e u| då|und| no|ir |gar|g g|l h|se |ga |d d|l f|ker|r o|å d|eld|ige|t d|t i|t h|oko|nnl|rel|nok|rt |lt |åse|jer|ta |ik |ial|eig|r p|i e|olk|bar|osi|kte|sos|lir|opp| un|ad | be",
+    "mos": " n |ẽn| a | se|a t|sẽ|̃n | ne|a s| ye|e n| ta| tɩ|n t| pa|tɩ | la| so|nin| ni| b | fã|fãa|ãa |ng |a n| bu| tõ|la |ẽ | te|tõe|ne |ye |a a|or | ya| to|ed |ned|pa |e t|õe |tar|em |tẽ|g n|ã n|n m|aan| ma|sor|buu|n y|maa|uud|a y|r n|ins|n p|ud |ra |paa|ɩ n|a b| wa|d f| na|me |n d|ara|n b|sã |taa|n w|bã |an |yel|eng|aal|ɩ b|n n|gẽ|̃ng|og | ka| bɩ|bɩ | tʊ|gã | yɩ|na |am |e b|ame|wa |g a|d b|aam|ab |mb | bã|ãmb| ba|m n|wã |aab|a m|aa |saa|ga |nsa|yaa| wã|a l|tog|ore|n s|nd |ʊʊm| sõ| sã|ãng|seg|egd|d s|el |tʊʊ|ngã|ba | tũ| da|ã t| me|b s|re |dat|l s|d n|ɩ y|ã y|dɩ |aoo|g t| kã|m t|ing|r s|a p|b y|b n|gdɩ|men|dã |vɩɩ| vɩ|lg |oor|ã s|n k|al |rã |nga|ar | le|gr |d a|neb|̃nd|ɩɩm|ĩnd|yɩ |lem| pʊ| bʊ|pʊg|nge|to |b t|ɩ s|g s| mi| ke|a k|bãm| we|kao|ilg|wil| zĩ| no|kẽ| ra|m b|ʊge|b k| bũ|oog|ã p|bũm|ngr|at | wi|gam| ko|eb |g b|sõn|ãad|ã f|õng|ɩm |m s| yi|ũmb| yã|ʊm |oy |wẽ|noy|ʊmd|da |ren|a z|ya | gã|le |b p|ɩ t|n g| f |ni |soa|oab|i t| sɩ|lag| ti|te |o a|s n|oga|go |tũ |gem|age|a w|̃ n|in | yõ|a g|b b|aor|ka |ẽe|tũu|aas|a r|e y|ag |eg |r t|e a|ã k|iid|e p|neg|o t|ate|oa |e s|ũ n|mã |ms |ell|eem|ẽm|b w|̃ms|too|ik | zã|zĩn|kog|bao|r b|s a|bui|uii|ogl|aba|alo|loa|kãa|od |l b|ll |nda|kat|aka",
+    "cat": " de| i |es |de |la | la| a | pe|per|ió |ent|tat| se|nt |ret|ts |dre|at | el|ls | dr|men|aci|a p|ció|ona| co|a l|al |na |s d|que|en |el | to|s i| qu| en|e l|ns |tot|et |t a|ers| pr|t d|ons|er | ll|ion|a s|ta |a t|con|els|s e| l’|rso|res|als|son| un|est|cio| re|pro|ita|cia| in|les| o |ue |del|lli|té | té|ia |ame|é d|sev|ota|nac|i l| al|s p|a d|ar |a i|ual|nal|a c|ant|nci| le|ert|sta|rta|ser|t i|i a|l d| no|va |ats| d’|s n|re |s a|e c|eva| na|rà | ca|ues|com|lib|és | so|ibe| es|ets|ber|da |r a|no |una|l’e|s l|ter|sen|ran|ure|des|man|i e|l p|t e|n d|e d|e e|om | di|cci|igu|a a|s t| pa|i d|tra|s o|aqu|tre|vol|ect|a u|l i|gua|ide|s s|ada|ene|ial|nta|ntr|ens|soc|cte|ra |oci|hum|uma|cla|ali|lit|erà|cti| aq| hu|ici|pre|era|ess|uni|nte| fo| ni|ble|sse|tes|alt|eme|ass|ica|seg|o s|ote|rac| ig| po|ans| és|a e|un |us |mit| ma|r s|se |ssi|s h|a m|r l|nit|l t|ènc|ó d|ten| te|ir |i p|tal|eta|dic|i i|hom|t q|par|egu|s f| as|n l|ria| mi| ac|lic|int| tr|act|eix|n e|s c|ont|nse|ecc|t t|ltr|amb|qua|l’a|eli|ura|an |ist|e t|ó a|one|nam|ing|lar|o p|esp|rec|lig|a f| ha|iva| am|lle|t s|rot|mat|liu|tiu|iur|n a|fon|ots|inc|ndi|e p|seu|olu|gur|i c|més|der|rna|ina|for|igi|cie|bli|ic |mb |in |art|ol |rom|nin|omp",
+    "sot": " le|le |ng |ho | mo| ho| bo|a h| e |lo |ya |ba |e m|a l| ya| ts| ba|na |ong| ka|a b|tho|e t|sa |elo|olo|a m|ets| di|o e|la |mon|oth|tsa|o y|ka |eng|a k|oke|kel|a t|g l|tok|ang|o t|tla|mot| se|o l|e b| na| ha|lok|wa |e h| tl| a |aba|o b|tse|ha | o |hab|e k|tjh|a d|tso|jha| to|se |so |oko|e e|tsh|dit|pa |apa|o n|e l|loh|kol| ma|o m|a e|ela|ele|ana|a s|let|bol|ohi|a a|tsw|kap| ke|hi |g o|ohl|eo |ke |ona|set|o k|o s|di | kg|e d|aha|lan|bot|bo |ito|o h| mm|hle|eth|ena|i b|ala|ats|moh|swa|lwa|g k|atl|abe|g m|ola|phe|bat|ane|a n|mel| me|o a| ph|ebe|ell|hlo|tlo|etj|mat| sa|g t| th|g y|lat|mol|g b|g h| en|she|the|seb|nan|lek|boh|hae|kgo|hel|e s|edi|wan|me |kga|ae |to |a f|ath|lao| hl|han|ile|nah|we |ume|kan|otl|len|aka|efe|ire|bel|bet|rel|swe|mme|sen|a p| ko|g e|atj|lel|its|bon|oho|eha|shi|man|ano|nts|he |lal|eka| fu|o f|heo|got|all|ao |het|hat|get|ban|hal|kge| wa|a y|lla|fum|mmo|kar|alo| ef|thu|e y|wal|tha|san|hon|tlh| he|e n|ben|hla|ing|uma|pha|o o|si | tu|tum|llo|lle| ta|pan|hen|mo |nen|hir| lo|son|ots|tab|ama|ato|din|lap|hil| eo|dis|oka|elw|tsi|llw|i m|hol|pel|iso|no |e a|fet|lwe|adi| fe|fen|hwa|opa|kop|are|amo|ret|emo|i k|isa|o p|o d|i l|gat|dik|i t| nt| la|ame|shw|hah| am|nya|ita|mab",
+    "bcl": "an | sa|in | na|ng |sa | pa|na |nin|ang| ka| ni| ma| an|pag| as|sin|asi|n s|ion|n n|cio|a m|on |ban| de|n a|ga |kan| mg|a p|mga|a n|os |rec|ere|der|cho|ech|n p|aci|aro|n m|man|a s| la|n d|o n|asa|n k|g s|kat|sar|ata|ay |o s|al |ong|n l| o |a a|ho |a k|igw|tal|gwa|amb|kas|sai|mba|wa |ara| ig|agk|o a|lam|ro |o i|gka|ali|apa|nac|san|aba|g p|ina|a d|iya|yan|ing|lin|may|ink|aiy|nka| ba|aka|a i|yo | in|ag |abo| da|aha|ini| ga|tan|s n|nta|ano|agt|s a|kai|ad |hay|ida|hos|o m|og |ia |iba|ent|han| ta|par|n i| hu|at |ron|a b|g n|ant|g m|nal|ayo|a g|dap|mag|no |sta|aya|iri| pr|nga|ran|cia|g k|es |pat|li | co|dad|l n|y n|bos| si|mak|pro|ala|men|gan|aki|nte|lan|o k|con|t n|gab|a l|g d|ona|n b|ta |do |nda|aan|as |uha|agp|a c|uli|awo|taw|pan|n o| so|hul|i n|ter|ado|ags|g a|tra|min|anw|tay|kam|nwa|waa|g o|a o|kap|ain|bal|bil|ami|g i|d a|res|ra |nag|gta|ton|n e|ba |nan| mi|kab|en |bas|gpa|nes|o p| di|pin|ika|l a|n g|ind|isa|cci|ili|ial|ecc|tec|nci|ios|bah| es|one|pak|om |imi|agi|ico| re|ana| bi|a e|nid|rim|rar| se|rab|s s|hal|i a|buh|sab|cri|ubo|bo |gi |wo |rin|int|agh|ipa|sii|ibo|ani|to |sad|hon| le|iis|a t|ast|say|lar|n c|aag|ote|rot|n t|y m|ici|paa|ley|ey |yag|aen|dan|ni | pu|atu|lab|sal|ica| gi",
+    "glg": " de|os |de | e |ión| a |da |to |ció|ere|ón |der|ito|en |a p| co|ent|eit|n d| se|rei|ade|as |aci|dad|s d| pe|per|o d|s e|e a|e d|men| da|nte|ers| pr| te|do |al |rso|ida|es |ten|soa|oa |que| to| po| o |a t| in|a e| li| do|cia|te |tod|res|o a|pro| re|tos|est|ra | es| ou|dos|lib|con|a d|nci|o e| na|e e|a a|a s|ber| á |oda| pa|e o| qu|e c|ue |ar |nac| en| sú|tra|s p| un|súa|com|ou |ia |nto|ser|a c|er |ns |a o|se |des|is |ter|s n| ca|ado|or |óns|sta|úa | no|rda|s s|ibe|rá |erd|era|no |nal| as|ica|e p|eme|erá|pre|sen|das|e n| ni|e s|por|ais|par|ant|ara|ame|cci|ona|io |o p|n p| di|cto|s t| so|o t|o á|nin| me| os|cio|enc|unh|n e|n c|nha|ha |ntr|ion|n s|á s|n t|s o|ese|nta|ect|e i|o s|e l|so |nid|oci|soc|ont|dic|ici|e t|tad| ac|tiv|ndi|ali|gua|l e|rec|a l| ig|omo|cas|o m|re | ma|ing|na |igu|vid|eli|ngu|und|s i|rac|a n|cla|cti|seu|ria|on |ase|o n|lic|s c|man|lid|a u|uni|ta | ó |ual|ido|ori| fu|ind|nda|ste|s a|tes| tr|act|ial|fun|dis|ecc|o ó|cal|mo |un |e r|iva|n o|ca |n a|o c|esp|ome|o o|seg|sti|r a|tor|r d|egu|ada|lo |nde|r o|uma|ote| el|alq|lqu|uer|spe|a i|tar|bre|tri|hum|olo|cie|ren|ena|ari|mat| fa|med|ura|lar|edi|ver|ixi|á p|ibr|gur|int|pen|rot|a f|cac|s f|ili|rio|ma |a v| vi|rim|len|ita",
+    "lit": "as |ir | ir|eis|tei| te|s t|os |uri|ti |us |is |iek| pa|ai | vi|vie|tur| ki|ri |žmo| tu| žm|ien|ės |ių |ali|ais|mog|vis| ka|lai| la|ini|i t|s i|s ž|sę | į |isę|ena| ne| pr| bū| jo|pri|kie| ta|kvi|nas| su|ekv|mas|gus|būt|tin|isv|s s|ogu|isi|mą |mo |ant| ar|s k|ama|kai|ūti|s a|s v|aci| ti|s n| sa|s p|oki|cij|inė|ar |val|ms |tai|jo |i b| na|gal|sav|kur|aus|men|rin| ap|imą|ma |sta|ę į|ina|i p|imo|nim|i k| nu|ima|oti|mis| ku|jos|lyg|dar|išk|je | at|tas|kad|r t|tų |ad |tik|i i|nės|arb|i v|ijo|eik|aut|s b| įs| re|iam|sin|suo| be|isu| va|li |sty|asi|tie|ara|lin|isė|i s|ą i|jų | ly| ga|vo |si |r p|tuo|aik|rie| mo|din|pas|mok|ip |i n|rei|ybė|mos|aip|r l|ntu|įst|į t|gyv| iš|nti|tyb|ų i|pag|kia|kit|es |uot| sk|jim|tis| or|aud|yve|ven|mų |als|ų t|nac|avo|dam|ą k|i a|s j|oje|agr|kla|gau|neg|nių|o k|ega|iki|aug|ek |tat|ieš|tar|ia | ši|ios|ška|sva| to|tau|int|sau|uti| as|io |oga|san|mon|omi|kin|ito|s g|ome|r j| ve|aty|kim|nt |iai|lst| da|ją |min|r k|o t|nuo|tu |ver|kal|am |usi|o n|o a|ymo|tym|vę |ati| ji|o p|tim|ų n|paž|ter|s š| vy|alt|ksl|ing|ų s|oma|šal|ran|e t| ni| ša|ava|avi|nie|uom|irt|elg|jam|ipa|kių|tok|eka|tos|oja|kio|eny|nam|s d|ndi|amo|yti|gri|svę| gy|lie|ėmi|ats|ygi|soc|sie|oci|pat|cia",
+    "umb": "kwe|oku|a o| ok|nda| kw| om|da |wen|e o|a k|la |ko | ly|end|nu |ka |o l|oko|mun|omu|unu|kwa|wa | ko|a v|o y|omo|mok|ali| vy|eka|olo|i o|osi| yo|lyo|mwe|si |okw|we |lo |iwa|o k|i k|le |te |a e|ete|gi |kut|sok|ong|iso| ya|vo |ang| ey|wet|ata|a y|o o|yok|ofe|fek|kuk|ela|a l|ilo| wo|owi|nga|iñg|kul|oka|vyo|uli|u e| va|li |ñgi|kal|wat|ta |u o|eci|ngi|ovo|ye |so | li|oci|yo |wiñ|nde|ga |ing| nd|ili|nge|ci |eye|ala|vya|e k|kol|isa|a a|lom|lon|go |avo|ako|ovi|pan| ol|uka|ngo|lya|ti |o v|akw|yal|olw|uti|imw|eli|alo|ge |ung| ku|a u|lis| al|onj|ati|wal|ale|e l|sa |i v|and| ov| yi|ika|ukw|ele|lil|yos|he | oc|yov|iha|ikw|omb|val|lin|lim|ahe|apo| ka| ye|yom| vo|lik|i l|kok|wav|aka|cih|o e|tiw| ke|yi |i w|ama|e y|lof|yow|yol| ek|kov|ole|vak|vik|tav|omw|a c|upa| el|ila| lo|aso|su |e v|lyu|ava|ñgo|lwa| wa|gis|gol| ce|tis|ave| on| es|po |wil|va |eso|kup|co | la|yam| ak|wam|iyo|ekw|e e|i c|tat|i a|a n|yah|eko|lwi|ita|lit| ec|kwi|upi|i y|epa|kan|kiy|nja|dec|asi|e u|yav|asu|mak|lap|yim|tya|vos|kas|cit| ha|lel|u c|a w|emb|u y|ola|yon| os|win|lye| ca|eyo| uk| ci| ow| yu|ayi|vel|liw|has|iti|sil| et|yuk|o w|umb|ulu|ya |wi |anj|kat|ngu|wom|o a|uva|esu|usu|mbo| co| of|mat|o c|ca |cel|vi |u l|ba |kon|mbe|wiw",
+    "tsn": " le|le |go | mo|ng | ts| go|lo | bo|ya |we | di|gwe| ya|ong|ngw|sa |olo|elo|a b|tsa|tsh| e |tlh|a l|o t|e t|a g|e m|wa |a t|o y|eng|na |e l| kg|wan|kgo|mo |o n|tse|a k| tl|ets|ane| ba|dit|mon|ele|hwa|shw|la |ka |a m|nel| na| ka|e d|o l| o |o m|ba |se |e g|e e|bot|a d| a |di | ga|ots|tla|otl| se|lol|o b|tho|so |lho|tso|o g|ang|got|e b|ga |lel|seg|o e|its|gol|ose|ho |oth|let|e o|lha|ego|aba|hab|e k|ano|los|a n| nn| ma|eka|g l|šha|tšh|kan|alo|ola|lhe|ela|aka|sen|gat|tsw|kga| nt|mol|o a|nng|o o|o k|aga|atl|o s|bat|tlo|agi|yo |len|g y|edi|e y| th|g m|dik|to |tir|e n| ja|a a|mel|o d|ana|ire|g k|rel|swe| yo|bon|gag|lek|e s|mot|kwa|i l| te|a s|he |agw|ats|iwa|i k|itš|ona|no |a e|mai|any|lao|ikg|she|ntl|lwa|dir|g t|lon|ale| sa|ao |hel|shi|tle| wa|ume|log|jwa|itl|pe |hir| jw|non|iti|a y|set|hok|ira| ti|odi| me|gi |e j|tek|etl|a p|ko |ath|ala|hol|bod|tet|mog|han|nya| mm|g g|nag|i t|adi| lo|oag|i b|nna| ko|the|lan|re |thu|wen|hot|nyo|hut|o i| ne|pol|me |tum|ope|ame|gan|emo|ore|wel|nts|oko|okg|iro|ro |tha|elw|amo|gor|ing|jal|isi|nan|ogo| it|jaa|si |oga|heo|gon|diw|pa |opa| kw|lat|are|bo |o j| ke|ke |ile|gis|o f|rag| ph|bok|aak|kar|rwa|nye|g a|atš|mok|ago|okw|hag|ate|ato|uto|gwa|mme| fa|fa | op",
+    "nso": "go | le|le | go|a g|lo |ba | di|ka |o y|ya | ka| ya|ng | ma|a m| mo| tš|elo|etš|e g|a l|o l| bo|a k|a b|e t|na |o t|tok|wa |e m|a t| ga|la |ang| a | ba| se|man|tše|oke|o k|ša |kel|dit|tša|tho|we |ele|a d|o g|o a|a s|o b|gwe|e d|ho |o m|ego|e l| na|tšh| to|šo |še |oko|ga |di | o |olo| e |let|ong|gob| ye|oba|ago| tl|tšw|mo |e b|re |g l|ngw|aba|tšo|swa|šha|ane|tla|hab|o n|ona|ito|ela| kg|ogo| th|oth|wan|eo |e k| sw|lok|kgo|log|ye |o d|a n|ola|g o|e s|set|hlo|kol|se | wa|lel|ao |eng|o s|šwa|mol| ts|eth|net|ano| bj|a y|o e| ke|thu|hut|šwe|ge |itš|leg|rel|alo|to |ohl| ge|mog|kan|e e|ire|nag|ke |eba|aka|pha|gag|bot|o w|aga|a a|mot|are|mok| yo|gor|oka|ko |gon|no |ore|ana|agw| wo|bon|bat|lwa|tse|bja| ph|din|yo |e r|šeg|e y|ath|nya|get|lao|sa |wo | re|wag|odi| sa|seb| me|utš|oph|mel|iti|kge|ato|kar|o o|šom| la|o f|phe|edi|hir|ala|pol|lat|ušo|i g|a p|g y|the| fi|ume|wel|bop|hel|emo| du|ile|gwa|bo |ale|tle|lwe|lek|ban|ta | lo|lon|o š|dir|mae| mm|tlh|god|pel|a w|weg|eka|elw|atš|išo|aem|šhi| ko|gam|rwa|mmo|boi|e n|ntl|pan|amm|i l|i b|hle|hla|leb| am|šon|jo |len|i s|kop|ret|gel|ing|opa|yeo|dum|sen|e a|ape|ase|kwa|lef|mal|amo|oge|bjo|oik|mon|kga|okg|a f|tsh|boh|uto|ika|ahl|ja |adi|iša|gab|hom|abo",
+    "ban": "ng |an |ang| sa|ing|san| ma| pa|ane|rin|ne |ak |hak| ha| ka|n s| ri| ke|nga| ng|man|in |lan|a s|ara|ma | ja|n p|n k| pe|g s|g p|pun|asa|uwe|gan|n m|nin|sal|pan| la|alu|iri|sa |lui|jan|adi|a m|adu|uir|ra |yan|mad|kan|wan|duw|ur |tan|g j|anm|we | tu|nma|ika|awi|nge|ah |tur|ih |ban|ka |e h| ne|n n|en |nte|un |ngs|eng|anu|beb|aya|ani|ana|ian|a p|ala|bas|nan|gsa|ngg|uta| da|gar|aka|eba|da |apa|asi|ama|lih|aha| wa|ten| ut| ta|a n|ebe|are| wi|han|aje|keb|oni|nik|ent|aki|uni|ata|wia|iad|g n| pu|jer|ero|ron|aan|k h|saj|din|sak|a t|nus|dan|n w|pen|usa| ba|ngk| pi|ant|sam|e p|taw|n r|ate|wi |nen|i m|ega|neg|iwa|pat|atu|e s|ami|ipu|g k|ina|mar|kat|kal|aga|sar|ran|kin|per|g r|ndi|arg|ar |ksa|e m|ren|nya|al |tat|ida|ela|h p|aks|ntu|ngu|ado|lak| ny|oli|at |wen|ep |i k| se|dos|h s|n l|dad|gka|eka|a k|rep|eda|n h|par|upa|ena|swa| sw| in|nay|ewa|ung|era|ali|a u| mu|eh |nip|r p|e k|n t|k p|ras|i n|uku|n i|wah|eri|g m|pak|n b|r n|ayo|nda|mal|mi |um |dik|os |osa| mi|yom|na |teh|awe|k r|lar|car|tah|sia|g h|ti | hu|ut |huk|kum|sti|ewe|tuk| me|rga|pin|h m| su|gi |ari|n d|a w|ta |uan|gaw|gen|h r|on |war|tut|lah|pag|gay|r m|n u|ada|ira|a b|ngi|end|kew|g t|min|ggi|gda|jag|as |rap|agu| an|e n|ngd|s k|ila|eta",
+    "bug": "na |eng|ng | na| ri|ang|nge|nna|ngn|gng|ge |sen|a r| ma| pa| si| ta| ha|ri |hak|app|tau|ak |au |ddi|a t|ase|edd|ale|a n|nap|gen|len|ass|pa |e n|ai |ria|enn|ega| ru|upa|rup|ias|a a|ing|inn|a s|pun|ngi|nin|e p|ini|nai|ga |lal|gi |sin|ppu|are|ae |ye | ye|ana|g n|sed|ada|le | as|i h|a p|ama|g r|i r|man| se|una|ara|ra |di |ssa|ren|a m|pad|e r|ila|ban|asa| ke|san|din|e a|ura| la|ane| de|nas|e s|i a|ipa|pan|u n|ann|i l| ad|da |ala|aji|ole|att| pu| e |ong|i s| ba|pur|aga|lai|i p|lan|g a|ngs|sal|ola|gsa|g s|a b|i n|ppa|rip| we|a k|g m|asi|wed|akk|mas|i m|ril|u r|reg|g p| pe|ung|gar|neg|sse| po|e m|k h| ar|pas| ne|map|ian| te|nar|pol|ett|ran| ja|bas|eba|jam|beb|ena|par| al|sib|ebe|ngk|uru|keb| sa|ain|ttu| mo|aka|unn|add|iba|sa |gan|gka|nen|bbi|i t| at|atu|kan|nan|uan|leb|rus|de |e d|ton|ata|tu |ssi|ro |e y|cen|kun|awa|ell| wa|k r|mak|wa |uwe|ire|ebb|gag|apa|sae| tu| ia|tte|mat|sim| to|a d|o r|ta |nat|ece|tur|la |ie |dec|ko |kel| di| hu|nca|caj|pak|rel|ma |lu |g t|bol|uku|e e|ter|jaj|tta|we |bir|deg|huk|e h|dan|ure|baw|kol|rit|kko|ele|arg|rga|llu|oe |lin|use|ari|auw|pat|mul|elo|ula|iti|gau|an |u p|nga|g y|a h|ekk|sil|ka |e w|ade|anc|iga|sip|ten|a y|e t| me|nre|aja|ji |rek|a w|dde|per|iko|sik",
+    "knc": " a |ro |be |nzə|ye |a a| ha| kə|abe|akk| ka|zə |adə|a n|a k|kki|hak|mbe| la| ad|ndu| nd|wa |ben|en |ma |də | ya|o a|əbe|ə a|ga |e a|əga|lan|əna|lar|aye|aro|kin|inz|rdə|ard|ana|yay| ga|əla|kəl|ji |awa| mb|bej|eji|kən| ba|an |uro|du | na| ku|anz|dəg|nəm|kal| nə|e m|na |gan| du| sh|shi|amb|n k| su|ara|u y| ta|so |a d|kam|wo | ye| sa|e h|a s|sur|aso|au | au|iwa|nyi|kur|a l| da|kar| as|dəb|iya|kiw|o k|obe|e s|ada|ama|and|u a|aa |ta |ima|n n|la |əwa|nga| ci|ba | ab| nz|əgə| fa|ənd|ata|ndo|ya |tə |nza|ə n|ndi|a g|in |nam| fu|ə k|aya|a t|tən|a b|təg|ru |uru|inb|am |e k|al |ida|mga|aar|a h|baa|ə s|nab|dəw|dun|asa|nya|owu|gad|taw|o w|gən|a y|kat|dam| sə|o h|əra|e n|awo|ade|əmk| wa| wo|amg|dən| tə|a f|ala|i a|zəg|o n|uny|iga|zən|əli|wur|u k|o s|wan|za |din|utu|e l|san|i k|uwu|wu |awu|n a|on |de |da |nba|mka|yi |gay|tam| ng|laa|gin|azə|bem|gai|taa|ibe|rad|adi|fut| mə|wow|wak|ali|kun| an|mər|o t|yab|nad|aim|əgi|i n| aw|liw|cid|u s|edə|atə|any|do |apt|lka|alk|dar|rta|bed|tu |ela|ndə|uwo|gal|yir|wum|n y|ayi|n d|mma|zəb| yi|nan|ltə|lmu|ilm|mar|bel|raj| il|ero|m a|utə|enz|iro|alw|uma|umm| um|e g|how|kka|o f| ny| ho|fuw|ə h|ang|tin|zəl|o g|ema|ən |no |a i|a m|wal|əny|iwo|lil|ədə|ə f|rtə|hi |diy|mu ",
+    "ibb": "ke | nd| mm|me | ke|e u|ndi|o e| em|mme|de |en |e n|owo| en| ow|wo |i e|mi |ye |emi|nye| un|e e|edi|ene| ek|yen|eny| ed|e m|nen|une|ana|n e|e o|e i| ye| uk|et |n n|eke|na |e k| mb|em |ne | id| es|un |kpu|ede|iet|ndo| nk|o k|di |kpo|ukp|did|am |an |kie|nam|kem|esi|o u| nt|idu|eme|o n|t e|no |yun|mo | uf|ho |mmo|nyu| in|o m|kpe|o o|sie|oho| kp|do |din|ie |ono|kpa|m e|ri |nkp|dib|on |e a|uke| ki|boh|a k| et|po |ida|dut|m u|ked|ded| ub| of|ond|ru |uru|pur|in |ut |du |eko|a u|ina| ot|mbe|n o|bet|iny|man| ak|op |idi|ikp|i o|edu|kon|ade|om | us|uan|wem|a m|uwe| uw|puk|ak |ode|ro |t m|a e|oro|a n|n k|u o|to |te |bo |akp|ufo|ok |dik|pan|mbo|bio|i m|ide|ini|fur|uri|ban|ofu|ubo|n i|o i|uto|iso|dom|omo|ema|diy|fen| nw|dis| ny| is|ni |usu|n m|u u|fin|tom|eto|pem|ed |m m|ibo|oto|o a|sua|wed|nwe|m n| ut|mde|dud| eb|ara| as|i n|oki| ob|nte|mok| ik| an|kar|m k|o y|t k| on|i u|nwa|n y|asa|ama|re |ufi|uka|io |nek|i k| or|pon|top|sun|ion|se |aha|t o|k n|e y|ere| ef|mba|mad|isu| mi|kor|ra |ian|i a|ka |a a|k m|ko |da |t i|ena|obi| ey|ha |dia|ti |aba|uk |u m|d e|dem|san|a o| se|pa | ab|tod|n u|p m|ude|fok|k u|efe|uku|nti|nka|ibi|son|he |pe |nto|dak|a y| od|nde|eye|anw|ndu|mbu|so |ebi|bie|nda|sin|med|tu ",
+    "lug": "a o| ok| mu|oku|mu |wa |nga| ob|ga |tu |ntu|a e|na |bwa|a a|ang|ra |aba| n |ba |a m|wan|a n| ng| ab|li |obu|unt|a k|era|ibw|dde|oba|a b|u n|za |la |mun|ban|ali|ka |emb|iri|bul|ate|mbe|i m| ek|tee|eek|uli| bu|u a|edd|sa | ku|ant|ana|eki|u b|be |dem| eb|ama|n o| om|ira|omu| ki| ed|ye |ala|amu| am|e o|gwa|nna| er|kuk|y o|kwa| en|okw|eer| ly|inz|ula|kus|kir|u e| ba| em|eri| ky|any|onn| wa| ye|ggw|ina|kol|n e|awa| bw|uyi|u k|eka|yo |bwe|ola|o e|usa|o o|kwe|mus|yin|bal|i e|u m|ngi|e m|bir|riz|ere|ri |ebi|kul|aga|nza|kub|ekw| eg|ko |a y|u o|we |kut|mat|e l|e e|a l|aan|ger|no |kan|sin|nka|gir|uso| at|a g|iza|gan|nyi|zes|uku|wo |nge|zib|isa|izi|ya |egg|ufu|rir|lin|wam|wal|eby|a w|i o|bee|oze|esa|eta|iko|ebw| ma|ako|bon|tuu|kin|uki|de |zi |kug|yen|ino|e b|obo|aka|ulu| te|ne |lwa|ma |y e|lye|kuy|nsi|i y|gi |utu|ly |imu|e n|taa|asa|enk|ku |o n|o b|sob|si |una|bun|usi|san|e k| ag|uka|uga|ata| ol|rwa|wen|ing|wat|kik|o k| by|nya|ong|kye|by |kyo| bo|ewa|yam|bye|ubi|ngo|kis|ani|boz|kit|i n| aw|ky | al|sib|muk|awo|uko|umu|ibi|uma|afu|olw|eky|tab|ung|buy|ini|uum|saa|y a|lal|mag|ro |end|add|enn|kib|ens|ole|ni |mbi|o a|i k|gat| og|maw|and|kuu|a z|wet|igi|yig|emu| ne| gw|a t|nzi|n a|gya|amb|uwa|ulw| ey",
+    "ace": "ng |an |eun|ang| ha|peu|oe |ak |on |nya| ny|yan| ta|ngo|ung|gon|na |ah | pe|reu| ng| ba| ke|hak|meu|keu| me|eut|at |ure| na|ban|ee | di|teu|roe|ata| ur|ara| be|seu|han|a h| sa|am |dro|eur|um |n n|tie|iep| ma| la|ala|nan|g n|ut |ong|a n|ep |tan| te|tap|jeu| ti|eul|eub|eu |eug| da|eum|eh |euk|ra |ih |n p|uga|ai |n b|a t|e n|lam|eba| se|beb|n t|awa|om |a b| ka|asa| at|eus|and|nyo|oh |ta |ka |h t|n k|p u|man|e t|n d|n h|ana|dan| pi|ape|a s|neu|nda| si|t n|bah|ula|yoe|a k|h n|dum|euh|g d|e p|eng|e b| le| pa|ngs|sia|ran|ma |g k|un | wa|ndu|lan|una|heu|ura|n m|lah|sa |n a| ra|aba|g s|a p|ia |und| je|wa |kat|bak|k n|anj| dr|asi| bu|nga|beu|uny|yar|sya|hai|k m|k t|k a|ama|aan|ek |a m|ok |g h|aka|sab|g p|i n|uta|khe|h p|ue |uka|har|ari|di |e d| su| um|t t|a l|ya |san|e s|gan|uko|gsa|e u| li|kan|bat|lee|aro|ot |n s|leu|ina|h d|lak|oih|yat|n u|kom|pat|ate| ne|ngg|nje|taw|mas|uma|sid|anu|umu|aja|si |uh |h m|rat|aya|sal|et |soe|t b|n l|aga|taa|usi| ja|ute|m p|en |dek|ila|a d|ube|dip|gam|any|lin|tam|don|ika|usa| ji|rak|idr|h b|nus|adi| as|dar|ame|n j|ngk|m n|eup|h h|bue|k h|huk|euj|g b|gar|eka|gah|upa|ile|sam| bi|h s| de| in|mum|‐ti|t h| hu|k k|pho|dil|ep‐|nta| ge|geu|h l|hat|ie |tha|use|ieh|sas",
+    "bam": " ka|ni |a k|ka |an | ni|kan| bɛ|n k| la|i k|ya |la |ye |ɔgɔ|na | ye|bɛɛ|ɛɛ |en |li |sir|ɛ k|ama| ma|ira|a d|ra |ali|’a | da|man|a n|a b| i |ma | kɛ| wa|gɔ |wal|mɔg|ana|n n| ba| ja|ɔrɔ| mi| kɔ| k’| mɔ| jo| si|min|iya|dan|len|i m|’i |in |kɔn|ko |aw |den| sa| o | n’|ara|bɛ |i n|jam|ɔnɔ| na|ɛrɛ|a s|i j|ani|n b|a m|i d| fɛ| tɛ| an|osi|jos|a y|kɛ |a l|iri| ko| di|ɛ b|ada|ila|ɛ m|i t| fa|nɔ | de| ha|asi|tɛ |ari|a j|raw|a t|ɛ s|ale|a f|tig|ɛn |aya|dam|a i|i b|sar|si |riy|ɲa |n y|nu |inn|e k|ɔn |rɔ |ang|a w|o j|w n|nnu|k’i|nti|nɲa|ade|abi|bil|ala|hɔr|kal|had|igɛ|i s|a a|mad| a |aga|u k|kab|a ɲ|aba| ti|olo| hɔ|o b|ɛ j|i f| ta|ɔ k|aar|baa|ɛ n|n’a|kun|ugu|iɲɛ|diɲ|n j|k’a|a h|rɛ |ati|ɔ m| se| cɛ|ɲɔg|bɔ | tɔ|i y|lan|i h| ɲɔ|tɔn|don|nɛ |inɛ|ga |i l|ɲɛ |ile| fo|o k|ɛ l|nna|ili|un |gɔn|maa|fɛn|n d|ant|n i|aay|go |da | jɛ|u b|ri |rɔn|aka|lak|ɔnɲ|e m|ɔ b|nin|nw |cɛ |w k|yɔr|n o|o f|nga|jo |o m|nen|n’i|on |ɛ t| ku|o l|igi|ɲɛn|anb|fɛ |ɔ s| bɔ|n m|e b|afa|nka|n f|nma| fi|’u |ɔ n| ɲɛ|fan|i ɲ|ti |a o|dil|ɛ d|uya| sɔ|ago|ɛ y|e f|ɛmɛ|mɛn|aju|e d|bɛn| jɔ| fu|til|bag|fur|n t|uru|kar|atɔ|be | d’| du|d’a|oma|lom| u | do|riw|taa|w l|mɛ |gɛ |imɛ|n w|iir|nni|iim|amu|so |bal| ɲa| b’|gu |ɛɛr|’o |iwa|n s|wol|ele|ɲan",
+    "kmb": "a k| ku|ya |la |ala| mu| ki|a m| o |u k|ni |o k| ni|kal| ky|mu | ya|lu |dya| dy|a o|ang|kya|a n|tok|i k|oso|so |kwa|nge|xi |na |elu|nga| kw|wa | wa|a d|hu |kut|thu|uka|oka|mut| ka|a i|mba|uth|ka |gel|ba |u m|u y|ku |ene|u n|ga |kuk|ban|ixi|i m|e k|wal|oke| mb|kik|kel|ne |u w|ela|uto|i y|ana| ng|iji|a y|kit|ma | ji|nda|ngu|yos|kum|ulu|ji |i d|isa|und| it|and|ong| mw|u i|iba|ika|wen| di|ten|ilu|ila|ndu|ye |sa |kub|aka|ena|amb|ung|olo|a w|ngo|kil|oxi|lo |muk|ke |sok|du |mox|ate|o w|kus|wat|ta | wo|gu | ph|u d|ito|ita|e m|alu|a j|kis|tun|uma|wos|luk|o m|san|mwe|a a|di |imo|ula|wan|nji|jix|i j|a t|kij|idi|kan|uku|gan|kul|e o|kye|adi|ato|o i| ja| ix|da |nu |o n|uta|kud| yo|i n|udi|ki |su |tal|a u|lun|e y|u u| ye|jin|iki|pha|hal|wij|we |a s|lak|ikw|go |tes|fol|itu|eng| ke| uf|yen|ing|yat|ele|utu|kyo|o y|kwe|kwi|uba| en|kib|ite| we|dal|i o|yan|ge |eny|tan|uki| ik|dib| im|esu|lon|kat|atu|e n|ja |i u|jya|vwa|kam|i w|ute|ini|uke|lel|esa| se|xil| ut|fun|unj|ufo|mbo| a |uso|kim|mun|u p|nen|ukw|u o|i i|umu|han|gon| il|lan|ata|te |i a| ko|jil|o a|nde|nyo|eka| at|o d|exi|ijy|tu |usa|tul|kuz|ilo|dis| un|u j|dit|ufu|ote| ib|ivw|mwi| bh| ha|se |bul|ubu|win| os|imb|bha|ama| to|axi|inu| uk|sak|kos|bot",
+    "lun": "la | mu|ng | ku|a k|tu |ntu|chi| ch|a n|aku|di |mun|ma |unt|a m|g a| a | na|ela|ndi|aka| we|ima|jim|shi|eji|u w|i k| ni|ind|wu |i m|a w| in|a i|u m|hi |awu|na |kul|wej|lon|cha| ja|sha| kw|a c|i n|nak|ala|mu |wa |ing|ka |ung|kum|a h|ulo|him|mbi|muk|u c| wa|hak|iku|nsh|yi | ha|bi |amu|imb|ewa|wen|kwa|ang|adi|idi|kut|esh|ana|g o|ila|ha |tun|u j|ong|nik|kuk|tel|ovu| ov|u n|han| an|ate|vu |a a|kal|ula|kwi|jak|u a| ya|a y|ilu|u k| he|ham|and|uch|kus|ond|eka|hel|kew|zat|del|hin|uku|nde|i j|enk|i a|uka|eng|ach|lu |nat|nji|ona|mon|awa|nke|umo|ins| yi|a d|ama|udi|wak|i h|ati|i c|wan|ta |bul|mwi|ata|ayi| ak|uma|i y|ina|ich|itu|uza|kuz|nin| mw|ku |kin|wun|sak|naw|nyi|ni |ant|muc|wal|ish|u y|mul|kud|waw|uke|wes|uki|i i|kam|yid|wit|da |akw|kad|yan| di|ken|uta|ika|imu|iya|nda| ns|mbu|ya |ule|dil|iha|kuy| ko|hik|eni|ahi|kuh|si |kun|ush|umu|atw|g e|his|dik|ji |any|li | ye|dim|kos|osi|hih|wat|eyi|ney| ne|amb|twe|til|wil|nu |kwe|u h|etu|tiy|ja |nan|ash|mwe|win|was|hit|iti| wu|iwa|wah|lem|g i|tam|din|hu |haw|nga|kay| ka|hid|yin|isa|iki| ma|jaw|jil|che|mpe|omp|eta|tan|jin|hiw|usa|umb|eme|inj| hi|ulu|ubu|nam|wik|mpi| da|ale|ite|tal|twa|ahu|end|nka|mba| at|ga |mes|dic|iwu|yej|kan|kuc|iyi|sem|emb|lun|una",
+    "tzm": "en |an | ye| d | n |ad |ur | ad|n i| s |agh|ḥe|n t| i |dan| ta| lh|lḥ|d y| gh|ell|n a|ra |̣eq|i t|eqq|s l|mda|ett|n d|d t|akk|la | ti|qq |hur|di | di| am|gh |ghu| is|t i|r s|in |nag| na|a y|is | te|a d|n n|yet|n g|ll |ara|ghe|ma | we| ar| wa|n s|l a|n l|sen|edd| ak|it |li | le|dd |ull|lla| id|d a| ur|rfa|erf|kul| yi| ku|as | se| ma|zer|amd|a n|lli|lel|men|t a|kw | de|t t|nt |kkw| im|fan|a i|a t|eg |n w|i d|q a|rt |ar |gar| ag|es | tl|ize|emd|i w|i l|deg| as|ken| dd|n u|lan|d i|a a|wak|tta| tm|d u|er | tu|wem|at |ddu|tle|w d|n y|t n|sse|r a|mur|s t|tam|gi | tt|yes|wan|r i|tim|na |wen|twa|d l|ttu|kke|wa |nen| iz|iḥ| u |win|d n|ame|s d|ent|ḍe|hel|a l|hed|ess|t d|mga|arw|i n|ḥu|mi |mad|agi|i g|der|udd|s n|rwa|̣en|awa|i i|ya |h d|iya|s y|msa|uḥ|idd|urt|un |n m|ane|em |sef|lsa|ili|q i|qan|leq|siy| ik|el |err| in|yed| la|ant|den|tag|man|g w|mma|yen|len|tmu|i u|aw |taw|r y|wad|edm|ṣe|hla|t l|̣er|ala|asi|ef |u a|tte|ddi|ttw| lâ|imi|l n|til|al | ne|am |̣ud| lq|iḍ| ya|dda|̣ṛ|med|ren| ss|gra|m a|ghl| il|chu|tem| ll|khe|way|eln|lna|ana|ukl|duk|gha|lt |ni |all|i a|tal|ray|nes|s k|tes|naw|ert|ila|awi|lqa|kra|anu|nun| kr|ikh|ezm|n k|iwe|iwi|ima|net|ser|s u|ir |yeh| an|aya|ehw|hwa|esk|dde",
+    "war": "an |ga |nga| ka| ng| pa| ha|han|pag|in |ata| hi| an|mga| mg| ma|kat|hin|a m|ay |a p|ya |ung|a k|gan|on |n h|n n|ug |n p|n k| ug|n m|da |a h|n i|ha |iya|adu|dun|tad|a n| ta|ada|sa | iy|ara| na| di| o |pan|may|a t|ang|ud |ana|n a|o h|o n|taw|n u|ags|yon|y k|al |tag|asa|kad|o p|man| ba|awo|gsa|wo |ag |gad| in|a a|a u|ina|syo|a i|a s|od |ing|agp|ala|asy|ngo|n b|ali|nas|san|aka|a d|ra |g a|was|g h|aha|gpa|agt|to |ad |n t|tun|ng |usa| wa| tu|ini|iri|tan|ahi|kan|ray|nal|war|dir|i h|gka| us|god|g p|ri |a b|nan|ida|o a|i n|bal|y h|kas|uga|hat|tal|nah|awa|ni |pin|uha|buh|o m| bu|gud|aba|at |no | pi|bah|g m|ili|him|aya|atu|d h|agi| su|agk|lwa|mo |d a|alw|sya|uma|ano|int|kal|upa|mag|yo |o u|agb|n d|asu|lin|a o| ko|ona|did|hiy| bi|as | ki|l n|sud|iba|hi |o k|kon|ira| la|gba|pam|amo|g i|ton|gin|n o|uro|ho |os |la |g k|gtu|d m|aud|aag|t h|gi | gu| ig| ir|n g|abu|aho|ami| sa|ati|par|kau|ern|ban|tra|gar|ama|ras|yan|adt|tum| un|ka |aga|aso|api|dto|kin|tik|mil|iko|rin|sal|ika|a g|ila|mah|lip|rab|non|agu|ak |dad|lau|d n|ko |it |pak|n e| ti|una|i m|lig|s h|bay|ro |sug|mak|n w|naa|g n| so| ag|yal|nte|lal|ba |aup|lan|ihi|y b|kah|tub|bye| am|ari|yer|uka|ani|uyo|oha|ito|n s|upo|ent| pu|sam|iin|til|mat|ato",
+    "wol": " ci|ci | sa|am |sañ|añ | na| ak|ak |lu |it | mb| am|aa |na |al |ñ s|ñu |ne |mu |te |pp | ne| ko|m n|i a| ku| ñu| te| mu|baa|u n|ko |u a|mba|a s|e a|ay | wa| lu| do|ar | ni|u m|nit|oo |épp| ta|oom|gu |t k|i b|ku |u k| it|éew|rée| ré|u y|xal| aa|kk |i d| bu|doo|i w| bi|war|u c| yi|aay|llu| li|fee|loo| xe| xa| ya|taa| di|yi |ama|on |u j|yu |eex|ew | yo|boo|xee| bo| wà|àll|wàl|mi |o c|ir |mën| më|yoo|ul | gu|nn |en |oot| du| so|oon|e m|dam|een|u d|i n|uy |eet|i m|ara| ba|bu |a a|ata|okk|aad| lé| ay|ju |ada| nj|nam|und|axa|dun|m a|enn|r n|aar|ex |taw|ala| jà| pa|et |di |ën |ana|ral|ota|k s|awf|naa|wfe| gi|u l|igg|aju| dë|ma | aj|ti |u t| se|ax |gée|mbo| ja|ool|bii|li |a m| ke|see|m c| ye|i l| ng|yam|ngu| yu|w m|an |ken|n w| lo|i s| me| de|m m|i t|om |u x|n t| an| mi|jaa|laa|ee |bok|lig|p l|n m|t y|ggé|k l|a l|lép|àpp|jàp|aam| jë|aax|ekk|nd |góo|ewa|ndi|tax|a d| da|amu|éey|gi | su|k c|n n|l b|o n|k t|p n|jàn|àng|gir| jo|a c|n a|n c|ñoo|i ñ|a n|kaa|ba |m g|le |une|kan|e b|la |nda|lee|i j|ang|aat|k n|ey |ant|iir|a y|l a|e n|nan|añu|men|j a|ok |k i|nee|l x|omi|i c|oxa|aw |g m|dox|nte|opp|u w|ngi| mo|omu|y d|are|i k|aan|em |du |a b|njà|ñ ñ| ti|m r|kun|ddu|ali| së| la|eg | ma|ëra|ng |xam|mul",
+    "nds": "en |un |at |n d| da| de| un|een|dat|de |t d|sch|cht| ee| he|n s| wa|n e| vu|vun|ech|rec|ht |er |ten| to|tt | si| re|ver| ge|nne|t w|n w|ett|n h|n v|k u|n u| el|gen|elk|lk |t u|ien|to |ch | ve|wat|sie|war|het|it | an|n f|ner| mi| in|ann|rn | fö|ör |r d| fr|t r|hte|orr|ich|för| sc|rie|eit| or|den|nsc|ege|fri|rer| st|t g| up|aar|t a|nd | is|ll |rre|is |up |t e|chu|rt |se |ins|daa|lt |on |t h|oon|che|all|n g| ma|rrn|min| se|ell|hei| na|t s|n i|n a|nn |len| sü|in |rd |nen| we| bi|n m|e s|ven|ken|doo|sse|ren|aat|e m|ers|n t|s d|n b|lle|ünn|t t|n o|ik |kee|e g|t v|n k|hen|arr| dr|heb|lie|ebb|e v| al|e a|llt| ke|hn |he | wi|cho|ehe|ok |ard|sta|men|ill|gel|tsc| ok| do|an |düs|ene|erk| gr| dü|weg|ie |ede|ieh|r s|sün|üss|und|raa| dö|röf|drö|t m|ats|öff|e f|ünd|e w|dör|ens| gl|rch|sik|ig |kt |örc|ere|gru| ün|ff |ahn|nre|mit|st |al |aal|hon|ert|kan|nat|der|dee|enn|run| so|eih|lic|ehr|upp|iht|nwe| fa|pp |eke|e r|unw|t n|taa|hup| ka| be|bbt| wo|p s|el |as |t f|bt |e e|nee|maa|huu|eve|nst|ste|mee| ni|inn|n n|ern|iet| me|hör|dde|ent|n r|t o|öve|are|arb|ite|ter|l d|ach|nic|bei| as|lan|t b|d d|t i|ang|ame|rbe|utt| ut|pen| eh|uul|iek|hr | ar|r t|ul |e d|art|n ü|one|eer|na |nte|mut|ete|üd | mu|üüd|lüü",
+    "vmw": "tth|la |thu|a e|na |hu |kha|a m|we |ana| mu|a o|awe|ela|ni |ala|hal|edi|to | ed|ire|dir|eit|ito|rei|ya |a n|wa |mut|a w| wa| ni|akh|aan|u o| on|o y|okh|utt|a a|haa| n’|wak|nla| wi|ari| yo| si| ok| ot|iwa|ka |iya| sa|ne |apo|lap|ale|le | oh|oth|att|the|mul|aka|oha|kun| el|aku|oni|mwa|ha |e s|unl|tha|ott|ele|ett|e m|o s| va|ene|e n|e o| ya|oot|hav|ade|ihi|iha|ihe|de |o o|e a|eli|hen|amu|e w| aw|hel|dad|ra | at|po |i m|lel|wi |o n|owa|e e|ula| en|ta |o a|i a|moo|waw|ina| ak|ota| mo|sa |a s| so|han|ara|var| kh|a i|ri |aya|itt|anl|row| mw| et|i o|ika|’we|nro|i e|n’a|her|lan|nak|sin|lo |elo|vo |u e|eri|n’e|oli|thi|u a|a’w|ida| ah|a v|liw|kan|him|lib|yar|riy|ona|onr|erd|wal|hiy|aa |ibe|rda|wan|ber|era|avi|hiw|nna|i v|hwa|lei|mih|vih| ep|khw|ntt| na|ko |ia |sik|aha|iwe|e k|hun|una|mu |avo|ikh|laa|riw| ma| an|e y|kel|’el|huk|u y|phe|kho|pon|i s|nid|upa|ath|ila|yot|eko|ali|tek| es| it|o e|uku|wih|nan|tte| a |mur|’at|i w|ani|ulu|nih|wel|lik|ira|ane|a y|nkh|saa|ro |n’h|wir|i n|ile|som|u s|hop|inn|ei |ont|kum|yaw|saw|iri| eh|tel|tti|ola|aki|mak|ret|uth|nnu|a k|nuw|ahi|enk| il| nn|ena|va |yok|ute|soo| pi|lal|ohi|hik|mpa|uwi|lih|har|kin|aph|ma |ope|man|ole|uma| oo|mpw| v’|nal|ehi|nin|uni| ek|khu",
+    "ewe": "me |ame|e a|le |wo |kpɔ| am|ɖe |ƒe | si| me| wo|be |si | le|sia|esi|la | la|e d| ɖe| kp|pɔ |aɖe|e l| be|e w| ƒe|e e|dzi|na |nye|a a| du|ye | ŋu| na|duk| dz|ukɔ|e s|ome| mɔ|e n| aɖ|kpl|nya|gbe|e b|e m|ple|ɔkp|ɔ a|pɔk|woa|ɔ m|kɔ |evi|nɔ |ŋu |ke | nu|ɔ l|mes|awo| o |iwo|ɔnu|e ɖ| ab|ya |ekp|e k|ɔwɔ|u a| al|nu |ia |ɖek|e ŋ|kpe|ɔme|o a|iny|zi |dze| ny|o k|eme|eƒe|o n|iam|egb|mɔn|blɔ|i n|wɔ |a m| eƒ|o d|alo|siw|ɔɖe|lo |o m|eke|e g| bu|eny|ubu|ŋut|ɔ s|bub|lɔɖ|enɔ|meg|akp|abl| ha|e t| ta| go|mek|eɖo|ukp|li |nɔn|to |any|a l|etɔ|ɔ ƒ| ey|e h|nuk|gom|ɔ ɖ|ɔe |bɔ |ɖo |i s| to|anɔ|a k|ɔnɔ|e x|awɔ|e ƒ|tɔ | ƒo|mev| es| ɖo|ɖes| xe|i w|tso| wò|wɔw|mɔ |iaɖ|i l| ag| li|ã |o ƒ|odz|a s|agb|yen| ts|bu | he|bet| gb|o e|ewo|a e|ɔna|i d|ti |ele|dɔw| ka|i a|uti|peɖ|ta | an|afi|a ŋ|a ƒ| ad|ƒom|se |ɔwo|xex|exe|oma| ma|vin| dɔ|o l|wɔn|eye|a n|i t|vi |ɔ b|so |edz|gbɔ|ɖev|ado| se|ɔ n|oto|ene|eɖe|xɔ |nan|ɖod| af|ben|zin|ee |de |ɖok|dzɔ|gɔm|adz|ɔ k|wom| gɔ|uwo|i ɖ|a d| vo|a t|o g|i b| xɔ|oɖo|i m|e v|ats|o ŋ|sɔ |ovo|i e| at|vov|ne |ɔ e|kat|o s| ne| aw|da |wòa|eŋu| as|asi| el|o t|yi | sɔ|men|a b|ze |mee|uny|te |dom| ak|man|ẽ |i o|ie |ana|ata|ui |axɔ|u k|ɖoɖ|tsi|ema|rɔ̃|ded|ɔ g|ena| en|kɔm|met|u s| eɖ|oku|kui|mew|xem",
+    "slv": " pr|in | in|rav|pra|do |anj|ti |avi|je |nje|no |vic| do|ih | po|li |o d| za| vs|ost|a p|ega|o i|ne | dr| na| v |ga | sv|ja |van|svo|ako|pri|co |ico|i s|e s|o p| ka|ali|stv|sti|vsa| ne| im|sak|ima|jo |dru|nos|kdo|i d|akd|i p|nja|o s|nih| al|o v|ma |i i| de|e n|pre|vo |i v|ni |red|obo|vob|avn|neg| bi|ova| iz|ove|iti|lov|ki |jan|a v|na | so|em | nj|a i|se | te|tva|oli|bod|ruž|e i| ra| sk|ati|e p|aro|i k| ob|a d| čl|eva|rža|drž| sp|ko |i n| se| ki|ena|sto|e v|žen|nak|kak|i z|var|ter|žav| mo|di |gov|imi|va |kol|n s| z |mi |ovo|rod|voj| en|nar|ve | je|pos|a s|ego|vlj|jeg| st|h p|er |kat|člo|ate|a z|enj|n p|del|i o|lja|pol|čin|a n|ed |sme|jen|eni| ta|odn| ve| ni|e b|en | me|jem|kon|nan|elj|sam|da |lje|zak|ovi|šči|raz|ans|ju |bit|ic | sm|ji |nsk|v s| s |n v|tvo|ene|a k|me |vat|ora|krš|nim|sta|živ|ebn|ev |ri |eko|o k|n n|so |za |ičn|ski|e d| va|o z|aci|cij|eja|elo|dej|si |nju|vol|kih|i m|nst|kup|kov|uži|la |mor|vih| da|h i|lju|otr|med|o a|sku|rug|odo|ijo|dst|spo|tak|zna|edn|vne|ara|ršn|itv|odi|u s|čen|boš|nik|avl|akr|e o|vek|dno|oln|o o|ošč|e m|ta |vič|bi |pno|čno|mel|eme|olj|ode|rst|rem|ov |ars| bo|n d|ere|dov|ajo|kla|ice|vez|vni| ko|ose|tev|bno|užb|ava|ver|e z|ljn|mu |a b|vi |dol|ker|r s",
+    "ayr": "apa|nak|aka| ja| ma|ata|ana|aña|asi|aqe|cha|aki|ñap|jha|mar|aw |kan|ark| ch|una|aru|paw|ti |jh |pat|jaq|rka| ta|a j| ar|hat|ama|tak| wa|ach|iw |a a|ani|a m|spa|na |kap|ki |taq|pa |jan|sa | uk|qe |kis|kas|ha |ina|niw|may| kh| am|at |ati|pan|i j| ya| mu|iti|ka |ayn|t a|as |amp|ch |a u|an |pjh|yni|mun|iña|uka|ajh|ru |w k|hit|ñan|h a|is |isp|qen|khi|isi|has|ejh|e m|sis|atä|oqa|nch|rus|kam|siñ|han|mpi|kañ|qha|sin|asp| in|ham| uñ|ñat|hañ|qat| sa|yas|yat|ita|äña|ska|tap|asa|kha|sit|täñ|tha|arj|ma |a t|ta |tas|nka|sti|iri|sna| ji|a y|ara|pas| as|ñja|rjh| ku| ut|hap|tat|kat|tis|pi |apj|jam|noq|aya|i t|i u|ukh|ura| ka| ju|ans|qas|uñj|asn|a c|nin|aqa|kaj|nañ|sip|i a|us |i m|kun|w u|anc|api|ino|ili|uya|pac|tan|jil|ña |lir|utj|w j|s a|ipa|chi|kiw|w m|kak|muy|pis|rak|hac|isa|njh| lu|mas|amu|ena|nsa|w t|nan|ali|s j|ink|tay| a |upa|wak|a k|way|wa |in | ay|tañ|s m|jas|mp |lur|ank|khu|rañ|h j|t m|iru|eqa|ayt|yt |heq|che|anq|en |lan|rin|ipj|i c|mat|qpa|aqh|tja|awa|uki|k a|qej|anj|sap|pam|usk|yaq|kar|nip|llu|wal|run|yll| aj|lin|a w|ayl|n m|jac|isk|naq|ast|h u|ni |ath|a i|ayk|jhe|aqp|h k|uch|inc|hus|sar|s u|s w| pa|nap|ap | un|ak |n j|tir| ak|ns |s c|ust|arm|ask|war|ri |man|pit|qer|juc|sir|n w|hik|ika",
+    "bem": " uk|la |uku|wa |a i|a u| mu|kwa|ali|ya |shi|a n|amb| na|sam| pa|ula|ta |nsa|fya| no|nga| ya|mbu|bu |ata| in| ku|a m|lo |se |nse| ba|ntu|kul|ons|ala|ang|ins|aku|li |wat|mo |tu |alo|a a|ngu|ili|nok|ika|na |nan|a p|ing|a k| al|mu |gu |o n|sha| ca|ila|oku|e a|ikw|yak|ka |lik| um|ana|lin|yal|ga | ci|aba|lwa|ku |ish| fy|uli|a b|u u|unt|i n| on|kal|lil|u y|ba |hi |ukw|amo|po |ulu|kan| sh|kup|ko |we |and|a c|aka|le |u n|cal|o u|ha |ile|ama|umu|bal|kus|akw|u m|mul| if|o a|kut|nsh|o b|ung|apo|e n|kub|mun|uci|yo |mbi|nka|cit|bul| ab|any| bu|pa |ne |u c|u b| ka|abu|ndu| fi|e u|a f|ton| ne|ant|no |i u|u a|ban|o i|cil|cin|ify| ng|pan|tun|gan|nda|kuc|kwe| ns|o c|ngw|o f|ans|fwa|a l|pam|tan|ti | am|kum|kuk|lan|u s| is|wil|du |nya|und| ic|e k|wal|aya|bi |bil|ubu|ush|fwi|int|nta|utu|twa|wab|afw|ela|o m|uko|ako| ta|lam|ale|gwa|win|u k|apa|ma |onk|way|kap|i k|imi|a o|upo| im|iwa|mba|o y|ngi|ici|pak|lul|ind| ma|e p|de |nde|gil|e b|iti|uti|ilw|a s|imb|da | li|uka|hiw|umo|pat|afu|kat|ine|eng|fyo|bun| af|uma|kuf|alw|til|ita|eka|afy|mas|e y|tul|but|nto|usa|kwi|mut|i i| ak| ap|bom|umw|sa |ont| wa|ilo|u f|baf|fik|ina|kab|ano|pal|ute|nab|kon|ash|bwa|ifi| bo| bw|lya|atu|ubi|bik|min|aik|cak|nak|men|ubo|ye |hil",
+    "emk": " ka|a k|ka | la| a |la |an |kan| ma|a l|ni |ya |na |ama|a a|lu |n k| di|ɛɛ |di |a m|ma | bɛ| ja|ana|a b|aka|bɛɛ|man|iya|a d|ara|dɔ |jam|alu|en |a s| si| sa| mɔ|mɔɔ|ani| ye| dɔ| tɛ|ye |i s|i a|den| ba|riy|tɛ |sar|ɔɔ |da | al| kɛ| ni|ari|ila|a j| i |a t|n d|ɛn |ɲa |kak|ra |ada|ɛ k|i k|i d|len|u d|ele|nna|sil|n n|n m|olo| se| bo|ade|aar|ɔdɔ|ɛ d| kɔ|ɔ a|ank|ɔn | fa|fan|a ɲ|se |lak|lo | da| na|bol|kel|e k| wo|i m|aya| ke|ko | ad| mi|nu |baa| sɔ|dam|nda|ɔnɔ|mɛn| ko|a f|and|ala|ɛ y|ɔ b|ɛ s|le |ɛ m|i l|i b| wa|n s|a i| de|ina|li |ɔya|mad| mɛ|aba| le|n a| ha|a n|ɔ s|u l|nɲa|han|n b|sɔd|dɔn|kɔn|kɛ |ata|nɔ |kar|dan|in |u k|ɔ m|kɛd|ɛda|i j| su|nnu|a w|ɔ k|nka|lat| gb|ɲɔɔ|aji| an|a h|nin|olu|u m|kun|a g|on |asa| ku|ibi|jib|don| lɔ|i t|waj|bɛn|ɛnn|ban|ɔrɔ|wo |ran|si |ɛ b|ɛnɛ|ɛ l|mak|suu|e m|ii |i f| ɲi|e a|o m|ɲin|enn|usu|ba |ɛdɛ|yan|taa|nan|u b|u t| ɲa|nal|nba|ɲɛ | ɲɔ|law|ati|nad|rɔy|hɔr|a y|iri|sii| hɔ|mir|ti |enɲ|bɔ |u s|n t|u y|ini| te|ta |kol|enb|awa|bat| fu|nki|kil|ili| du|bar|ɛ j|fɛn|fɛ | do| dɛ|gbɛ|su |uus|aam| ta|afɛ|may|lɔ |nni|ɔnn|lɔn|maf|o a|e d| bɔ|din|sab| fɛ|ɔ j|o y|i w|tan|ɔɔy|dɛɛ|bɛd|kad|min|ɔlu|dal|ɔɔl| tɔ|ɔɔn|e f|biy|ali|e b|kɔd|te |wol|bi |e w| mu|ida|du |ant|nɛn|dɛ |ɛ a|dah",
+    "bci": "an |be | be| ɔ |un | i |ran|sra|wla| sr|kwl|in |la | kɛ|n b|kɛ |n s|n k| kw| ng|n n|lɛ |a b|n m|le | nu|a k|nun|i s| a |man|n i|ɛn |e k|ɛ n|kun|n ɔ|mun| ni| ti| mu|nin|nga|ti | n |ɛ ɔ|e n|ɔ n| su|ga |ɔ f| fa| ku| li|e s|su |a n|a s|a ɔ|ɛ b|i n|e a| sɔ|wa |sɔ |i k| ma| le|ɛ i|tin|ɔ k|di | at|ata|ta |ɔ l|fat| mɔ|ati|mɔ |lik|akw|ɛ m| sɛ|lak|e w| sa|dɛ |ndɛ|mɛn|i b| mm| yo|iɛ |ba | nd|nvl| nv| kl|vle|sɛ |a a| mɛ| fi|ke |und| wu|ɛ s|n a|mml|liɛ|mla| ka|ike|yo |ɔ t|ngb|i a|e b|a m| an|ɔ ɔ| di| yɛ| si| bo|e t|ndi|bo | ye|o n|n t|e m|fin|e y|n f|sa |ɔ b| fɔ|dan|n y|fa |i i|uma|yɛ | ju| ny|ɔ i|nan| na|kan|ɔun| tr|wun| b | o |n l| aw|a y|b a| wa|fɔu|i f|ɛ a|ing|ge |uɛ |i w|a w|nge|klu|ka |gba|e i|awa|o m|jum|ɔ y|ɛ k|wie|a i|ie | fl|e f| wl|tra| ba|lo |lun| ak|ang|ye | wi|e l| kp|uan|i m| uf|uwa|n w|sie|flɛ|kpa|alɛ|luw|flu|o i|kle|ua | da|nyi|nzɛ|wuk|ɔ s|wo |e ɔ|ika| wo|wan|bɔ |ian| bl|wlɛ| bu|anz|o ɔ| af|aci|u b|bu | ya|ɛ w|ufl|bɔb|te |zɛ |ɔ d|a t|elɛ|i t|ci |nua|fuɛ|ɔbɔ|u i|anm|i l| w |w a| bɔ|o b|lu |se |u m|ilɛ|iɛn| ja|a j|afi|i ɔ|n u| se|unm|nda|yek|bɛn|gbɛ|eku|ɛ l|nma|kac|u s|san|ko |o y|o s|a l|u n|si |anu|aka|any|ɛ d| ko|n j|ɔ w|u a|fi | yi|anw|i j|uka|fiɛ|a d|o a|lel| kɔ|ɔlɛ|ɔn |a f",
+    "epo": "aj | la|la |kaj| ka|oj | de|on |de |raj| ra|iu |ajt|as |o k| ĉi|e l|j k| li| pr|eco|aŭ |ĉiu|jn |ia |jto|est| es| al|an | ki|pro|io | ko|en |n k|kon| ti|co |j p|o d| po|ibe| aŭ|ro |tas|lib|ber|aci|toj| en|a p| ne|cio|ere|ta | in|to |do |o e|j l|n a|j d| se|a k|j r|ala|j e|taj| re|rec|iuj|kiu| pe|o a|ita|ajn|ado|n d|sta|nac|a a|nta|lia|ekt|eni|iaj|ter|uj |per|ton|int| si|cia| ha|stu|a l|je | je|al |o ĉ|n p|jta|tu | ri|vas|sen|hav|hom| di| ho|nte|a e|ali|ent| so|nec|tra|a s|ava|por|a r| na|igi|tiu|sia|o p|n l|ega|or | aj|soc|j ĉ|s l|oci|no | pl|j n|kto|evi|s r|j s|ojn|laj|u a|re | eg|j a|gal|ers|ke |pre|igo|er |lan|n j|pri| ku|era|ian|rim| fa|e s| ju|e a|ika|ata|ntr|el |is |u h|li |ioj|don|ont|tat|ons| el| su|go |un | ke|ebl|bla|n s|oma|ĉi |raŭ|kla|u r|ne |ili|iĝo|o t|s e|tek|men|nen|j i|nda|con|a d|ena|cev|moj|ice|ric|ple|son|art|a h|o r|res| un|u s|coj|e p|ĝi |for|ato|ren|ara|ame|tan| pu|ote|rot| ma|vi |j f|len|dis|ive|ant|n r| vi|ami|iĝi|sti|ĝo |r l|n ĉ|u l| ag|erv|u e|unu|gno| ce| me|niu|iel|duk|ern| ŝt|laŭ|o n|lab|olo|abo|tio|bor|ŝta|imi| ed|lo |kun|edu|kom|dev|enc|ndo|lig|e e|a f|tig|i e| kr| pa|na |n i|kad|and|e d|mal|ono|dek|pol|oro|eri|edo|e k|rso|ti |rac|ion|loj|j h|pli|j m",
+    "pam": "ng |ing|ang| ka|an | pa|g k| at|ala|g p|at |apa| ma|kar|lan| ki|ata|kin|pam|g m|ara|tan|pan|yan| a |pat| in| ba|aya|n a|g a|ung|rap|ama|man|g b| ni| di|nin|din|n k|a a|tin|rin|a k|ami| la|tun|n i|ari|asa|nga|iya|ban|ati| me|nan| da| sa| na|t k|gan|g s|bal|etu|mag|a i|met|sa |la |ant|kal| iy|kap|a n| mi|in |ya |aka|tau| o |san|n d|au |lay|ana|mak|yun|na |ika|a m|ipa|ran|atu| al|n n| ta|ti |ila|g l|ali|kay|nsa|aga|a p|iti|g t|par|u m|ans|nu |al |g i|t p|iwa|a d|syu|t m|sab|anu|un |uli|mip|ra |aki|aba|u a|mal|as |mil| it|una|bla|abl|ita|awa|kat|t a|ili|kas|g n|lag|da |tas|i a|wa |n l|lal|dap|mas|bat| pr|abi|ap |a b| e |mik|ani|sal|li |ad | an|ral|ira|gal|a r|lin|g d|nte| li|ale|kab|e p|ula|wal|lit|nti|s a|lip|nta|pro|te |ie |wan|ag |tu |upa| ya|g e|tek|usa|g g|bie|o p|it |pun|ian| bi|lat|aku|be |n p|sas|iba|yat|alu|tul|e m|kan|l a|nap|t i|lir|u k|isa|pag|abe|len|e k|rot|en |bil|mam|ksy|ngg|lam|p a|ily|liw|eks|ote|n o|gga|u i|eng|ipu| tu|lya| ri|aul|pas|dan|uri|ema|lab|ta |lak|are| ar|ail|tam|o a| ke|ril| pe|sar| ra|ina|asi|ka |art|pak|sak|mit|rel|i k|gaw| ul| re|inu|i i|mun|abu|asy|mba| pi|ags|obr|gpa|a o|am |n m|mem|o k|isi| mu| nu|mis|nun|era|ndi|ga |agp|aun|mab|anm|lub|gla|e a|nme",
+    "tiv": "an | u | sh| na|nan|en | a |ha |sha|shi| i |er |a i| er|or | ma|ar |gh |n i|n u|a m| ve| ci|n s|han|u n| ke|lu |man| lu|n m|yô |a u|u a|n a|r n|a k|mba|in |ii | ha|kwa|ken|n k|na |hin| mb|a a| kw|n n| ga|ga |cii|agh|a n|aa |wag|ve |a s| yô|nge|ba |r u|u i| gb|ana| or|a t|mao|r i|ity|ma |aor|anm|nma|gen|oo | ta|ir |ren| kp|i n|ang|r m|e u|gba| ng|r s| ia|ere|ugh| it|ian|doo|ese|uma|kpa| la|u k|n g|ngu|gu |om |oug|on |ol |a h|ior| ts| he| ne|tar|h u| ka|la |n t|se |e n|r a|a v|hen| ku|aha|mac|yol|i u|ace|ge |ce | de|ish|u t| io| do|tom|hi |a e|u u|o u|i m|iyo|i d|bar|ave|ua |u s| te|igh|a l|e a|m u|a w|un |n c|n e|ne |ev |r k|ind|ene|sen| is|ndi|ker|era| to|a o|ima|u v|a g|paa|n h| wo|di |yar|tya|ase|e s|de |n y|ee |end|him|tes| mk|u m|ka |tyô| mz|won|u e| um|u h| wa| mi|yan|tin|ran|ie |hie|a c|hir|i a|e k|i v|mak| in| za|r c|nen|e l| ig|i k|kur|nah|tse| ik|ves|eng|rum|mzo|men|zou|i l|e i|a d|i e|i i| ya| vo|mlu|ô i|inj|nja| as|vou|ura|ron|gbe| iy|r t|ôro|a y|oru|e e| zu| ti|ra |n l|ci |u l|ver|kpe| fa|was| ml|e m|em |io |mi |da |civ|môm|ant|see|ivi|wan|vir|nda| ij|soo|zua|lun|ea |vea|wa |ôm |av |hio|ake|a f|igb|l i|u z|r l|zan|nta|e g|hem|h s| mt|ded|iky|o s|r g|do |ndo|iji| hi|e h",
+    "tpi": "ng |ong|lon| lo|im | ol| na|la | ma|pel|ela|ri |at | bi|ait|na | yu|ol |gat| ra|bil| ka|ilo|man|rai|t l|it |eri|mer| o |wan| i |mi |umi| wa|ing|yum|ta |t r|tin|eta|get|lge|olg|iga| ig| sa|ara|em |rap|i o|ap |nme|anm|in |ain|an |a m|ant|ape|nar|m o|i n| no|g o|g k|i i|as |ini|mas| me|n o|sim|tri|kan|kai|ntr| ga| st|a s| pa|gut| ha| wo|g y|yu |a l|g s|ama|m n|ok |g w|wok|spe|a k|i b|i m|g l|i l|sin|sam|pim|m l|kam| gu|l n|amt|tpe|g n| in|ts |a i|mti|utp|isp|kim|its| la|isi|aim|api|lo |o m|g b|tai| di|a o|dis|a t|p l|en |map|t w|s b| lu|luk|sem|no |tim|lai| ko| ki|ave|ols|nog|m k|lse|sav|nem|ve |a p| fr| em|nim|tu |i y|nka|et |m y| ti|g t|nap|g p|sta|tap|aun|a n| tu|un |asi|fri|pas|n m|m g|l i|aut|ane| sk|kau|t n|nta|sen|n s|oga|i g|g g|m i|kis|o i| ba|tok|os |usi|m s|ngt|anp|a w|s n|a h|s i|iki|i s|sai|l m|npe|ari|o l|o b|g r|ik |uti|iti|gti|aik|ut | to|a g|ili|a y| pi| ta|kin|ni |n b|lim| ye|yet| we|k b|ina|g m|uka|str|ins|rid|a b|anw|nsa|nwa|m w|m m|dom|ot |hap|ido|aus|i w| ne| si|n i|t o|dau|ese|rau|ank|sap|o k|m b|nin|pos|o n|am |go |s o|s l|u y|pik|vim|ivi|es | go|n n|kot|ron|ple|g d|a r|kul|ali|sku|apo|om |g h|l l|s s|ti |les|t m|gav|eki|nai|mek|kom| as|ind|nda|ip |liv|ul |ati",
+    "ssw": "nge|eku|a n|ntf| le|e n| ng|tfu|lo |la |nga| ku|fu | ne|o l|khe|tsi|nkh|le |he |unt|elo| lo|si |ele|a l|ni |ung|mun|ma |lun|lel|wa |lek|nom| um|eni|oma| no|kut|hla|onk|a k|e l|ent|e k|gel|ela|ko |eli| ba| la|pha|ats| em|o n|ang|ema|eti|nel|nye|ban|ulu|uts|hul| na|aka|tfo|e u|lan|oku|lok|won|khu|esi|lul|a e|ule|ala|umu|tse|akh|ye |ve |i l|nek|ana|ane|lil|kwe|aph|na |we |ke |aba| wo|nti|ndl|ale|i n| ye|ba |ilu|gek|gan|lab|any|hat| li|tin|wen|gen|kel|len|ndz|fo |and|let|eko|e b|lwa| ka|te |set|nem| kw|mal|ka |ant|alu|ne |phi|ing| un|u u| ek|ise|une|e e|kul|nal|lal|mph|o y|uhl|fan|‐ke|ile|i k|kub|ukh|ben|kan|ako|a b|kat|eke|ive| ti|sek|nak|sit|seb|u l|alo|yel|kho|wo |kha|les|o e|ngu|kus|lom|ini|ikh|elw|isa|sa |fun|e w|ebe|o k|jen|iph|eng|kwa|ahl|uph|emb|be |tis|lwe| si|etf|isw|uma| se|ene|ta |nan| im|i e|enk|e a|abe|kun|ume|hak|nen|dle|ase|sen|kuv|tel|ebu|omu| in|lin|sel|tfw|nhl|a i|e i|kuk|uba|ti |kuf|mhl|bon|ula|sin|int|fut|dza|lak| wa|ind|ave|ali|yen|ete|to |ngo|use|kuh|hol|ze |a‐k|ona|a a|se |nje|und|swa|lon|eki|ike|i a|lis|tsa|gab|sim|i w|its|fol|e t|o m|hi |ndv|phe| ya|ma‐|utf|sik|liv|bun|cal|nta|ata|gal|mel|ute|wem|gap|han|uny|oba|alw|ili|a w|mbi| bu|gob| at|awo|ekw|dze|u n|emp",
+    "nyn": "omu| om|ntu|tu | ku|a o|ra | ob|wa |obu|ari|a k|mun|a n|unt|mu |uri|nga| mu|aba|ri |a e| na|e o|gye|rik|ho |a a|han|ang|re |ga |iri|bwa|oku|aha|bur| bu|na |eki|ka |iku|ire|uga|ndi|ush|ban|ain|ere|ira|we |kur|sho| ek| ab|ne |ine|a b|and| ni|u a|e k|sa |u b|iha|i m|e n|kir|be |aho|bug|ibw| eb| ba|ing|ura|gir|u n|kut|ung|ant|abe| ah|ye |e b|i n| bw|kwe|ebi|era|iki|ba |ro | kw| ok|uba|gab| no|zi |bir|i k|u o|o o|rwa|o e|kub|end|ama|mer|eka|kug|ate|tee|di |rir|bus|kuk|rin|ish|sha|i b|wah|ha |u m|bwe|ngi| ai|ara|kwa|kan|o g|za |ngo|kuh|ana|i a|eme|eek|i o|baa| ka|go | gw|nib|zib|ash| or|iro|she|o k|u k|iin|o b|iba|oon|gan|agi|ngy|hem|mwe|ona|oro|bwo| ar|ya |i e|uru|nar|eir|uta|tar|kwi| ti|egy| n |hi |bar|isa|ute|o a|shi|ora|e e| en| ki| nk|riz|nda|da |ja |si |nsi|wen|yes|tek|yen|aga| am|o n|rei|rag|ki |obw|mur| ha|ris|wee|amb|aab|bya|kus|ugi|a y|ind|ata| ne|bas| ky|ija|hob|ikw|mus|gar|a g|eky|dii|bor|aar|ibi| we|aka|ham|emi|ekw|rer|ini|har|gi | bi|naa|kor| er|gwa|n o|iza| by|eih|yam|iho|rih|i y|ete|o m|eby|but|a r|ika|mag|ozi| em|ong|iik|iko|uka|nik| yo|sib|eri|utu|tuu|amu|uko|irw|nka|ani|yaa|u e|mut|roz|mub|ens|aij|nis|uku|kye|nde|der|e a|nok|nko|asa|aas|hab|obo|ent|ahu|rye|oba|kih|yob",
+    "yao": "chi|ndu| wa|du | ch|a m|aku|akw|ni |kwe|und| mu|wak|wan|mun| ku|la |e m|wa |ulu|amb| ak|kut|u w|ali|mbo|lu |we | ma|le |ufu|ful|ila|a k|bo |a n| ga| ni|amu|kwa|se | na|ose|hil|nga|go |aka|and|ang|na | uf| pa|ete|uti|jwa|kul| jw|son|ngo|lam|e u|ne |kam|oni| so|u j|e a|ele|a c|ana|wal|ti |isy|cha| yi|gan|te |ya |mwa|lij|wet|che|ga |yak|ili|pa |e n| ya|o s|nda|i m|ula|jos|i a|ile|ijo|li |e k|o c|a u| mw|ich|mul|uch|o m|asa|ala|kas| ka|i w|ela|u a|ach|his|nam|lan|yin|i k|ind|ani|sye|yo |si |pe |gal|iwa|man|sya|aga|a w|o a|ule|ikw|asi|kus|ope|ma |gak|e w|jil|kap|hak|ika|ite|aji|mba|u g|ase|mbi|kum|uli|any|ape|a y|ekw|mal|imb|ja | al|end| ng| ja|mas|usi|kup|e c|pen|ye |anj|ka |a j|a p|lem|o n|ama|him|ago|sen|eng|ane|ako|mch|ola|och|oso|ena| kw|sop|lek|pel|gwa|hel|ine|gam|u y| mc|i y|awo|ons| mp|ole| li|wo |i u|hik|kol|auf|mka|tam|syo|e y|mpe|ten|ati|mau|nji|wam|muc|ong|i g|kan|uma|je |iku|nag|kwi|da | ul|cho|ngw|ene|iga|ano|esy|ion|upi|pag|o k|eka|wu |uwa|kuw|sa | un|a l|bom|iya|uni|jo |ale| ji|apa|yil|lil|uku|i n|o g|a a|o w|waj|mus|ipa|pan|pak|one|i c|ujo|duj|emw|nya|tio|jak|oma|nja|hiw|dan|apo|e j|poc| wo|lic|alo|eje|ing| mi|e p|lo |lig|a s| yo|ung|no | m |upa|ata| bo|nde|he |i j|was",
+    "lav": "as |ība| un|un |tie|ies|bas|ai | ti|esī|sīb|ien| vi|bu |vie|ir | ir|ību|iem| va| pa|em | ne|s u|am |m i|šan|u u|r t|pie| ci| sa|ās | uz|vai| ka| pi|brī| iz|rīv| br|uz |cij|dzī|ena| ar|ar |isk|s p|es | at|āci| ap|ot |nam|viņ|inā|ikv|kvi| no|s v| ie|vis| ik|i i|pār|u a|ju |nu | pr|edr|vīb|īvī|iju|drī|u p|dar| st|lvē|cil|ilv|s t| la|iņa|ana|s i|n i|īdz|s s|kā |tīb|i a|ija|bai|ībā|ied|s n|arb|val|līd|s b|aiz|tu |iec|cie|ām |gu |vēk|īgu|īgi|ka |jas|umu|mu |t p| jā|u v|zīb|ska|lst|als|kum|gi |s l| tā|jot|stā|st |n v|vēr|a p|arī|aut|n p|ama|kas|u k| da| ta|nīg|izs|ojo|anu|ņa |u n|sta|s a|ba | ai| so|s d|a u|ā a|stī|cīb|m u|i u|son|not|mat|sav|iev|ā v|jum| kā|u t|ned|ajā|s k|u i|i v|līt|ēro| pe| dz|i n|per|u d|īks|kat|nāt|līb|nāc|rdz|nīb|pil|rīk|kst|a s|cit|pam| pā|ekl|tau|u s|bie|jā | re|i p|kur|a a|t v| li|evi|tis|evē|bā |ma |rīb|a v|os |ras|abi|nev|iku|skā| ve|lik| lī|nas|t k|ant|uma|roš|kād|zsa|sar|ciā|mie|ais|eci|oci|oša| je|jeb|būt|atr|n b|ieš|rso|ers|soc|enā|a t|t s|īša| be|bez|āda|ebk| ku|glī|isp|tot|spā|roj|lie|pre|ret|aul|na |tra|iet|du |zgl|āt |ard|kt |ier|izg|ikt|paš|iāl|nod|ts |eja|ā u|sab|eno|ēt |ta |tik|tīt|ecī| de|īga|tar|arp|r j|īst|tās|ja |enī|atv|vu |ārē|rēj|rie|oši|dro",
+    "quz": "una|an | ka|nan|cha|ana|as |apa|pas|man|lla|aq |sqa|ta | ru|run|kun|ach|qa | ll|pa |paq|na |nta|chi|npa| ma|nch|aku|anp| ch|in |a r|ant|hay|mi |taq|ay |ama|asq|qan|tin|kuy|chu|lap|a k|yta|a a|ima|wan|ata|spa|all| wa|n k| ja|ipa| ya|nin|ina|aqm|his|qmi|a m| ju|pi |anc|nap|iku|aus|usa|kau|pan|nak|kan| mu|naq|aqt| pa|kam|aqa|kay|i k|kus|un |ank|isq|nku|may|yku|ayn|a j|a l|ayt|qta|ati|a p| pi| ri|aci|lli|lin|ayk|uku| al| at|n r|yac|ion|pip|han|inc|n j|ayp|yni|qpa|nac|say|asp|uy |mac|s m|cio|awa|a c|laq|tap| yu| im|a y|yoq|n m|asi|mun| de|has|n a| as|n c|int|uch|nma|s k|oq |ari|q k|hu | na|ypa| tu|tuk|tun|atu|rim|q r| sa|jat|yan| ji|nat|anm|jin|a s|api|hik|uya|nti|pac|tan|ash|mas|n p|n l|k a|ura| su|a q|yuy|n y|ech|q j|unt|yay|ypi|is |lan| qa|usp|kas| an|a w|s w|inp|sin| ta|ma |a t|shw|q a|hwa|uyt|nmi|sim|ere|rec|der|uma|s t|isp|n t|ña | ni| ay|upa|nam|hur|war|waw|imi|nka|sap|kaq|s j|was|y r|usq|kin| un|inm|qas| si|ani|tiy|t a|sta|pay|pis|maq|hin|ha |arm|npi|rmi|ink|aqp|q c|la |i p|nis|yma|nk | ku|aym|nal|hak|rik| ti|unc|niy|y s|iyo|juc| qh|ist|pap| aj|s y|cho|onq| re|ayo|iqp|n s|s p|os |i m|t i|ras|ita|piq|qsi|ku |yqa|mik|q y|eqs|pat|tak| pu|lak|i r|ipi|iya|ywa|muc|a n| qe|san|jun|y l",
+    "rmy": " sh|ri | a |shi|hi |i s|ti |ea |ari|i a| ca|rea|tsi|i c| s |a a|ndr|tu |câ |dre|i n|ept|ptu|rep|li | nd| di| un|a s|are|i u|ats|la | la|i l|ear| li|lje|di |ati|lui|ui |a l| tu|tat|â s|ei |sea| ti| câ|un |jei|or |caf|afi| lu|â t| ar|ali|i t|fi |ilj|a c|bâ |râ |car|ibâ|lor| cu|nâ |icâ|a n|i d|s h|hib|tâ | hi|â a|si |u c|eas|tur|tul|ber|â c| in| co|lib|u a|n a|cu |ibe|u s|tea|lu |tsâ|ul |tse|int|a p|i i| pr|u p|i p|url|i m|lji|min|sti|alâ| al| pi|sht|nal|â n| si|ji |â p|rar|ert|sii|ii |nat|til|u l|sâ |lâ |â l|sta| nu| ic|i f|nu |ist|mlu|ili|a t|ots|uni|rta|a d|its|â d|pri| ts|oml|i e| de| na|sia| po|gur|tut| st| at| ân|ura|al |ita|anâ| ma|ips|can|oat|tsl| su| as| so|ând|nts| ap| ea|sh |nit| mi|ent|a i|ate| ac|poa|ilo|sot|ina|ash|ona| lj|âts|rli|lip|â i|unâ|t c|iti|bli| u |nji| fa|zea|tât|ril| om|urâ|con|i b|sig|igu|ntr|pur|par|ntu|let|com|iil| ni|eal|ind|r s|hti|at |ucr|art|adz|arâ|itâ|rtâ|inj|uri| eg| sc|atâ|sin|ral|pse|asi| ba|r a|apu|âlj|ia |chi| va|sun|ter|rlo|ica| pu|luc|unt|i v|ise|ini|est|ast|gal|ega|act|nda|ead|uts|a u|imi|ma |ra |pis|s l|ets|a o|va |pi |lit|scâ|asc|ial|sa | ta|rim|tar|alt|idi|tlu| gh|era|ant|eri|aes|a m| nâ| ae|oar|nea|pro|apt|ana|ta |atl|lic|l s|iun|nte|mil",
+    "src": " de|de |e s|os | sa|tzi|tu | su|one| a |sa |ne | e | in|ent|ion|der|su |zio|ere|as |e d|a s|u d|ret|es | cu|ess| pr| so|s d|men|ale|ade|atz| s |re |e c|sos|in |s i|chi| un|nte|ten|etu|er | pe|et |e e|ida| te|le | is| ch|ene|are| es|a p| si|u s|a d|pro|hi |dad|te |sse|tad|zi |e t| on|e i|s e|nt |nzi|u a|sso|onz| co|ame|cun|tos|e a|sas|a c|ntu|net|na |e p|at |nes|du | li|t d|n s|son|s a| o |ber|ro |pes|u e|int|zia|nat|i p|ia |res|nu |un | re|sta|s p|ter|era| po| di|per|s c|t s|rar|ser| at|e o|s s|ibe|lib|si |tra|ust|u c|rta|unu|cus|ntz|adu| to|da |nal| na|ant|egu|eto|und|ine|i s|a e|otu|u p|t a|ert|est| da|a a| fa|ist|ona|pod|s o|pre|iss|ra | ma|ica|tot|les|ntr|una|sua|con|dae|ae |s n|man|sia|ndi|nid|ada|a l|nta|o s|a i|ua |ide| ne|otz|min|rat|iat| pa|nde|ode|dis|ren|ali|a u|ta |u o|sot|u t|ime|ssi| as|o a|pet|e u|nsi|fun|lid|epe|eru|unt|st |t e|end|us | fu| ca|ner|dos|s f|ass|nda|uni|das|iu |ind|a t|ial|a f|ghe|gua| eg|a n| se|ont|etz|s m|s ò|sti|t p|ual|nen| me|sen|com|ura|a b|lic|a o|pen|ado|nos|inn|des|seg|e f|din|òmi|ire|a m| òm|e l|dep|ènt|for|ena|par| tr|u i|ara|cra|sid| no|s u|u r|suo|e n|pri|ina| fi|ria|gur|art|det|s t| bo|tar|emo|run|ama|icu|isp|dam|e r|itu|cum|tut|eli| bi",
+    "sco": " th|the|he |nd | an|and| o |al | in|ae |in |es |ion|cht| ta|tio|or |t t|ric| ri|ich|tae|on |s a|is |e a| aw| be|s t| he|ati|ent|ht |ts |e r| co|er | na| fr|bod|ody|his|dy |hes| fo|e t|o t|for|it |ng |ty |n t| or|be |fre|ree| hi|l a|ing|awb|wbo| sh|s o|ter| on|sha|nat|r t|nal|an |n a| as|hal|e o|y a|d t|tit| pe|l b| re|y h|aw | ma|nt |men|air|ce | pr| a | ti|hts|e f|e c|le |eed|edo|dom|n o|e s|ons|d a|res|e w|man| wi|d f|ed |sta|ar |t o|ona| it|ity|at |as |her|ers|t i| de|con|til|il | st|nti|e p|e i|e g|nce|ny | so| di|nte|ony|ns |und|ith|thi| fu|ie |ir |oun|ont|e e| un|pro|oci|nae|y i|lit|soc|com|nin|en |ic |ne |r a| me|ly | wa|ear|ual| en|ame|uni|r i|e h|hum| is|ane|uma|ess|inc| fa|equ| hu|ver| eq|e m|hei|o h|ms |d o| ha|wi |t n|s f| no|t a|int|cla|rit|qua|d i|iti| se|rsa|y s|ial| le| te|e d|r o|ive|r h| la|nit|om |ite|s r|cie|s i|ali|cti|cia|re |aim|rat|ld |tat|hat|rt |per|s h|n f|dis|tha| pu| we|g a|oms|eil|ntr|fai|tri|ist|ild|e u|r s|dec|lea|e b|hau|imi|mai|s n| ac|elt|lt |l t|omm|d p| ga|din|war|law|eme|y t|era|eir|art|ds |s e|ral|nor|tel|ge |g o|eik|eli|rie|rou|nda| gr|lan|mei|ate| ge|n i|ten|id |s d|ors|iou|bei|sam|nta|sec|mmo|lar| tr|ful|ul |mon|s w|anc|l o|gar|ern|ara|d s",
+    "tso": " ku|ku |ni |a k|hi | ni|a n| a |i k|ka |i n|wa | ya| ma|la |ya |na |a m| ti| hi|fan| sv|nel|hu |a t|ane|ela| ka|iwa|u n| na|svi|lo |nhu|a l|a h|ele|le |ndz|u k|va | xi|a w|vi |mbe| à |elo|wu | wu|eli| mu|u y|mun|i l| le|nga|umb|lan|nfa| va|u l|be |u h|li |kum|tik|ihi|iku|aka|unh| wa|a s|liw|isa|i m| fa|ma |anu|nu |u t|han| la| ng| wi|wih| ha|a x|yel|a a|lel| nf|i h|ta |ana|o y|e k| nt|u a|i a|eni| li|ndl|ga |any| ko| kh|van|u w|u v|amb|a y|ti |sa |pfu|i t|i w|in |lek|e y|ang|and|ati|yi | è |irh|sva|mat|ani|i s| nd|a v|mel|yen|hla|isi|hin| ye|eke|n k| lo|ulu|kwe|hul|thl| kw|nth|tin|mah|wan|ava| mi|ko |khu|u s|à n|dle|lul|ule|tir|o l|i y|aha|aye|kwa|inf|à k|è k|rhu|mba| th|fum|end|anh|xi |dzi|kel|a f|u f| lè|we |may|eka|nye|gan|dze|vu |ham|xim|mis|thx|aku|tà |xa |hlo| tà|eyi|ima|nti|eki|ngo| si|u p|vak|ngu|lak|ume|oko|lon|a è|o n|lok| ta|zis|hak|u m|i à|ke |i x|u x|rhi|ha |awu|dza|u à|za | là|n w|ung|e n|a à|i f|esv|les|vik|siw| y |à m|to |mha|ola|sav|ond|nya|kot|kol|uma|e h|mbi|e s|naw|ths| dj|fun|mu |a u|xiw| ts| hl|u d| lw|nyi|ki |ong|sun|lwe|ike|ind|nis|xih|e a|èli|imu|sel|sek|iph|zen|lum| pf| xa|sin|umu|sim|ave|kar|ala|wey|sik|o t|avu|wav|oni|ile|wak| yi|ali| hà|gul|e l|ba |i v",
+    "men": " ng|a n|i n|ɔɔ |ti | ti|i l| i | ma| nu| gb|ngi|a k|aa |gi | kɔ|ia |ɛɛ |ei | na| a |ma |hu | ye| ta|kɔɔ|a t|na | hu|a m| kɛ| nd|gbi|ya |bi |i y| lɔ|a h|ɛ n|ii |ɔny|u g|i h|nya|uu |lɔn| kp|i m|ngɔ|nga|la |i t|kɛɛ|lɔ |i k|ɔ t|mia| mi|a y|nge| ji|ee |gaa|a a|ɔ n|ɔ i|gɔ |ind|tao|ao | hi|num| le| yɛ|umu|mu |ung|nda|hin|ye |i g|hou|hug|e n|ugb|ni |a l|sia|ndɔ|nuu|a i|maa| ya|ahu|gba|u k|mah|oun|ɔma|le |da |i w|ɔlɔ|i j| va| ɔɔ|eng|i i|va |yei|dɔl|li |lei| sa|yɛ |kpɛ|yil|isi| la|bat|a w|u n|e t|ta |ahi| ki| wo|ɔ k|e a|ɛlɛ|saw| lo|o k|ji |gbɔ|pɛl|uvu|ili| ho|vuu| gu|nde|aho|gbu|ɛ t|ale|ila|nah|kɛ |ɛi |ndu|kpa| wa|nuv|ge |e m| ny|e k|atɛ|wei|awe|a g| ii|bua|ie |awa|wot|yek|kɔl|ulɔ|ing|ga |gul|tɛ |ɔle|u t|gbɛ|ɔ y|nun|wa |hei|ani|ɛ k| tɔ|bɔm|ɛ g|ein|taa| ha|ang|uni|u i|ekp|ɔ g|lɛɛ|kpɔ|a v|kpe|ote|i b|te |u m|tii|ɔ s| we|ɛ h|baa|pe |ɛ y| ɛɛ|i ɛ| ba|fa |a j|bu |ifa|kia|jif|u l|eke|ama|gen|u w|lee|lɛ | lɛ|ɛmb|a b|e y|aah|hii|ngo|bɛm|lek| wi|ui | yi|u y|bɛɛ| he|u a|e h|ɔ m|uah|o g|yen|yan|nyi|aal|hi |wu |yee|maj|ajɔ|jɔɔ|nye|mbo|e g|u ɔ|ong|ka |oi |lon|dun|uny|ɛng| sɔ|lɔl|nyɛ|lii|a p|oyi|iti| bɛ|lɔm|akp|e i|ɛ i| ka|jis|oko|i p|ɔla| wɛ|a s|ewɔ|iye|dɔɔ|lok|gua|ɛ b| li|u h|nin|wee|lah|ula| ga| du|i v",
+    "fon": "na | na| e | ɖo|ɔn |ɖo |kpo| kp|nu |o n| ɔ | nu| mɛ| gb|mɛ |po |do |yi |tɔn| é | si|gbɛ|e n|in | to| lɛ|lɛ | tɔ|nyi| al|wɛ | do|bo |ɛtɔ| ny|tɔ |e ɖ|ɖe | bo|okp|lo |ee |ɖok|to |ɔ e|bɛt| wɛ| ac|a n|sin|acɛ|o t|o a|ɛn |i ɖ|o e|bɔ |ɔ ɖ| bɔ|cɛ |ɛ b| ɖe|a ɖ|ɔ n|ɛ ɔ|n b|an |nɔ |odo|ɛ ɖ|o ɔ|ɛ n|ɛ e|ɖɔ |ji | ɖɔ|lin|n n| en|bi |o ɖ|mɔ |n e|pod| bi|lɔ | mɔ|n a|nɛ |ɛ k|i n|un |ɔ m|i e|mɛɖ| hw| ji| ye|ɛɖe|enɛ| ǎ |alo|o s|kpl|u e|a d|ɔ b| nɔ|alɔ|ɔ é|ɔ g|ɖee|si |n m|gbɔ|a t|n k| yi|sɛn|jɛ |e k| wa|o m|e m|é ɖ| jl|hɛn|e e| hɛ| sɛ|nnu|nun|wa |n ɖ| ee|é n|kpa|unɔ|bɔn|ɔ t|a s|ɛ é|u k|ɔ w|inu|e s|i t|zɔn|o l|a y|o g|bɛ |ma |n t|e j|ɔ s|ɔ a|o b|a z| zɔ|jlo|i k|nuk|ɔ k|a e|ɔ l|u t|kɔn|xu |e ɔ| lo|hwɛ| ka|eɖe|o y|e w|jij|sis|n l|ixu|six| su|ali|isi|ukɔ|ɛ a| ay|ayi|su |n g|u a|a b|n d|dan|nmɛ| ta|n ɔ|etɔ|e g|o j| we|onu|wem|ba |ema|ɛ g|o h|ɛ s|ɛ t|i s|u w|n s| sɔ|bǐ | bǐ|hwe|a m|sɔ |lɔn|o d|u m|ple| ma|ɛ l|azɔ| az|tog|ye |i l|hun| jɛ|o w|ogu|o k|u g|kan|oɖo|elɔ|gbe| le| el|wu |ka |ɛ w|n w| li|sun|esu| hu| i |ɖó | ɖó|plɔ|ɖi |ɖè |ɛnn|pan|i m|yet|xo |iin|tii| ti| fi|e b|zan|i w|poɖ|ɖes|a j|ann|a g|gun| ɖi| tu|gan|ɛ m| wu|u s|ɔ y|a l| da|u n|u l|ɔnu|obo|ɔ h|vi |lee|ijɛ|ta |e a|ya |nuɖ|ɔ d|wen| tɛ| ga| ɛ | xo",
+    "nhn": "aj |tla| tl| ti|ej |li |j t|i t| ma|an |a t|kaj|tij|uan|sej|eki| no|chi|ij | ua|ma | to| te|j m| ki|noj|ika| se|lis|j u|aka|laj|tle|pa |pan|j k|ka | mo|amp|ali|ech|uaj|iua|j n|man|oj |och|tek|tli|kua|ili|a k|se | pa|ano|ise|ual|mpa|tec|n t|en |len|iaj|is | ue|a m|jto|ajt|pia| am|uel|eli| ni|ya |oua|j i|ni |hi |tok|kin|noc|one|lal|ani|nek|jki|ipa|kit|oli|ati|amo|j s|kam|aua|ia |tim|mo | ku|ant|stl| ik| ke|opa|ase|nij|ama|i m|imo|ijp|ist|tl |ijk|tis|mej|itl|tik|mon|ok |lak|par|n n|ara|ra |tit|kej|jpi|a s|ojk|ki | o |alt|nop|maj|jya| ka|iti|cht|ijt|uam|a n|kiu|lat|leu|o t|ita|lau| ip|tep|kia|jka|n m|ana|lam|kij|nka|tou|epa|n s|til|i n|i u|e t| ak|s t|k t|lti|nem|lan|eyi|mat|nau|ose|emi|j a|ntl|uat|uey|jtl|nit|nti|kip|oka|onk| on|eui|i k|kat|j p|ini|toj|kem|ale|ajy|ame|ats|pal|iki|ema|uik|n k|eua|ach|e a|ijn| sa|mpo|tot|otl|oyo|mil|hiu|eka|tol|ajk|uak|ite|san|pam|atl|yek|tia|ate|ino|jua|a i|ipi|j o|tsa|oke|its|uil|o o|jne|oju|tos|kui|oui|a a|yi |kol|ote|a u|i i|n a|ken|chp|iko|as | ne|tin| me|ank|jti| ye|kon|ojt|aui|xtl|ine|tsi|kii|you|ko |ejk|o k|uas|poy|tst|ejy|nok|las| ya|yol|hti|pou|siu| in|nel|yok|mac|ak |hik|sij| si|sto|htl|jke|nko|jch|sek|mot|i a|ela|ui |kis|mel|axt| ax|ijc|nan",
+    "dip": " ku|en |ic |ku | bi|bi | yi| ke|an |yic|aan|raa| ci| th|n e| ka| eb| ra|c k|c b|n a|ci |in |th |kua|ny |ka |i k|ŋ y|i l|ben|k e|ebe| ek| e |höm|nhö|öm | al|ai |kem| ye| nh|eme|m k|men|i y|t k|n k| la|c e|ith| er|lɛ̈|thi|alɛ|ua |t e|ek |ɛ̈ŋ| lo|ɔc |n t|ŋ k| ep|u l|it |yen|kɔc|̈ŋ |de |k k|pin|a l|i r|n y|epi|n b|lau|at |iny|aci|aai|u t|ken|au |ok | te|a c|ath| pi|ke | ac|e y|cin|u k|oŋ | lu| ti|a t|uat|baa|ik |tho|yit|ui |hii|u n|h k|e r|n c|te |kek| lö|l k|h e| lɛ|hin|thö|m e|ɛŋ |n r|n l| et| mi|ëk |i b|ekɔ|era|eŋ |e w|i t|el |ak |nhi|iic|a k|i e|pio| ny|ŋ e| aa|nde|u b|e k|kak|eba|ök |k a| ba| en|ye |lɛŋ| pa|iim|im |köu|e c|rot|e l| le|öŋ |ot |ioc|c t|i m|r e| kö| kɔ|eth|y k|oc |ŋ n|loo|la |iit| el| we| ey|i p|uny| ro|ut | tu|oi |e t|enh|thɛ|m b|hok|pan|k t|ëŋ | wi|yii|tha|wic|pir| li|u e|bik|u c|ën |ynh|y e|lui|eu |ir |y b|nyn|uc |n w|mit| ec|öun|any| aw|ɛt |ɛ̈ɛ| dh| ak|and|loi|wen|l e|höŋ|e e|thë|aku|̈ɛ̈|kut|am |eny|u m|i d|iek|k c| ko|tic|leu| ya|u y|tii| tö| ma|nyo|tö | ew|hök|den|t t|hëë|i n|k y|i c|cit|h t| ed|uee|bai|ɛ̈n|öt |eri|ɛ̈k|awu|rin|a p|cɛ̈|hai|kic|t a| të|tue|cii|hoŋ| bɛ|ooŋ|n p| cɛ|̈k |c l|u p|uk |c y|löi|i a|eke|dhi|wel|thk|eeŋ|öi |elo|n m|r k|ien|om |hom| wa|nho",
+    "kde": "na | na| va| wa|la |nu |a k| ku|a w|ila|wa |a v|chi| mu|unu|e n|mun|van|a m|a n|ya |le |ele|sa | ch|asa|amb|ana|was|lam|mbo|ohe|ave| vi|ne |bo |aka|e v|a u|u a| n’|u v|e m|ke |anu| li|ve |vel|ake|ala|hil|ile| pa| av|ng’|a l|he |ing|ene|ela|ili|ika|vil|ngo|vak|ali| di|uku|wun|any|lan|a i|mbe|a a|uni|e a|ama| ma|go |nda|bel|emb|wak|kuw|nya| mw|ola|a d|den|lem|a c| il|ulu|kol|g’a|o v|nji|kan|ji |au |ma | au|lil|mbi|uwu|lik|ye |’an|kuk|din|ula|no |and|umi|kum|eng|ane|dya|ong|o l|ach|mwa|e w| ak|an’|a p|kal|nil|lew|mad|n’n|voh|ilo|wen|aya|apa| vy|kut|ale|va | al|ang|ava|kul|hin|o m|hel|e k|ond|hi | la|lin| lu|idy|dye|u l|da |ole|ka |ani|ndo|ton| in|ewa|lov|o c|dan|u m|cho|uva|ia |pan|kam|we |ove|nan|uko|bi |kav| ya|lim| um|eli|u n|nga|uli|lia|mil|o n|’ch| kw|li | an|aha|dil|ata| dy|e l|n’t|i v|tuk|hoh|u i|hev|ni |niw|und| ul|ade|lel|kay|lon|e u|ino|i n|nje|uwa|she|yik| ly|hum|ako|i w|uma|vya|kwa|ba |’ma|val|kil|mwe|mba|mu |pal|umb|wav|hih|ulo| ka|e c|nde|wal|ima|’ni|lun|ihu|a y|vin|yoh|e i|vyo|inj|u c|kup|kuv| ki| m’|a s|e p|dol|lek|awa|o u|n’c|iwa|imu|anj|mal|yen|u w|yac|bil|oja|o a|ha |utu|ech|i d|uka|taw|n’m|ita|awu|ina|m’m|i a|itu|hon|lu |atu|mak|iku|lya|lit|jel|evo| vo|i l|mah|hap",
+    "snn": " ba|ye |bai| ye|ai |e b| ca|ai̱|ia |ji | ne| si|i̱ | go|goa|sia|i n|e c|a y|i y|̱ b| ja|se |aye|i j|a b|jë |iye|e g|re |oa |hua|yë |quë| gu|hue|e̱ |u̱i|gu̱|ne | ma|̱i |je̱|eo |e s| hu| ña|bay|o y|ñe |ja |ajë|to |aij|deo| ñe|a i|ayë|ba | ji|beo|cat| de| be|e j|i s|mai|e e|bi |a ñ| co| e |ato|uë |ña |i g|e ñ|i b| iy|cha|ë b|eba|coa|na | ts|e y|̱je|reb| i | ti|i t|ja̱|ach|ue |e i|i c|ni |oac|e t|a ë| re|je |aiy|oji|eoj|a̱j|oye| ë |ë t|cay|ija|ico|ihu| sa|i d|ere|a c| qu|ahu|iji|ca |ua | yë| to|a h|ase|ues|ë s|aca| se|uai|e d|ese|asi|caj| ai| tu|tut|utu|ë c|yeq|equ| na|cai| i̱|ti |mac|e m|ë g|ebi|a a|ani|tu |e n|yeb|eje|oya|toy|co̱|a m|̱ t|ije|sic|eso|eoy|a t| a | te|haj|cah|oas|are|i m|a s|ehu|añe| da|o b| do|i i|i r|e r|neñ|yer|huë|ë y| o |jai|a j|aje|a g|ibë|ëay|aña|aja|a o|coc|bëa|oca|sos|doi|oi |aco|eñe| jë|ë d|ë j|cas|ëca|hay|ea |̱ g|ari|tsi|yij|sai|̱ c|osi|teo|o h|co |̱re|nej|ëhu|o s|ose|jab|̱ni| me|rib|ñes|si |yaj|jëa|uaj|ë m|dar| yi|oe |e o|nes|i̱r|ma |nij|i h|oja|uëc|ama|ë i|i̱h|o̱u|̱uë|̱hu|aqu|ëco|e a|a̱ |ëja|̱ñe|o̱a|go̱| ëj|ñe̱|tia|abë|sih| bi|tsë|sëc| je| cu|̱ a|ned|cab|a d|ore|me | oi| ro|jay|tso|ë r|eye|ta |bë |ñaj|soe|̱ca|o̱c|año|o c|ire|ohu|uej|ñej|i a|ñas|ë q| ju|ban",
+    "kbp": "aa | pa| se|se |na |nɛ | nɛ| yɔ| wa|yʊ | ɛy|ɛ p|ɖɛ |aɖɛ|a ɛ|a w|ɛwɛ|ɛna|yɛ |ala|ɛ ɛ|ɛ s|ɔɔ |yɔɔ|ɩ ɛ| ɛ |paa|e ɛ|e p|ɛyʊ|aɣ | pɩ| ɛw|a p|waɖ|ʊʊ |a n| ta|yɔ |yaa|yɩ |wɛn|la |taa|ʊ w| tɔ|a a|ɔ p|ɛya| kɩ| ɩ |ɩyɛ|a t|ʊ ɛ|a k|wɛɛ|tɔm|ɔm |ɛ t|wal|ʊ n| wɛ| ŋg| tɩ|ɛ n|ɛ k|kpe|ɛ ɖ|maɣ|zɩ | an|ʊ t|ɛ y| pʊ|nɩ | tʊ|ɛyɩ|ɩɣ |ɩ t| we|ɩ y|anɩ| pɔ|a s|gbɛ| pɛ| ɛs|pa |kpa|ɛɛ |wɛ | nɔ|daa|nɔɔ|ʊ y|ama|ya | kʊ|tʊ |pal|mɩy|ayɩ|ɩ p|ɩna|tɩ | ɖɩ|ʊ p|ɔ ɛ| ɛl| mb|ɔ s|ŋgb|a y|ɩma|ɖɩ |ʊ k|ɔɖɔ|ɩ n|bʊ |mbʊ| ɛk| kp|ɛja| ɛj|tʊm|jaɖ|paɣ|kɛ | ye|ɛyɛ|alɩ| na|i ɛ| ke| ya| ɖɔ|ɩ ɖ|ɔɔy|nda|ɖɔ |fɛy|ɣ ɛ|ɩ s|jɛy|yi |ɖɔɖ|ɛla|lɩ |kɩm|kɩ |aŋ |bɛy|pee| ñɩ|lab|ɩzɩ|pe |eyi|ŋ p|ɩ ɩ|ɛzɩ| fa|ɔyʊ|aʊ |ʊmɩ|ʊyʊ|ʊma|a l|sɔɔ|a ɩ|ekp|ʊ s| aj|ajɛ| ɛt|iya|wey|ɩ k|ʊ ŋ|ma |kan|ɩsɩ|laa|ɔyɔ|ɩm |li | kɛ| lɛ|and|sam| sa|ɣtʊ|ɔ k|day|ɔɔl|ɣ p|sɩ |ɔŋ |ɩfɛ|akp|pak|sɩn|pɩf|naa|ndʊ|kul| ha|aɣt|ɔ y|uli| ɖe| kɔ|eek| pe| sɔ|m n|ŋga|ee |ga |ɖʊ |maʊ|m t|e e|ɣna|ɣ s|ŋgʊ|abɩ|akɩ|a ñ|yaɣ|pɩz|eki| ɖo|maŋ| la|yee|ana|tɩŋ|ɣ t|pad|ñɩm| ca|ɛ a|a ɖ|pɩs|ina|dʊʊ|ɖe | ɖa|a m|lɛ |ked| ɛɖ|lak|aka|gʊ |asɩ|ʊ ɖ| ɛd|dʊ |nʊm| nʊ|ñɩn|ba |ɛpɩ|pʊ |ada|ɛhɛ|hal| a |le |zɩɣ|ɛɛn|ɛsɩ| le|aɣz|uu |nɖɩ|e t|ŋ n|ɛda|lɩm|e w|ɔ w|ɩ a| ɛp| nɖ|ɛkɛ|i p|ɣzɩ|alʊ|zaɣ|bɩ |ɛ l|ɩkɛ|ɔ t|e y|ɖam|aaa|pɛw",
+    "tem": "yi | yi| ka|a ʌ| tə|uni|ni |wun| ɔ | aŋ| wu|ka | kə| kʌ| ʌŋ|nɛ |kə |tək| ʌm|əkə|ɔŋ |mar| ɔw|a k|ma |i k| a |wa | mʌ|i t|ri |ɔwa|thɔ| th| ma|ari|i m|a a|ʌma|aŋ | o | ba|tha|ba | kɔ|a y|ŋ k|ɔm |‐e | rʌ|lɔm|kɔ |i ɔ|kom|o w|ʌnɛ|te |mʌ | ŋa|i o|əm |hɔf|ɔf |alɔ|om |a m|ɔ b|ɔ y|aŋf|fəm|hal|kəp| mə|ŋfə|ʌth| tʌ|a t|a r|ŋ y|ŋth|ŋa | ʌt|ɔ k|e ɔ|ɛ t| ro|wan|ema| gb|ank| ye|th |yem|nko| mɔ|ʌwa| sɔ|kʌm|m a|kət|ʌmʌ|anɛ|rʌw|ɔ t|ʌme|ʌŋt|me |ʌte| bɛ|hɔ |a ɔ|ki |ʌŋ |m ʌ|m k|ar |ŋ ɔ|yɛ |əth|ɛ ʌ| ta|i a|ta | ʌk|ə k|thi|et |pet|pa |ŋɔŋ| te|ŋe |i ʌ|ra |i r|əpe| ŋɔ|ɛ k|ʌ k| yɔ| rə|kʌt|rʌ | yɛ|bɛ |e a|e t|ro |ɔ ʌ|akə|thə|ɔ m|a‐e|əpa|a w|kəl|ə b|yɔ |ə t|mɔ |bot|ŋ t|e y|əŋ |mʌs|gba|e m|m r| bo|ʌŋe| ak|ɛ a|nʌn|ləŋ|ələ|sɔŋ|ŋ b|təm|wop|ʌ a|ə y|kəs|sek|ə s|tʌt|li |ot | ko|ɛ ŋ|ŋ a|ekr| ra|ɔth|sɔt|ʌse|ath|ru |t k|ɛ m|e k|ɛth|ma‐|po | po| wo|ʌrʌ|i y|m t|m ŋ|tʌŋ|tɔŋ|e w|gbʌ|tə |nth|ʌyi|ʌlə|hən|ʌ ʌ|op |iki|ʌkə|rʌr|ʌru|ŋgb|sɔ |əyi|rʌn|gbə|ɔ a|ər |ɔkɔ| pə| ʌr|ənʌ|ləs|nka|ith|əli|ʌy |bəl|mʌy|ran|o ɔ|ɛ r|ant|f ʌ|mə |ti |f t| tɔ|əs |r k|hi |yik|ɔ ɔ|rək|kar|ʌ t|mʌt|lɔk|ayi|krʌ|pan|na |kʌr|mət|tət|tho|pi |mʌl| to|to | wa|ʌgb|thɛ|ə g|bas|eŋ |aŋk|ɔ r|thʌ|o t|ɛŋ |i‐e|kʌ |kʌs|mɔŋ|o d|kɔŋ|din|ɔ g|kəw|di |ŋ w|əma|ɛr |ʌ y|ək |ŋko",
+    "toi": " ku|a k|wa | mu|a m|la |ali|ya |tu |i a|e k|a a|aku|ula|ntu|ang| al|lim|lwa|kwa|aan|mun|mwi|de |ulu|ngu|wi |imw|luk|gul|na |ele| ak|kub|ons|unt|kul|oon|se |ant|nse| oo|zyi|gwa|si | ba|ba | lw|zya|uli|ela|a b| ci| ka| zy|waa|and| an| kw|ili|uki|eel|uba|nyi|ala|kut|ide| ma|kid|isi|uny|i m|kun|cis| ya|li |i k|nga|a l|yin|kuk|ka | ul|kus|ina|laa|nte|ila|tel|mul|wab|wee|nda|izy|ede| am|led|amb|ban|we |da |ana|kwe|e a|lil| bu|o k|bwa|aka|ukw|o a|ati|uko|awo|yan|ko |uci|ilw|bil|bo |a c|wo |amu|law|mbu|i b|bul|umi|ale|abi|kak|e m|u b|akw|u o|ti |sal|kuy|ung|bel|wak| bw|o l|ga |kal|asy|e u|lan| mb|lo |usa|ika|asi|aam|a n|ule|bi |cit|bun|kup|egw|muk|igw|u k|u a|mbi|wii|kum|a z|aci|ku |yi | mi|yo |le |mas|yig|ubu|kka|i c| ab|ene|ne |no |a y| wa|abo|ndi|uta|syo|aya|aba|len|kuc|eya|o y|mal|ind|lem| lu|ukk|mo |eka|mil|mbo|ita|uka|ama|lik|u z|ndu|mu |nzy|zum|bal|abu|upe|bam|syi|u m|liz|int|ta |yak|ley|e b|nzi|lii|kab|uti|ube|uum|i n|cik|ezy|iib|iba|ani|iko|iin|ile|was| ca|zye|alw| aa|sya|uku|twa|min|tal|muc|umu| nk|du |azy|onz|lek|kon|buk|o m|yik|i z|lwe|u u|oba|kwi|imo|gan|zil|del|usu| we|peg|yee|ngw|sum|imb|ump|mpu|nde|end|i o|yoo|o n| nc|a u|mi |ano|uya|o c|di |mba|yil|yal|ako|a o|isy|izu|omb",
+    "est": "sel|ja | ja|le |se |ust|ste|use|ise|õig|mis| va|gus|ele|te |igu|us |st |dus| õi| võ| on|on |e j| in|ini|nim|ma |el |a v|iga|ist|ime|al |või|da | te|lik| ig|adu|mes|ami|end|e k|e v|l o| ka|est| ra| se|õi |iku| ko|vab|aba|tus|ud |a k|ese| ku|l i|gal|tsi|lt |es |ema|ida|ks |a i|n õ|lis|atu|rah|tam|ast|sta|e t|s s| mi|ta |ole|stu|bad|ga |val|ine| ta|ne | pe|nda|ell|a t|ali|ava|ada|a p|ik |kus|e s|ioo|tes|ahe|ing|lus| ol|a a|is |vah|a s|ei | ei|kon|vas|tud|ahv|t k|as |a r|s t|e e|i v|eks|oon|t v|oni|kõi|s k|sio|sus|e a|gi |mat|min| pi|s v|oma|kul|dad| ni|e p| om|igi|tel|a j|e o|ndu|dse|lle|ees|tse|uta|vus|aal|aja|i t|dam|ats|ni |ete|pid|pea|e õ|its|lma|lev|nis|dis|ühi|sli|i s|nen|iel|des|de |t i|et |nin|eva|teg|usl|elt|ili|i m|ng | ee|tem|ses|ilm|sek|ab | põ|ait| ne|õrd|sed|võr|ul | üh| ki|abi| kõ|ega|rds| vä|ots| et| ri|põh|ed |töö|si |ad |i k| tä|ata| ab| su|eli| sa|s o|s j|sil|nni|ari|asu|nna| al|nud|uma|sik|hvu|onn|eab|emi|rid|ara|set|e m| ke|a e|täi|d k|s p|i e|imi|eis|e r|na | ül|a ü|koh|a o|aks|s e|e n| so|õik|saa|and|isi|nde|tum|hel|lii|kin|äär|sea|isk|een|ead|dum| kä|rii|rat|lem|umi|kor|sa |idu|mus|rit|har| si|vad|ita|ale|kai|teo| mõ|ade|üks|mas|lse|als|iaa|sia|sot|jal|iig|ite",
+    "snk": "an | a | na|na |a n|ga | ga|en | su|re |a k| ka|su |a a|a s| ta|un | se|ta |ma | i |ama|do |e s|ere|ser|aan| do|nan|nta| ra|n s| ma| ki| ja|jam| da|taq|ne |a g|a d| ya|n d|ni | ku|ren|ri | si|ana|u k|n ŋ|ŋa | nt|e k|maa| ŋa|ndi|wa |aqu|ane| ba|ra |a r| sa|oro|n t|raa|tan| ke|oxo| xa|i s|di |a f|and|ti |a b| be|i k|gan|aax|aaw| go|iri|kit|awa|axu|sir|a i| du|a t|me |ara|ya |ini|xo |tta|i a|oll|ran|on |gol|e d|n g|a j|nde|aar|e m|be |a m|ari|u n|lli|ron| fa|qu | ti|n n|aad|axa| ña|o a| so|ke |nu | ko|din|lle|dan|a y|man|i g|sor|u r|i t| no|are|xar|kuu| wa|enm|ada|baa|de |qun|o k|yi |xun|i n|i x| an| ha|kan|fo |att|ang|n k|o s|dam|haa|da |n y|kat|e t|li | fo|i d| mo|nme|u b|i m|aba| fe|len| re|pa |ant|ayi|yan|e n|a x|e y|n b| di|ppa|app|kap|xa |u t|o g|mox|ure| xo|ond|i i|a ñ|n x|taa|du |ell| me|iti|xu |u d|udo|ind|uud|anu|nga|o b|nun|nox|n f|ku |aga|anŋ|dun|itt|eye|ye | bo|ore|ite|u a|oor| yi| ro|sar|saa|ill|e b| wu|le |riy|nma|ro |ken|edd|fed|bur| mu|mun|o n|iin|tey|sel| tu|u m|lla|la |ono|ñaa|den|faa|a w|te |inm|ka |aay| te|ina|xoo|o d|ira|u s|o t|nmu|nen|ban|ene| ni|ña |o i|uur|una|o m|xon|n w|kaf|gu |e g|a h|kil|yu |und|aqi|een| bi|bag|i j|n ñ|laa|i r|no |sig|igi|kor| o |i b|bat",
+    "cjk": " ku|a k|yi |nyi| ny|la | mu|wa | ci|a c|a n| ha|we |a m|nga|ga |i k|kul|uli|sa |esw|ana|ela|a h|ung|ha |tel|swe|ze |ya |a u| ka| wa|uci| ya|ate|ci |mwe|kwa|ma |mbu|ji |kut|han|u m| ul|ang| mw|nat|ca | ca|e m|mu |uth|ali|i n|mut|thu|i m|e k|lit|hu |ina|ka |kup|na | ma|asa|aku|e n|a i|pwa|nji|wes|li | mb|e a|ifu|fuc|kan|bun|ize|ing|a y|anj|mba|uta|ita|i u| kw|muk|ite|kus|amb|lin|awa|imb|cip|lim|ong|esa|i c|nge| ak|ngu| ce| an|ili|ulu| na|naw|kuh|ama|upw|emu|lem|ila| un|a a|ula|ukw|aka|cif|ule|wo |has|kun|kha| xi|o n|tam| es|usa|ala|te |u c| ng|iku|cik|lya|wil|e c|ta |xim|wik| li|muc| ly|ikh|no |o m| in|i a|utu|e w|akw|mo |imo|mil| mi|i y|ba |ko |ngi|ufu|ku |lij|uka|iji|a w|umi|o w|tan|o y|e y|imw|ulw|uha|nal|so |o k| ye|i l|e u|umw|bu |aci|lwi|aha|ciz|mwi|kat|lon|u k|yes|ipw|ulo|aze|uni|wak|lo |ema|o c|aco| iz|kum|ika|e i|cim|isa|eny|umu|pem|yum|kwo| ik|kwe|e h|ngw|wam|cin|i h|a e|wan|ge |a x|was|le |kuk|uze|lik|gul|nin|pwe|o u|mah|ata|uma| up|sak|zan| uf|fun|go |wen|mbi|uso|ges|co |ngo|iki|hal|gik|ile|nda|kol|kal|kuz|ne | ja|oze|yoz|ikw|ipe|ces|swa|cis|man|i i|iso|ele|aso|waz|mi |upu| if|ise|umb|uvu|kil| it|i w|sok|o l|oko|nyo|una|bi |tum|iko|ene|hak|sem|a l|da |vul|nyu| ut| uk|eka",
+    "ada": "mi |nɛ | nɔ| nɛ| e | he|he |nɔ | a |ɔ n|kɛ | kɛ|i k| ng|a n|i n|aa |e n|blɔ| bl|ɛ n|ɛ e|gɛ |ngɛ|e b|lɔ | ma| mi|ɛ h| ts| ko|hi |ɛ a| ɔ |ko |e h|ɛɛ |tsu| ni|ɔ k|a m|a k|i h|ma | ny|emi|a h|ami| be|be |i a|ya | si|e m|e j| ka|si |ɛ m|ɔ f| kp|nya| je|ni |oo |loo|o n| hi| fɛ|fɛɛ|a t|laa|a b|je |e k| pe|pee| ye|mɛ |umi|ɔ m| ha|a a|ɔmi|omi|kpa| wo|ɔ e|i t|ɛ ɔ|e s|i b|ɔ h| lo|ɛ k|ke |ha |bɔ |maa|mla|i m|ɔ t|ɔ́ |e p|kaa|ahi| sa|lɔh|ɔhi|sum|ɔ a|nɔ́|o e| na| gb|ee |e ɔ| ji|e a|i s| ml|ɛ s|sa | hɛ|ɔɔ |yem|u n|alo| jɔ| ku| lɛ| bɔ| to|a s|ɛ b|i l|lɛ |sua|o k|uaa|a j| su|ɛmi| ad|ɛ y|imi|ade| fa| al|jɔm|des|esa|eɔ |ihi|ji |ne |ɛ t|a e|ɛ j|ake|e e|kak|ngɔ|o a|eem|i j|e y|wo | bu|him|e w|́ k|ɔ y|tom|suɔ|ia |ane|mah| ya|o b| ke|e g|wom|gba|ue |ba | bi| gu|uo |e t|san|uu |pa |hia| tu| hu|suo| we|tsɔ|ɔ s|e f|kuu|gɔ |o m|a p| ja|ɛ p|fa |ɔ b|ɛ g|hɛɛ| ab|a l|hu |ye |na |tue|i ɔ|isi| sɔ|sɔs|jam|gu |ti |ɛ w|sis|o h|uɔ |li |a w| ba|sɔɔ|abɔ| ju| hl|ɔsɔ|hla|ɔ l|a y|sɛ | ɔm|ɔmɛ|i w|ɛti|pɛt|kpɛ|to | yi|asa| kɔ|nyu|akp|pak|kpe|sɔɛ|ɔɛ |u ɔ|yɛm|o s|uɛ | nu|pe |se | sɛ|o j|a g|ɔ w| wa|sem| pu|su |e l| mɛ|u k|hɛ |nih|kas| fɔ|kon|onɛ|bim|lam|imɛ|nyɛ| fi|hiɔ|usu|i p|bi | ní|yo |eeɔ|uam|bum|níh|íhi|o l|ula|kul|guɛ|naa",
+    "bin": "e o|ne | ne|be |an |en |vbe| o |wan|mwa|n n|e e|emw|evb|mwe|in |na |e n| na| em|omw|e a|n e|e i| vb|re | ke|gha|gbe|wen| gh|ie |wee| om|e u| kh|bo |hia| ir|ha |o k|nmw|tin|n o|vbo|he |eti|ia |kev| ev| we| et|win|ke |ee |o n| hi|a n|a r|o r|gie|ran| ya|ira|mwi|a m| mw|a g|ghe|ogh| a | re| uh|eke| og|n k| no|ro |ye |khe| ye|hek|rri|nog|een|unm|a k|ogi|egb|ya |ere|wun|hun|mwu| mi|mie|de | rr|a e| ar|a o|n y|e v|o g|un |ra | ot| gb|uhu| ok|n i|ien|a v|rhi|e k|n a|i n|a y| ru|khi|n m|hie| eg|oto|arr|ba |ovb|u a|e y|ru |ian|hi |kpa| ra|o m|nde|yan|e w|and|to |o e|o h| ni| rh|e r|n g| er|n h|ugb|we |hae|on | iy|dom|rue|u e| or| ik|ren|a i|aro|iko|o y|n w|ben|ene|rio|se |i k|uem|ehe| ov|otu|okp|kug|oba|iob| uw|aen| do|iru|ae |tu |ue | iw| ma|wu |rro|o o|rie|n v| ug|a u|nna| al|ugh|agb|pa | ay|o w|ze |uwu|ma | eb|iye|aya|ugi|inn|gho|rre|nii|aku|gba|khu| se|yi |onm|ho |a w|ii |iwi| uy|uyi|e d| i |hin|obo|u o| ak|beh|ebe|uhi|bie|ai |da |i r|gbo|o v|won|mwo|umw| ag|ode| ek| la| um|aan| eh|egh|yin|anm|mo | kp| bi|kom|irr|i e|a a|kha|oda|bon|a d| ow|owa|ghi|n u|o a|yen|eem|ieg| az|aze|hoe| yi|oe |e g|ele|le |lug| ka|aa | as|yaa|gue|a h|mu |nre| od|n r|ero|ese| ku|enr|lel|vbi|wa |u i|a b|oro|bi ",
+    "gaa": "mɔ | ni|ni |kɛ |ɛ a| ak|lɛ |i a| he|ɛ m|akɛ| lɛ| ko|gbɛ|ɔ n|ɛɛ | mɔ| kɛ|yɛ |li |ɛ e|ko |ɔ k|i e|aa | yɛ|bɛ | ml|shi|ɛ h|egb| gb|ɔɔ |mli| fɛ|fɛɛ|heg|nɔ |a a|i n|aŋ |oo | nɔ|i k|he |ɛ n| es| am|ɛ k|ɔ y| sh| ma|esa|loo|ji |maŋ|amɛ|emɔ|ɔ f|fee| ek| al|ɛi |ii |ɔ m|ɔ a|bɔ |e n|ɔ l|amɔ| eh|alo|hi |naa|ee |ɔmɔ|oni| en|o n|kon|aji|i y|i m|sa |o a|eli|umɔ| bɔ| hu|yel|hu |eem|nɛɛ|tsu| ah| nɛ|sum|tsɔ| an|nii|o e|baa| as|mɛi|yɔɔ|gbɔ|aaa|na |i h|eye|ɛ g|eɔ |ɛji| at|ana|eko|ena|o h|ŋ n|kom| ts|ɔ e|maj|i s|i l|efe|ome| kp|a l|kwɛ|ku |ehe|toi|a n|saa|bɔm|ha |a m|kɛj|kpa|hew| ku| sa| na|hiɛ| hi|ane|gba|e e|i f| mɛ|ɛ t|bɛi|ash|ŋ k|e k| ej|hey|aka|ats|ne |its|e a|san| ay|ye | je| kr| ey|mla|eŋm|nit|a h|ɔ b|ɛ s|anɔ|ŋmɔ|a e|ɛ b|jeŋ|ɛ y|aan|kro| ab| af|any|iaŋ|ɔ g|a k| yɔ|uɔ |shw|ets|ekɛ|usu|ŋŋ |ŋma|esh|u l| ba| et|iɔ |i j|o k|suɔ|oko| yi|e s| ag|afe|agb|oi |ŋ a|rok|o s| aw|ai | ji|ɛ j|aye|ŋ h|ish|nyɛ|la | ad|o m| ef|tsɛ|sɛ |wɔ |ewɔ|mɔɔ|ehi|aŋm|hwe| bɛ| to|ɔ h|jɛ |aha| ja|paŋ|alɛ|awo|sɔ |ŋts|ɛŋt|iɛŋ|bii|diɛ| di|mɛb|eni|his| ny|e b|hik|u k|ate|i b|ŋmɛ|akw|o y|eŋ |ahe| lo|me |ade|ɔ j|kɛn|teŋ|yeɔ|ɔ s|des| su|wal|nyɔ| eb| eg|ŋ m|mef|saŋ|ɛ l|o l|u n|asa|sem|jia|wɛ | em|o b|gbe|hil|ihi|hih|ɔŋ |nak|e h|sus|e g",
+    "kng": " ya|na |ya |a k| na|a y|a m| ku|a n|a b| ba|u y|and|ka | mu|yin|wan|tu | lu|aka| mp|ve | yi|la |ntu| ki|mpe|pe |nda|a l|si |yan|ana|so | ke|e n|ons|nso|di |da |ndi|i y|u n|lu |mun|alu|unt|ina|e y|nza|luv|ala|uve| ma|u m|ke |za |ayi|sal|o m|ban|ndu|ta |isa|kan|ulu|i m|amb|ma |kim|u k|fwa| ny|nyo|yon|ama|ti |ang|anz|du |kus|o y| me|i n|to |ins|nsi|wa |usa| mo|kon|uta|end|i k|uka| bi|a d| ko|mbu|mos|sa | ve|ika|mu |osi|e k|uti|kuz|imp|a v|e m|und|ind| fw|ila| to|pwa|mpw|ngu|bal|adi|ba | sa|len|sam|sik|mab|tin|vwa|mba|kuk| di|yay|a t|yi | le|ant| ka|ata|isi|olo|kis|mut|ula|lo |bu |su | bu| at|amu|o n|dya|kut|dil| nz|ngi|abu|usu|but| nt|ni |bak|kul|e b|nga|e l|inz|imv|gu |wu | dy|lus|awu| ti|lak|bay|bun|kat|ngo|tal|i b|utu|kak|o k|bim|uzi|uza|mvu| ng|nak|iku|baw|esa|kin|ken|yak|mpa|luz|umu|nu |nta|dis|dik|vuk|u f|tan|sad|ati|nka|ank|luk|mak|ong| mb|ani|i l|lwa|aba|luy|uya|yal|ing|zwa|kuv|idi|ku |ga |zit|bis|uvw|uzw| ni|swa| nk|iti|mef|fun|ibu|nsa|aku|ufu|kub|lam|met|i a|mus|eta|a a|u t|twa|atu|tuk|fum|uko|iki|don|kol|kun|bam|eng|uku|ndo| ns|a s|ela|usi|pam|mvw|u b|i t|zo |anu|tis|uke|sul|te |gid|dib|yam|ilw| mf|ola|umb|uso|kam|gi |mbi|oko|nzi|i s| nd|mfu|luf|dus|bum|lut|mam|ded|wil|tad",
+    "ndo": "na |oku|wa | na|a o|a n|ka |ntu| uu|tu |uth| om|e o|mba|ong|omu|ba | ok|uut| ne|he |the|ang|hem|emb|unt|o o|a u| wo|nge| iy|ehe|kal| no|a w|o n|no |nga|e n|ko |mun|oka|lo |o i|lon|we |ulu|a m|ala| ke|la |a k|u n|han|ku |gwa|osh|shi|ana|ngu|ilo|ano|ngo|keh| mo|ga |nen|man|ho |luk|tha|ge |gul|u k|eng|ha |a y|elo|uko|a e|ye |hil|uka|li |go |wan|ath|wo |thi|dhi|uun| pa|kwa| ta|a p|ya | sh| ko|nka|lwa| os|mwe|oma|ta |ema|sho| ka|e m| yo|sha|wok|ika|po |o w|onk|e p|pan|ith|a i|opa|gel|hik|iya|hi |aan|una|o g|kuk|alo|o e|nok|ndj|le |a a|men|yom|a s|i n| li|and| po|pam|lat|kan|ash|waa|aka|ame|gam|umb|a t|ond|yuu|o k|olo|ane|ing|igw|aa |ele|kul|mon| gw|ilw|gan|o y|iil|iyo| el|kut|nin|oko|ike|o m| ku|adh| ye|amw|ome|yeh|aye| ga| on| yi|a g|lyo|ne | ng|mbo|opo|kug|eko|yok|wom| oy|non|iye| go|ulo|e e| we| e |ina|ant|omo|ene| a |i k|mok|him| dh|und|ndu| me|eho|wen|nek| op|alu|e g|ima|kat|ota|oye|ila|ngw|yop|wat|ela|o u|a l| ii| ay| nd| th|o l|yon|ili|oon|okw|yaa|taa|lwe|omb| ni|aku|i m|mo |ula|ekw|enw|iyu|pok|epa|uki|ke | wu| mb|meh|e t|uni|nom|dho|pau|eta|yi | ly|o a|ono|lun|lak|ola|yo |lol|ank|bo |i o|awa|nwa|a h|naw|hok|nem|kom|ndo|o s|u t|vet|mbu|ani|uga|ndi|ukw|udh|lok|e k|alw|kwe|kun| ya",
+    "quy": "chi|nch|hik|una| ka|anc|kun|man|ana|aq |cha|aku|pas|as |sqa|paq|nan|qa |apa|kan|ikp|ik |ech|spa| de|pa |cho|ere|der|rec|am | ru|an | ma| ch|kpa|asq|ta |na |nam|nak|taq|a k|qan|ina|run|lli|ach|nap|pi |mi | ll|yoq|asp|ima|hay|hin|aqa|nku|ant|ayn|oyo| hi| im|hoy|cio|nta|nas|q k|api|iw |wan|kuy|kay|liw|aci|ion|ipa|lla|oq |npa|ay |kas|a m|nac| na|inc|all|ama|ari|anp| ya|chu| hu|nin|pip|i k|qmi|hon|w r|ata|awa|a c|ota|in |yku|yna| wa|a h|has|a d|iku|a l| li|pan|ich|may| pi| ha|onc|a r|onk| ot|ku | qa|ank|aqm|mun|anm|hu |a p|nma| mu|qta|n h|pap|isq|yni|ikm|ma |wsa|aws|kaw|ibr|bre|lib|ayk|usp|nqa|e k| al|lin|n k|re |ara|nat|yac|kma|war|huk|uwa|yta|hwa|chw| sa|was|kus|yan|m d|kpi|q m|a i|q l|kin|tap|a a|kta|ikt|i c|a s|uy | ca|qaw|uku| tu| re|aqt|ask|qsi|sak|uch|q h|cas|tin|pak|ris|ski|sic|q d|nmi|s l|naq|tuk|mpa|a y|k c|uma|ien|ypi| am|qaq|qap|eqs|ayp|req|qpa|aqp|law|ayt|q c|pun| ni|a q|ruw|i h|haw|n c| pa|amp|par|k h| le|yma|ñun|ern|huñ|nni|n r|anq|map|aya|tar|s m|uñu|ten|val|ura|ita|arm|isu|s c|onn|igu| ri|qku|naw|k l|u l|his|ley|say|s y|rim|aru|rma|sun|ier|s o|qar|n p|a f|a t|esq|n a|oqm|s i|awk| va|w n|hap|lap|kup|i r|kam|uyk|sap| qe|ual|m p|ran|nya|gua| pe| go|gob|maq|sum|ast| su| ig",
+    "rmn": "aj |en | te|te | sa| le|aka|pen| si| e |el |ipe|si |kaj|sar| th|and| o |sav|qe |les| ma|es | ha|j t|hak|ja |ar |ave| an|a s|ta |i l|ia |nas| aj|ne | so|imn|mna|sqe|esq|nd |tha|haj|e s|e t|e a|enq|asq|man| ja|kan|e m| i | ta|the|mes|cia|bar|as |isa|utn|qo |hem|o s|s s| me|vel|ark|i t| na|kas|est| ba|s h|avo| di|ard| bi| pe|rka|lo | ak|ika|e r|a a| pr|e k|qi |mat|ima|e p|a t| av|e d|r s|n s|anu|nuś|o t|avi|orr|o a| ka| re|n a|re |aja|e o|sqo|sti| ov|õl |l p|nqe|ere|d o|vor|so |no |dik|rel|ove|n t|ve |e b|res|tim|ren| de|àci|o m|i a|but|len|ali|ari|rre|de | pa|ver| va|sqi|ara|ana|vip|rak|ang|vi | ra|or |ker|i s|eme|e z|ata|e l|a e|rip|rim|akh|la |o p|kar|e h|a p|na |ane|rin|ste|j b|er |ind|ni |tne| ph|nip|r t| ke|ti |are|ndo| je|l a|uśi|e n|khi| bu|kon|lim|al |tar|ekh|jek|àlo|o k| ko|rde|rab|aba| zi|ri |aća|ćar|śik|dõl|dor|on |ano|ven| ni|śaj| śa|khe|ća |ast|j s|uti|uni|tni|naś|i d|mut| po|i p|a m| pu|a l|l s|som|n n|ikh|nik|del|ala|ris|pes|pe |j m|enć|e e|nća|ndi|rdõ|kri|erd|śka|emu|men|alo|nis|aśt|śti|amu|kh |tis|uj |j p|do |ani|ate|nda|o b|nge|o z|soc|a d|muj|o j|da |pri|rdo| as|cie|l t|ro |i r|kla|ing|a j| ze|zen|j e|ziv|hin|aśk| st|maś|ran|pal|khl|mam|i b|oci|rea|l o|nqo| vi|n e"
+  },
+  "Cyrillic": {
+    "rus": " пр| и |рав|ств| на|пра|го |ени|ове|во | ка|ани|ть | в | по| об|ия |сво| св|лов|на | че|ело|о н| со|ост|чел|ие |ого|ет |ния|ест|аво|ый |ажд| им|ние|век| не|льн|ли |ова|име|ать|при|т п|и п|каж|или|обо| ра|ых |жды| до|дый|воб|ек |бод|ва |й ч|его|ся |и с|ии |аци|еет|но |мее|и и|лен|ой |тва|ных|то | ил|к и|енн| бы|ию | за|ми |тво|и н|о п|ван|о с|сто|аль| вс|ом |о в|ьно|их |ног|и в|нов|ако|про|ий |сти|и о|пол|олж|дол|ое |бра|я в| ос|ным|жен|раз|ти |нос|я и| во|тор|все| ег|ей |тел|не |и р|ред|ель|тве|оди| ко|общ|о и| де|има|а и|чес|ним|сно|как| ли|щес|вле|ься|нны|аст|тьс|нно|осу|е д| от|пре|шен|а с|бще|осн|одн|быт|сов|ыть|лжн|ран|нию|иче|ак |ым |ват|что|сту|чен|е в| ст|рес|оль| ни|ном|род|ля |нар|вен|ду |оже|ны |е и| то|вер|а о|зов|м и|нац|ден|рин|туп|ежд|стр| чт|я п|она|дос|х и|й и|тоя|есп|лич|бес|обр|ото|о б|ьны|ь в|нии|е м|ую | мо|ем | ме|аро| ре|ава|кот|ав | вы|ам |жно|ста|ая |под|и к|ное| к | та| го|гос|суд|еоб|я н|ен |и д|мож|еск|ели|авн|ве |ече|уще|печ|дно|о д|ход|ка | дл|для|ово|ате|льс|ю и|в к|нен|ции|ной|уда|вов| бе|оро|нст|ами|циа|кон|сем|е о|вно| эт|азо|х п|ни |жде|м п|ког|от |дст|вны|сть|ые |о о|пос|сре|тра|ейс|так|и б|дов|му |я к|нал|дру| др|кой|тер|ь п|арс|изн|соц|еди|олн",
+    "ukr": "на | пр| і |пра|рав| на|ня |ння| за|ого| по|ти |го |люд| лю|во | ко| ма|льн|юди|их |о н| не|аво|анн|дин| св|сво|ожн|кож|енн|пов|жна| до|ати|ина|ає |а л| бу|аці|не |ува|обо| ос| як|має| ви|них|аль|або|є п| та|ні |ть |ови|бо | ві| аб|ере|і п|а м|вин|без|при|іль|ног|о п|ми |та |ом |ою |бод|ста|воб| бе|до |ва |ті | об|о в|ост| в | що|ий |ся |і с| сп|инн|від|ств|и п|ван|нов|нан|кон| у |ват|она|ії |но |дно|ій |езп|пер| де|ути|ьно|ист|під|сті|бут| мо|и і|ідн|ако|нні|ід |тис|що |род|і в|а з|ава| пе|му |і н|а п|соб|ої |а в|спр|ів |ний|яко|ду |вно|і д|ну |аро|и с| ін|ля |рів|у в| рі|и д|нар|нен|ова|ому|лен|нац|ним|ися|чи |ав |і р|ном| ро|нос|ві |вни|овн| її|ові|мож|віл|у п| пі| су|її |одн| вс|ово|ють|іст|сть|і з| ст|буд| ра|чен|про|роз|івн|оду|а о|ьни|ни |о с|сно|зна|рац|им |о д|ими|я і|ції|х п|дер|чин| со|а с|ерж|и з|и в|е п|ди |заб|осо|у с|е б|сі |тер|ніх|я н|і б|кла|спі|в і| ні|о з|ржа|сту|їх |а н|нна|так|я п|зпе| од|абе|для|ту |і м|печ| дл|же |ки |віт|ніс|гал|ага|е м|ами|зах|рим|ї о|тан|ког|рес|удь| ре|то |ков|тор|ара|сві|тва|а б|оже|соц|оці|ціа|осн|роб|дь‐|ь‐я|‐як|і і|заг|ахи|хис|піл|цій|х в|лив|осв|іал|руч|ь п|інш|в я|ги |аги| ді|ком|ини|а і|оди|нал|тво|кої|всі|я в|ною|об |о у|о о|і о",
+    "bos": " пр| и |рав| на|пра|на |да |ма |има| св|а с|а п| да|а и| по|је |во |ко |ва | у |ако|но |о и|е с| за| им|аво|ти |ава|сва|и п|ли |о н|или|и с|их |вак| ко|ост|а у| сл|не |вањ| др|ње | не|кој|ња | би|ије|и д|им |ств|у с|јед|бод|сло|лоб|обо| ил|при| је|ање| ра|а д| об| су|е и|вје|се |ом |и и|сти| се|ју |дру|а б| ос|циј|вој|е п|а н|раз|су |у п|ања|о д|ује|а о|у и| од|и у|ло |ова|дје|жав|оје|а к|ни |ово|едн|ити|аци|у о|о п|нос|и о|бра| ка|шти|а ј|них|е о|пре|про|ржа| бу|буд|тре| тр|ог |држ|бит|е д|у з|ја |ста|авн|ија|е б|миј|и н|реб|сво|ђи |а з|ве |бил|ред|род|аро|ило|ива|ту |пос| ње| из|е у|ају|ба |ка |ем |ени|де |јер|у д|одн|њег|ду |гов|вим|јел|тва|за | до|еђу|ним| са|нар|а т| ни|о к|оји|м и| см| ст|еба|ода|ран|у н|дна|ичн|уђи|ист|вно|алн|и м| дј|нак|нац|сно|нст|тив|ани|ено|е к|е н|аве|ан |чно|и б|ном|сту|нов|ови|чов|нап|ног|м с|ој |ну |а р|еди|овј|оја|сми|осн|анс|ара|дно|х п|под|сам|обр|о о|руг|тво|ји | мо|его|тит|ашт|заш| кр|тељ|ико|уна|ник|рад|оду|туп|жив| ми|јек|кри| ов| вј| чо|ву |г п| оп|међ|њу |рив|нич|ина|одр|е т|уду| те|мје|ење|сви|а ч|у у|ниц|дни| та|и т|тно|ите|и в|дст|акв|те |ао | вр|ра |вољ|рим|ак |иту|ави|кла|вни|амо| он|ада|ере|ена|сто|кон|ст |она|иво|оби|оба|едс|как|љу ",
+    "srp": " пр| и |рав|пра| на|на | по|ма | св|да |има|а п|а и|во |ко |ва |ти |и п| у |ако| да|а с|аво|и с|ост| за|о и|сва| им|вак|ава|је |е с| сл| ко|о н|ња |но |не | не|ом |ли | др|или|у с|сло|обо|кој|их |лоб|бод|им |а н|ју | ил|ств| би|сти|а о|при|а у| ра|јед|ог | је|е п|ње |ни |у п|а д|едн|ити|а к|нос|и у|о д|про| су|ање|ова|е и|вањ|и и|циј| ос|се |дру|ста|ају|ања|и о| об|род|ове| ка| де|е о|аци|ја |ово| ни| од|и д| се|ве |ује|ени|ија|авн|жав| ст|у и|м и|дна|су |ред|и н|оја|е б|ара|што|нов|ржа|вој|држ|тва|оди|у о|а б|одн|пош|ошт|ним|а ј|ка |ран|у у| ов|аро|е д|сно|ења|у з|раз| из|осн|а з|о п|аве|пре|де |бит|них|шти|ву |у д|ду |ту | тр|нар| са|гов|за |без|оји|у н|вно|ичн|еђу|ло |ан |чно|ји |нак|ода| ме|вим|то |сво|ани|нац| ње|ник|њег|тит|ој |ме |ном|м с|е у|о к|ку | до|ика|ико|е к|пос|ашт|тре|алн|ног| вр|реб|нст| кр|сту|дно|ем |вар|е н|рив|туп|жив|те |чов|ст |ови|дни|ао |сме|бра|ави| ли|као|вољ|ило|о с|штв|и м|заш|њу |руг|тав|анс|ено|пор|кри|и б|оду|а р|ла | чо|а т|руш|ушт| бу|буд|ављ|уги|м п|ком|оје|вер| ве|под|и в|међ|его|вре|акв|еди|тво| см|од |дел|ена|рад|ба | мо|ну |о ј|дст|кла| оп|как|сам|ере|рим|вич|ива|о о| он|вни|тер|збе|х п|ниц|еба|е р|у в|ист|век|рем|сви|бил|ште|езб|јућ|њен|гла",
+    "uzn": "лар|ан |га |ар | ва| би|да |ва |ир | ҳу|ига|уқу|бир|ҳуқ|қуқ|ган| ҳа|ини|нг |р б|иш | та|ни |инг|лик|а э|ида|или|лиш|нин|ари|иши| ин|ади|он |инс|нсо|сон|ий |лан|дир| ма|кин|и б|ши |ҳар| бў|бўл| му|дан|уқи|ила|қла|р и|қиг|эга| эг| ўз|ки |эрк|қил|а б|оли|кла| эр|гад|лга|нли| ол|рки|и ҳ| ёк|ёки| қа|иб |иги|лиг|н б|н м| қи| ба|ара|атл|ри | бо|лат|бил|ин |ҳам|а т|лаш|р ҳ|ала| эт|инл|ик |бош|ниш|ш ҳ|мас|и в|эти|тил|тла|а ҳ|и м|а қ|уқл|қар|ани|арн|рни|им |ат |оси|ўли|ги | да|а и|н ҳ|риш|и т|мла|ли | ха|а м|ият| бу|рла|а а|рча|бар|аси|ўз |арч|ати|лин|ча |либ|мум| ас|аро|а о|ун |таъ| бе| ту|икл|р в|тга|тиб| ке|н э|ш в|мда|амд|али|н қ|мат|шга| те|сид|лла|иро| шу| қо|дам|а ш|ирл|илл|хал|рга| де|ири|тиш|умк|ола|амл|мки|тен|гин|ур |а ў|рак|а ё|имо| эъ|алқ| са|енг|тар|рда|ода| ша|шқа|ўлг|кат|сий|ак |н о|зар|и қ|ор | ми|нда|н в| си|аза|ера|а к|тни|р т|мил| ки|к б|ана|ам |ошқ|рин|сос|ас | со|сиз|асо|нид|асл|н ў|н т|илг|бу |й т|ти |син|дав|шла|на |лим|қон|и а|лак|эма|муҳ|ъти|си |бор|аш |и э|ака|нга|а в|дек|уни|екл|ино|ами| жа|риг|а д| эм|вла|лма|кер| то|лли|авл| ка|ят |н и|аъл|чун|анл|учу| уч|и с|аёт| иш|а у|тда|мия|а с|ра |ўзи|оий|ай |диг|эът|сла|ага|ник|р д|ция| ни|и ў|ада|рор|лад|сит|кда|икд|ким",
+    "azj": " вә|вә |әр |лар| һә|ин |ир | ол| һү| би|һүг|үгу|гуг|на |ләр|дә |һәр| шә|бир|ан | тә|лик|р б|мал|лма|асы|ини|р һ|шәх|ән |әхс|ары|гла|дир|а м|али|угу|аг | ма|ын |илә|уна|јәт| ја|икд|ара|ар |әри|әси|рин|әти|р ш|нин|дән|јјә|н һ| аз|ни |әрә| мә|зад|мәк|ијј| мү|син|тин|үн |олу|и в|ндә|гун|рын|аза|нда|ә а|әт |ыны|нын|лыг|илм| га| ет|ә ј|кди|әк |лә |лмә|олм|ына|инд|лун| ин|мас|хс |сын|ә б|г в|н м|адл|ја |тмә|н т|әми|нә |длы|да | бә|нун|бәр|сы | он|әја|ә һ|маг|дан|ун |етм|инә|н а|рлә|си | ва|ә в|раг|н б|ә м|ама|ры |н и|әра|нма|ынд|инс| өз|аны|ала| ал|ик |ә д|ләт|ирл|ил | ди|бил|ығы|ли |а б|әлә|дил|ә е|унм|алы|мүд| сә|ны |ә и|н в|ыг |нла|үда|аси|или| дә|нса|сан|угл|уг |әтл|ә о|хси| һе|ола|кил|ејн|тәр|јин| бу|ми |мәс|дыр|һәм| да|мин|иш | һа| ки|у в|лан|әни| ас|хал|бу |лығ|р в| ед|јан|рә |һеч|алг| та|еч |и с|ы һ|сиа|оси|сос|фиә|г һ|афи|ким|даф| әс|ә г| иш|н ә|ији|ыгл|әмә|ы о|әдә|әса| со|а г|лыд|илл|мил|а һ|ыды|сас|лы |ист| ис|ифа|мәз|ыр |јар|тлә|лиј|түн|ина|ә т|сиј|ал |рил| бү|иә |бүт| үч|үтү|өз |ону| ми|ија| нә|адә|ман|үчү|чүн|сеч|ылы|т в| се|иал|дах|сил|еди|н е|әји|ахи|хил| ҹә|миј|мән|р а|әз |а в|илд|и һ|тәһ|әһс|ы в|һси|вар|шәр|абә|гу |раб|аја|з һ|амә|там|ғын|ад |уғу|н д|мәһ|тәм| ни|и т| ха",
+    "bel": " і | пр|пра|ава| на|на | па|рав|ны |ць |або| аб|ва |ацы|аве|ае | ча|ння|анн|льн| ма| св|сва|ала|не |чал|лав|ня |ай |ых | як|га |век|е п| ад|а н| не|пры|ага| ко|а п| за|кож|ожн|ы ч|бод|дна|жны|ваб|цца|ца | ў |а а|ек |мае|і п|нне|ных|асц|а с|пав|бо |ам |ста| са| вы|ван|ьна| да|ара|дзе|одн|го |наг|він|аць|оўн|цыя|мі |то | ра|і а|тва| ас|ств|лен|аві|ад |і с|енн|і н|аль|най|аво|рац|аро|ці |сці|пад|ама| бы| яг|яго|к м|іх |рым|ым |энн|што|і і|род| та|нан| дз|ні |я а|гэт|нас|ана| гэ|інн|а б|ыць|да |ыі |оў |чын| шт|а ў|цыі|які|дзя|а і|агу|я п|ным|нац| у | ўс|ыя |ьны|оль|нар|ўна|х п|і д|ў і| гр|амі|ымі|ах | ус|адз| ні|эта|ля |воў|ыма|рад|ы п|зна|чэн|нен|аба| ка|ўле|іна|быц|ход| ін|о п| ст|ера|уль|аў |асн|сам|рам|ры | су|нал|ду |ь с|чы |кла|аны|жна|і р|пер|і з|ь у|маю|ако|ыцц|яко|для|ую |гра|ука|е і|нае|адс|і ў|кац|ўны|а з| дл|яўл|а р|аюч|ючы|оду| пе| ро|ы і|вы |і м|аса|е м|аду|х н|ода|адн|нні|кі | шл|але|раз|ада|х і|авя|нав|алі|раб|ы ў|нна|мад|роў|кан|зе |дст|жыц|ані|нст|зяр|ржа|зак|дзі|люб|аюц|бар|ім |ены|бес|тан|м п|дук|е а|гул|я ў| дэ|ве |жав|ацц|ахо|заб|а в|авы|ган|о н|ваг|я і|чна|я я|сац|так|од |ярж|соб|м н|се |чац|ніч|ыял|яль|цця|ь п|о с|вол|дэк| бе|ну |ога| рэ|рас|буд|а т|асо|сно|ейн",
+    "bul": " на|на | пр|то | и |рав|да |пра| да|а с|ств|ва |та |а п|ите|но |во |ени|а н|е н| за|о и|ото|ван|не | вс|те |ки | не|о н|ове| по|а и|ава|чов|ни |ане|ия | чо|аво|ие | св|е п|а д| об|век|ест|сво| им|има|ост|и д|и ч|ани|или|все|ли |тво|и с|ние|вот|а в|ват|ма | ра|и п|и н| в |ек |сек|еки|а о| ил|е и|при| се|ова|ето|ата|воб|обо|бод|аци|ат |пре|оди|к и| бъ| съ|раз| ос|ред| ка|а б|о д|се | ко|бъд|лно|ния|о п| от|ъде|о в|за |ята| е | тр|и и|о с|тел|и в|нит|е с|ран| де|от |общ|де |ка |бра|ен |ява|ция|про|алн|и о|ият|ст |нов| до|его|как|ато| из|нег|а т|ден|а к|щес|а р|тря|а ч|ряб|о о|вен|ябв|бва|дър|гов|нац|ено|тве|ърж|е д|нос|ржа|а з|вит|зи |акв|лен| та|ежд|и з|род|е о|обр|нот| ни| с |т с|нар|о т|она|ез |йст|кат|иче| бе|жав|е т|е в|тва|зак|аро|кой|осн| ли|ува|авн|ейс|сно|рес|пол|нен|вни|без|ри |стр| ст|сто|под|чки|вид|ган|си |ди |и к|нст| те|а е|вси|еоб| дъ|сич|ичк|едв|жен|ник|ода|т н|о р|ака|ели|одн|елн|лич| че|чес|бще| ре|и м| ср|сре|и р|са |лни| си|дви|ичн|жда| къ|оет|ира|я н|дей| ме|еди|дру|ход|еме|кри|че |дос|ста|гра| то|ой |тъп|въз|ико|и у|нет| со|ави|той|елс|меж|чит|ита|що |ъм |азо|зов|нич|нал|дно| мо|ине|а у|тно|таз|кон|лит|ан |клю|люч|пос|тви|а м|й н|т и|изв|рез|ази|ра |оят|нео|чре",
+    "kaz": "ен |не | құ|тар|ұқы| ба| қа|ға |ада|дам|құқ|ық | бо| ад|ықт|қта|ына|ар | жә|ың |ылы|әне|жән| не|мен|лық|на |р а|де | жа|ін |а қ|ары|ан | әр|қыл|ара|ала| ме|н қ|еме|уға|ның| де|асы|ам |іне|тан|лы |нды|да |әр |ығы|ста|еке| өз|ын |ған|анд|мес| бі| қо|ды |ің |бас|бол|етт|ып |н б|ілі|қық|нде|ері|е қ|алы|нем|се |бір|лар|есе|ы б|тын|а ж| ке|тиі|ост|ге |бар| ти|е б| ар|дық|сы |інд|е а|аты| та| бе|ы т|ік |олы|нда|ғын|ры |иіс|ғы | те|бос|луы|алу|сын|рын|еті|іс |рде|қығ|е ж|рін|дар|іні|н ж|тті|қар|н к|ім | ер|егі|ыры|ыны| са|рға|ген|ынд|аны|уын|ы м|лға|ана|нің|тер|уы |ей |тік|ке |сқа|қа |мыс|тық|м б|ард| от|е н|е т|мны|өзі|нан|гіз|еге| на|ы ә|аза|ң қ|лан|нег|асқ|кін|амн|кет|рал|айд|луғ|аса|ті |рды|і б|а б|ру | же|р м|ді |тта|мет|лік|тыр|ама|жас|н н|лып| мү|дай|өз |ігі| ал|ауд|дей|зін|бер|р б|уда|кел|біл|і т|қор|тең|лге| жү|ден|ы а|елі|дер|ы ж|а т|рқы|рлы|арқ| тү|қам|еле|а о|е ө|тін|ір |ең |уге|е м|лде|ау |ауы|ркі|н а|ы е|оны|н т|рыл|түр|ция|гін| то| ха|жағ|оға|осы|зде| ос|ікт|кті|а д|ұлт|лтт|тты|лім|ғда| ау| да|хал|тте|лма| ұл|амд|құр|ірі|қат|тал|орғ|зі |елг|сіз|ағы| ел|ң б|ыс | ас|імд|оты| әл|н е|ағд|қты|шін|ерк|е д|ек |ені|кім|ылм|шіл|аға|сты|лер|гі |атт|кен| кө|ым‐| кұ|кұқ|ра |рік|н ә| еш",
+    "tat": " һә|лар|әм |һәм| ке| хо|кук|оку|хок|еше| бе|ләр|кеш|га |әр |рга|ан |кла| бу|ар |ең |нең|гә | то| ба|да |ргә| ти|ырг|һәр|ене|бер|ән |ен |р к|бул|укл|дә |а т|ары|тор|ире| үз|на |ган|ара| ка| ал|ә т|нә | ит| дә|ы б| ир|рын|ше |ын |енә|тие|лык|екл|ына|н т|иеш|бар|еле|ка |елә|а х|н б|кы |рек|ала|кар| та|ә к|нда|еш |лән|бел|укы|лан|ите|тә |шен|ле |лы |ез |ерг|н и|ә б|а к|клә|үз |тел|лыр|не |әрг|ы һ|е б| га| ха|алы|рне|м и|тен|әрн|а б|ның|ынд|ың |ләт|дан|сә | як|лга|улы|ел |а а| яи|яис|асы|ш т|а һ| са|рлә|лек|иге|ә х|гез|орм|ем |аны|р б|м а|р һ|рмы|мыш|сын|шка|ә һ|исә|тәр|үлә|әт |мәт|сен|сез|чен| ни|ә и|н м|илл|ять|ны |ылы|үзе| ки| эш| ту|алу|акы|ып |уга|ль |тан|н к|лу |бу |мас|рен|кә | тү| тә|түг|зен| җә|тын|ди |баш|кле|гән|ть | би|әре|штә|гын|әүл|ер |мил| ми|клы|гел|ыш |лер|ерл|әве|рдә|а я|р а| мә| рә|лем|хал| ан|ң т| аш|ык |ция|е х|стә|ә д|аль|рак|ек | де|рәв|тот|кән|улг|орг|веш|ешт|ни |итә|кка|м т|үге|шел|а и|ндә| да|рел|кер| кы|ерә|та |н я|еге|ый |а д|аци|р о|шла|тлә|әтл|н д|айл|ллә|ард|рда|кта|шкә| за|ге |ләш|ш б|әсе|кон|шыр|циа|нин|лау|уры|ры |оты|әне| тө|инд|нди| җи|оци|соц|лә |арт|якл|зак|тиг|рке| ди| со|ыкл|кем| ко|р и|ң б|әте|гыя|чар|үгә|ин |иле| сә| ил|мгы| ае|н а|аер|ыны|л һ",
+    "tuk": " би|лар| ве|ве |да |ада|ары| хе|ир | ад|бир|дам|кла|ер |р б|ың | ха|ара|га |ен |лан|ыны|или|дыр|ам |ала| бо|хер|р а|ыр |лы |лер|ан |бил|иң |ыды|р х|акл|нда| өз|клы|ны |хук|ери| ху|уку|ага|не |лыд|ине|ына|лен|на |хак|де |‐да|ин |рын|атл| эд|маг|өз | де|асы|лыг|кук|е а|ынд|алы|лма|бол|дан|ини|а х| я‐|е х|ге |иле|я‐д|ар |ама|ли |ыгы|ети| ба| га|гын|ере|укл|лиг|ның|зат|лык|тлы|нде|ни |лик|ден|мак|сын|дил|ры |аны|кин|әге|п б|а г|хем|иги|эрк|аза|а д|мек| эр|мал|ыкл|мәг|сас| эс|екл| ма|рин|эса|ола|ы б|айы|н э|эди| гө| хи|сы | аз|баш|ы д|йда|шга|ашг|а в| до|ыет|ы в|дак|ниң|рки|гал|чин|гда|ак | җе|а б| эт|этм|кы |лет|йән| та|гин|ян |тме|хич|ич |мез| гу|хал|ылы|үнд|илм|дай|ягд| яг|и в|им |акы|ы г|ән |а а|рың|ги |тле|н м| го|ип |ал |еси| се|лме| ка|м х|дең|ң х|е д|дир|илл|рил| ал|кан|е г|лин|ра |дол| бе| ми|мил|ң д|н х|ели|н а|е м| ге|ы х| дө|ик | со|ң а|чил|дөв|е б| са|гар|е в|ең |н б|рма| ме|кли|үчи| дә| үч|ция|н в| дү|и б|айд|кле|сер|а я|соц|гор|оци|дал|мы |олм|циа|уң | он|уп |кда|дәл|ири| ди|еле|лип|алк|лим|гур|үни|нме| әх|н г| иш|ы ө|ң э|нун|еги|тин|ы а|рле|аци|ыз |з х|сыз|аха|м э|олы|рам| ту| ни|ып |ерт|алм|ора|и х|хли|әхл|к э|өвл|вле|тмә|ет |нли|ахс|гөз|гы |етл|ы ү|нуң|ону|сиз|емм|ек ",
+    "tgk": "ар | ба| ҳа| да|ад | ва|он |ва | та|дар|ти | ин|ба | бо| ки|аро| до|ои |дор|ард|ки |бар|д ҳ|уқу| як|ин |ҳар|и о| на| ма|и м|ора| ҳу|як |ни |нсо|инс|и ҳ|аи |и б|сон|рад| му|ҳои|р я|ҳуқ|қуқ|ҳақ|ии |к и| ша|и д| аз|и и| оз|нд |яд |қ д|озо|аз |зод|анд|д б|ояд| ка|ият|она|да |амо|ақ |а б|ди | ё |гар|ат |дан|ҳам|оди|рда|моя| он|уда|қи | ху|бо |и т|дон|ст |нам|н ҳ|ода|и с|ан |н б|мил|и х|бош|они|оша|худ|ава|боя|аст|и а|ро | ме|а ҳ|имо|ила|оми|оба|ида|кар|н д|лат|д в|а ш|ҳо | ас|таҳ|рои|и н|д к|яти| ди|шад|ӣ в|ри |рдо|шав| ми|е к|роб|тар|та |кор| бе|о д|вад|мон|иҳо|ли |уд |оси|ошт|ми |р м|ати|т б| со|ӣ ё|нҳо|мин|шар|ара|таъ|ани|а в|иро|а д|дав|ят |даа| са|ама|дош|раф|шуд|лӣ |д а|оти|а м| фа|ист|ор |р ҳ|на |и к|р к|д т|и ҷ|и ш| эъ| су|н м|н в|и ӯ|фи |вар|диҳ|ига|зар| шу|ари|а т| иҷ| ақ| ҳи|асо|р б|т ҳ|а а|одо|мум|р в|а о| ӯ |рон|наз|диг| ни|бот| ҷа|авр| қа|яи |р д|уқи|лал|кас|шта|уна|еҷ |ино|тҳо|уни|або|сти| во|авл|и қ|вла|ун |у о|ӣ б| ҳе|дӣ |қу |чун|н и|сар|ояи|тав|маҳ|онҳ|қар|атҳ|тир|оҳ |ахс| қо|уқ |оли| ис|д д|и з| ко|аза|ори|фар|сос|ран|н к|р а|ҷти|ону|сӣ |ири|рра|рӣ |ҳеҷ| за|ид |ҳти|рии|ами|қон|уди|н н| од|иҷт|мия|ъло|лом|ию |наи|али|нда|оӣ |оят|янд| зи|оян|ӣ ҳ|и п|офи|киш|ҳим|рат|тим",
+    "kir": " жа|на |ана|жан| би|уу |уку|га |бир| ук|ар |ен |луу|тар|кук|укт| ка| ад|ын |ада|ууг|дам| ме|уга|ык | ар|ене|мен|нен|ан |ары|олу| бо|ин |ам |ган|ир |бол| ал|ара|нда|н к|туу|р б|н ж| ба|анд| же|р а|кта|ына|ард|кту|эрк|үн |да |н б|н э| эр|нди|а т| ко|рды|н а|дык|рки|инд|а ж|кин|ала|а а|лар|аны|үү | өз|а к|тер|алу| та|а у|алы|а э|же |ук |ийи| ти|иш |тий| ма|гө |кыл|йиш|улу|нын|ке |н т|кар|бар|или|у м| кы|иги|рын|а б|үгө|рга|е а|ун |етт|дик| ту|дар|тта|баш|у а|н у| ээ|дын|им |рүү|гин|лык|ушу|нды|тур| са| эл| эм| мү|гон|лга|алд|икт|үүг| бе|ры |өз |нан|он | ан|кте|ул |дай|ерд|диг|р м|ери|үчү| не|атт|лды|еке|еги|үнө|лук|амд|у б|ынд|үнү|рди|тук|ка |кан|к ж| ки|м а|күн|не |ине|мда|рин|ого|кет| со|кам|дин|к м| эч| то|сыз|ылу|өзү| де|н м|ция|ээ |чүн|гиз|уп |нег|эч |руу|ыз |мес|эме| иш|лут|ы м|шка|ыкт|мам|ашк|лде| ке|лго| тү|ө ж|олг|ес |к т|кор|ге |бил|түү|угу|рал|алг|тын|кен| ул|лим|утт|ыгы|орг|н н|у ж|рде|нуу|тал|ч к|рго|мак| те| уш|уну|ктө|ди |акт|нүн| ди|зүн|иле| кө|кат|аци|мсы| эс|тык|е к|ей |тан|е э|ай |ер |соц|оци|циа|аты| жо|к к|амс|лан|а м|ири|ске|айд|ирд| мы|ылы|зги|ыны|ага|ген|е б|шул|тол|өнү|дыг|е ж|ү ү|з к|айы|раб|енд|абы|жал|ү ж|оо |уна|к а|кал|лек|ект|рма|дей| үч|тоо|мат|у э|бер",
+    "mkd": " на|на | пр| и |во | се|то |ите|те |рав|та |а с|пра|ува|да | да| не|ва |а п|а н|и с|ата|о н|еко|а и| по|но |ој |кој| со| за| во|ств|ја |ње |ање|аво|ни | им|от |е п|е н|ма |ат |вањ|ост|а д|о с|е и|се |ова|ија|и п| сл|а о|има|сек|сло|ото|ли |о д|ава|обо|о и| ил|или| би|бод|и н|лоб| од|бид|ред|ен |при|вот|иде|а в|ста| об|и и|и д|пре|нос|ст |е с| ни| ќе|ове|аат|аци|ќе |со |ови|про|ј и|тво| ра|ест|што| де|т и|акв| ко|раз|гов|его|нег|ани|едн|ако|циј|бра|од |а з|е б|и о|а б|о п|ват| е | др|ето|ваа|как|ди |т с| ка| чо|ени|алн|одн|ено| си|чов| шт|а г|а е|вен|нит| ја|де |оди|е о|ран|и з|сно|нот| ед|тит|лно|ви |јат|ден|т н|нац| оп| до| ос|и в|осн|кон|дна|е д| ст|век|о о|род|сто|сит|еме|ара|дно|обр|ј н|пшт|еди|опш|за |ние|аро|нов|а к|вни|дру| ов|тве|жив|ште|д н|ие | ме|ед |иот|и м|о в|ќи |дат|шти|јќи|без|бед|ки |ков|ко |а р|нар|чно|дни| вр|ели|нак|ашт|ичн|ка |ема|цел|зем|еду|чув|тес|држ|ник|т п|луч|аа |деј|нст|не |а ч|руг|ода|ивн| це|нив|дин|авн| зе|нио|пор|а м|заш|лас|вит|дек|го |ине|ело|нет|ез |тен| ре| из|под|раб|або|бот|дув|нув| бе|ење|еде|он |њет|зов|иту|ван|н и|аѓа|е в|еѓу|рем|дел|о к|кот|им | жи|дос|вре|меѓ|олн|нап| го|емј|кри|уна|нем|оја| су|ита|азо|лит|тор|инс|ора|огл|ипа|пот|слу|кви",
+    "khk": " эр|эрх| хү|ний|н б|эн |тэй|ийг|х э|эй | бо|хүн| бү|йн |ан |ах | ба|ийн|бол|ий | ха|бай|уул|рх |оло|й х|йг |гаа|эх |бүр|гүй|үн | бу|он |аар|рхт|үнд|хтэ|үр |лэх|ар | за|н х|лах|эр | хэ|й б|өлө|н э|лөө|эл | үн|аа | ул|ын |хий|үй | ор| ту|улс|ула|үлэ| чө|чөл|н т|үүл| ху|сэн| ни|ндэ|лон|гээ|р х|өөр|сан| нэ|ны | ёс|нь |эд | гэ| нь| ч | тө| тэ|лаг|оро|дэс|лс |г х|ох |үни|ээр|хам|х ё| ша|д х|р э|лго|лд | дэ|н а|бую|уюу|гуу|төр|ай |юу |тай|ээ |ж б|эг |лий|хан|ыг | эд| то|х б|дсэ|й э|рга| ал|хар|арг|ад |лга|рэг| зо|айг|ага| тү|л х|ал | хө|өөт| са|н н|йгэ|дэл|нд |гий|н з|ол |ава|лла| өө|рол|өтэ|гэр|г б|л б|бус|нэг|н д|аг |аал|н ү|алд|рла| үз|гэм|й а|н у| ол|хуу|х ч|эрэ|мга|олг|эс |хүү|той| ар|үү |лал| эн| мө|йх |ин |өрө|х т|луу|рий|сон| га|хэн|айх|эни| ам|гла|өр |аса|ана|амг| би|ард| ял|йгм|ой |лын|үрэ|эгт| ав|эдэ|оо |мий|х н|аан|үйл|арл|нха|тгэ|дээ|с о|рхи|лов|д н|тэг|өг |өн |хэр|лэн|өөг|үүн|вср|га |р т| хи|хүр|рон|ч б| хо|гөө| мэ|бие|н г|ура|бүх|ори|али| аж| үй| яв|өх |хээ|г н|ата| та|гш |г ү|эгш|вах|лох|эгд|длэ|х ү|гох|үх |энэ|лж |олц| шү|л т| да|дал|эж |д б|лан|й т|айл|л н|х а|агл|тоо| со|өри|йгу|гми|дил|ээн|дар|н ш|шүү|овс| ад|а х|р ч|ади|ааг|лаа|айд|амь|гтэ|н с|д т|ийт|лэл|х ш|н ч|унх"
+  },
+  "Arabic": {
+    "arb": " ال|ية | في|الح|في | وا|وال| أو|ة ا|أو |الم|الت|لحق|حق |لى |كل |ان |ة و|الأ| لك|لكل|ن ا|ها |ق ف|ات |مة |ون |أن |ما |اء |ته |و ا|الع|ي ا|شخص|ي أ| أن|الإ|م ا|حري| عل|ة ل|من |الا|حقو|على|قوق|ت ا|أي |رد | شخ| لل| أي|ق ا|لا |فرد|رية| ول| من|د ا| كا| إل|خص |وق |ا ا|ة أ|ا ي|ل ف|ه ا|نسا|جتم|ن ي|امة|كان|دة | حق|ام |الق|ة م| فر|اية|سان|ل ش|ين |ن ت|إنس|ا ل| لا|ذا |هذا|ن أ|لة |ي ح| دو|ه ل|لك |ترا|لتع|اً |له |إلى| عن|ى ا|ه و|ع ا|ماع|د أ|اسي| حر|ة ع|مع |الد|نون| با|لحر|لعا|ن و|، و|يات|ي ت|الج| هذ|ير |بال|دول|لإن|عية|الف|ص ا| وي|الو|لأس| إن|أسا|ساس|ماي|حما|رام|سية|انو|مل |ي و|عام|ا و|تما| مت|ة ت|علي|ع ب|ك ا| له|ة ف|قان|ى أ|ول |هم |الب|ة ب|ساو|لقا|الر|لجم|ا ك|تمت|ليه|لتم|لمت|انت| قد|اد |ه أ| يج|ريا|ق و|ل ا|ا ب|ال |يه |اعي|لدو|ل و|لإع|لمي|لمج|لأم|تع |دم |تسا|عمل|اته|لاد|رة |اة |غير|قدم|وز |جوز|يجو|عال|لان|متع|مان|فيه|اجت|م و|يد |تعل|ن ل|ر ا| يع| كل|مم |مجت|تمع|دون| مع|تمي|ذلك|كرا|يها| مس|ميع|إعل|علا| تم| عا|ملا|اعا|لاج|ني |ليم|متس|ييز|يم |اعت|الش| تع|ميي|عن |تنا| بح|لما|ي ي|يز |ود |أمم|لات|أسر|شتر|تي | جم|ه ع|ر و|ي إ|تحد|حدة| أس|عة |ي م|ة، |معي|ن م|لمس|م ب|اق |جمي|لي |مية|الض|الس|لضم|ضما|لفر| وس|لحم|امل|ق م|را |ا ح|نت | تن|يته| أم|إلي|واج|د و|لتي| مر|مرا|متح| ذل| وأ| تح|ا ف| به| وم| بم|وية|ولي|لزو",
+    "urd": "ور | او|اور| کی|کے | کے|یں | کا|کی | حق|ے ک|ایٔ|کا |یٔے| کو|یا |نے |سے | اس|ٔے |میں|کو | ہے| می|ے ا| ان|وں | کر| ہو|اس |ی ا|ر ا|شخص| شخ|حق | سے| جا|خص |ہر |ام |ے م|ں ک|ہیں| یا|سی |ادی|آزا| آز|زاد|ص ک|ہ ا|ہے |جای|ا ح|ر ش|ت ک|کہ |م ک| پر|ی ک|ان |پر |۔ہر|دی |یٔی|س ک|ا ج|ر م|ہے۔|ق ہ|ں ا|ی ح|و ا|ار |ن ک|قوق|کسی|حقو|ری |وق |ے گ| ہی|ی ج| مع|سان| نہ| مل| حا|ٔی | جو|نی |کرن| لی|تی |ی ت|نسا|ل ک| کہ|جو |انس|اپن|ے ب|نہ | اپ|یت |ا ا|ہ ک| کس|ر ک|رے |ے ہ| ای|می |ل ہ|۔ ا|ے ل|ی ش|رنے|وہ |حاص|ی م|معا|اصل|صل |یں۔|ویٔ|نہی|ملک|ایس|انہ|ات |ی ب|د ک|ی ہ| تع|کیا|ق ک|ر ہ|ا م|دہ | من| بن| قو|ے ج|یہ |ں م|اشر|مل | دو|عاش|قوم|ر ب|انی|وام|قوا|اقو|لیٔ|دار| وہ| و | عا|ی س|بر |علا|اد |ہ م|و ت|ر ن| جس|ے۔ہ|ے، |انو| دی|گی |لیم|یوں| قا| یہ|دوس|ے۔ |ا ہ|تعل|یم |ر پ|جس |ریق|ے ح| اق|نیا|لک | گی|ین |یاد| مس|لاق|، ا|ی ن|پنے|وری|م ا| با|علی|یر |ی، |انے|ون |ن ا|ر ع| بر|ی آ|ر ح| رک|ے پ|کر |گا۔| پی|سب | گا|نا | پو|یسے|رای| مر|اری|قان|نون| مم|ندگ| اع|دگی|ہ و| ہر|ر س| چا|خلا|ا پ|ق ح| بھ|س م| شا|ہوگ|ے خ|وسر|رتی|ومی| بی|رکھ| مت|کوی|ر آ|پور|اف | مح|ے س|ہوں|نکہ|ونک|ت ا| طر|ے ع|یٔد|د ا|ال |ں۔ |م م|اں | مق|غیر|پنی| ام|ں، |من |ہو |ریع|و ک|ذری| ذر|عام|، م|دان|ادا|اعل|مام|تما| عل|دیو|بھی|ھی |بنی|ے ی|ا ک|اوی|ل م| زن|یاس|لان|عمل| عم|ت م| بچ",
+    "skr": "تے |اں | تے|دے |دی |وں | دا| حق| کو|ے ا|کوں| دے|دا | دی|یاں| کی|ے ۔|یں |ہر | ۔ |کیت|ہے | وچ| ہے|وچ | ان| شخ|شخص|ادی|ال | حا|اصل|حق |حاص|ے م|خص |صل |ں د| نا|یا | ای|اتے|ق ح|ل ہ|ے و|ں ک| ات|ہیں|سی | مل|نال|زاد|ازا|ی ت| از|قوق|ار |ا ح|حقو| او|ص ک| ۔ہ|۔ہر|ر ش|دیا|ے ج|وق |ندے| کر|یند| یا|نہ | جو|کہی|ئے |ی د|سان|نسا|وند|ی ا|یتے|انس|ا ا|ملک|ے ح|و ڄ|ے ک|ڻ د| وی|یسی|ے ب|ا و| ہو|ں ا|ئی |ندی|تی |آپڻ|وڻ |ر ک|ن ۔| نہ|انہ|جو | کن| آپ| جی|اون|ویس|ی ن| تھ| کہ|ان |ری |ڻے | ڄئ| ہر|ے ن|دہ |ام |ں م|ے ہ|تھی|ں و|۔ ا|ں ت|ی ۔|کنو|ی ح|ی ک|نوں|رے |ہاں| بچ|ون |ے ت|کو | من|ی ہ|اری|ور |نہا|ہکو|یتا|نی |یاد|ت د|ن د| ون|وام|ی م|قوا|تا |ڄئے|پڻے| ہک|می | قو|ق ت|ے د|لے |اف |ل ک|ل ت| تع|چ ا|ین |خلا|اے |علا| سا|جیا|ئو |کرڻ|ی و|انی|ہو |دار| و |ی ج| اق|ن ا|یت |ارے|ے س|لک |ق د|ہوو| ڋو|ر ت| اے|ے خ| چا| خل|لاف|قنو|نون|پور|ڻ ک| پو|ایہ|بچئ|چئو|ات |الا|ونڄ|وری|این| وس| لو|و ا|ہ د| رک|یب |سیب|وسی|یر |ا ک|قوم|ریا|ں آ| جا|رکھ|مل |کاں|رڻ |اد |او |عزت| قن|ب د|وئی|ے ع| عز| ۔ک| مع|اقو|ایں|م م|زت |ڻی |یوڻ|ر ہ| سم|ں س|لوک| جھ| سی|جھی|ت ت|ل ا|اوڻ|کوئ|ں ج|ہی |حدہ|تعل|ے ذ|وے |تحد|متح|لا |ا ت|کار| اع|ے ر| مت|ر ا|ا م|ھین|ھیو|یہو| مط| سڱ|ی س|ڄے |نڄے|سڱد|لیم|علی|ے ق| ذر|م ت| کھ|ن ک| کم|ہ ا|سار|ائد|ائی|د ا| ہن|ہن |ی، |و ک|ں ب|ھیا|ذری|ں پ|لی ",
+    "uig": " ئا| ھە|ىنى|ە ئ|نىڭ|ىلى| ۋە|ىڭ |ۋە | ئى| بو|ھوق|وقۇ| ھو|قۇق|نى |بول| ئە|لىك|قىل|ىن |لىش|شقا|قا |ەن | قى|ن ب|ھەم|ى ئ|ئاد|ىشى|دەم|ادە|كى |لىق|غان|ىي |ىغا|گە | بى|دىن|ىدى|ەت |كىن|ىكى|ندا|ۇق | تە|نلى|تىن|ەم |لەت|قان|ىگە|ىتى|ىش |ھەر|ئەر| با|ولۇ|دۆل|غا |اند| دۆ|اق |مە |لۇش|دە |لۇق| ئۆ|ان | يا|ەرق|ۆلە|ركى| قا|ەرك|ەمم|ا ئ|ممە|ۇقى|ىق | بە|رقا|داق|ارا|ىلە|رىم|ىشق|ى ۋ|لغا|مەن|اكى|ەر |ا ھ|دۇ |ياك|ۇقل|ئار|ق ئ|ىنل|لار| ئې|ى ب|لىن|ڭ ئ|ئۆز|ق ھ|شى |ىمە|قلۇ|ن ئ|لەر|ەتل|نىش|ىك |ەھر| مە|ھرى|لەن|ىلا|ار |بەھ| ئۇ|ە ق|ئىي|اسى| مۇ|رلى| ئو|بىر|، ئ|بىل|ش ھ|بار|ى، |ۇ ھ|ايد|ۇشق|شكە|ە ب|يەت|ا ب|رنى|كە |ىسى| كې|ېلى|الى|ەك |م ئ|ماي|ولم|تنى|ىدا|ارى|يدۇ|لىد| قو|ەشك|تلە|ك ھ|انل|ەمد|مائ|ئال|ر ئ|مدە|ىيە|ش ئ|ە ھ|لما|ائى|ئىگ|دا |ي ئ|ۇشى|راۋ|ا، |سىي| تۇ|كىل|ە ت|ىقى|قى |ۆزى|ېتى|ىرى|ىر |ىپ |ى ك|ن، |ر ب|لەش|اسا|اۋا|ى ھ|شلى|ساس|ادى|تى |اشق|ەتت|قىغ|ىما|انى| خى|ۇرۇ| خە|ن ق|منى| خا|چە |ى ق| جە|رقى|تىد| ھۆ|باش|ارل|ئىش|تۇر| جى|مۇش|نۇن|شۇ |انۇ|ۇش |رەك|ېرە|كېر| سا|الغ|ۇنى|ئېل|ىشل|تەش|خەل|مەت|اش |دىغ|كەن|ەلق|تىش|مىن|ايى|سىز|ق ۋ|نىي|جىن|رىش|پ ق| كى|ېرى|ئاس|ەلى| ما|تتى|ىرل|ولى| دە|ارق|سىت|ە م| قە|شىل| تى|ەرن|كىش|ن ھ|ەلگ|ەمن|ك ئ| تو|ى ي|قتى|ئاش|تىم|تەۋ|ناي|ىدە|ىنا| بۇ|ىيا|زىن|امى|قار|شكى|ىز | ئۈ|ەۋە|ۆرم|ە خ|شىش|ىيى|جتى|ىجت|ئىج|نام|تەر",
+    "pes": " و | حق| با|که |ند | که| در|در |رد | دا|دار|از | از|هر | هر|یت |ر ک|حق |د ه|ای |د و|ان | را|ین |ود |یا | یا|را |ارد|ی و|کس | کس| بر| آز|باش|ه ب|آزا|د ک| خو|ه ا|د ب|زاد| اس|ار | آن|ق د|شد |حقو|قوق|ی ب|وق |ده |ه د|ید |ی ک|و ا|ور |ر م|رای|اشد|خود|ادی|تما|ری | اج|ام |دی |اید|س ح|است|ر ا|و م| ان|د ا|نه | بی|با | هم| نم|مای| تا|د، |ی ا|انه|ات |ون |ایت|ا ب|ست | کن|برا|انو| بش| مو|این| مر|اسا| مل|وان|ر ب|جتم| شو| اع|ن ا|ورد| می| ای|آن | به|و آ|ملل|ا م|ماع|نی |ت ا|، ا|ت و|ئی |عی |ائی|اجت|و ب|های|ن م|ی ی|بشر|کند|شود| من| زن|ن و|ی، |بای|ی ر| مس|مل |مور|ز آ|توا|دان|اری|علا|گرد|یگر|کار| گر| بد|ن ب|ت ب|ت م|ی م| مق|د آ|شور|یه |اعی| عم|ر خ|ن ح| کش|رند|مین| اح|ن ت|ی د| مت|ه م|د ش| حم|و د|دیگ|لام|کشو|هٔ |ه و|انی|لی |ت ک| مج|ق م|میت| کا| شد|اه |نون| آم|اد |ادا|اعل|د م|ق و|ا ک|می |ی ح|لل |نجا| مح|ساس|یده| قا|بعی|قان|ر ش|مقا|ا د|هد |وی |نوا|گی |ساو|ر ت|بر |اً |نمی|اسی|اده|او | او| دی| هی|هیچ|ه‌ا|‌ها|یر |خوا|د ت|همه|ا ه|تی |حما|دگی|بین|ع ا|سان|ر و|شده|ومی| عق| بع|ز ح|شر |مند| شر|ٔمی|أم|تأ|انت|اند|اوی|مسا|ردد|بهر| بم|ارن|یتو|ل م|ران|و ه|ر د|م م|رار|عقی|سی |و ت|زش | بو|ا ا|ی ن|موم|جا |عمو|رفت|عیت| فر|ندگ|واه|زند|م و|نما|ه ح|ا ر|دیه|جام|مرد|ت، |د ر|مام| تم|ملی|نند|الم|طور|ی ت|تخا|ا ت|امی|امل|دد | شخ|شخص"
+  },
+  "Devanagari": {
+    "hin": "के |प्र|और | और| के|ों | का|कार| प्|का | को|या |ं क|ति |ार |को | है|िका|ने |है |्रत|धिक| अध|अधि|की |ा क| कि| की| सम|ें |व्य|्ति|क्त|से | व्|ा अ|्यक|में|मान|ि क| स्| मे|सी |न्त| हो|े क|ता |यक्|क्ष|ै ।|िक |त्य| कर|्य | या|भी | वि|रत्|र स|ी स| जा|स्व|रों|्ये|ेक |येक|त्र|िया|ा ज|क व|र ह|ित |्रा|किस| अन|ा स|िसी|ा ह|ना | से| पर|र क| सा|देश|गा | । | अप|्त्|े स|समा|ान |ी क|्त |वार| ।प|ा प| रा|षा |न क|।प्|ष्ट|था |अन्| मा|्षा|्वा|ारो|तन्|वतन|ट्र|्वत|प्त|ाप्|्ट्|राष|ाष्| इस|े अ| उस| सं|राप|कि |त ह|हो |ं औ|ार्|ा ।|किय|े प| दे| भी|करन|री |जाए|ी प| न |र अ|क स|अपन|े व|ाओं|्तर|ओं | नि|सभी|रा | तथ|तथा|िवा|यों|पर | ऐस|रता|ारा|्री|सम्| द्|ीय |िए |व क|सके|द्व|होग| सभ|ं म|माज|रने|िक्|्या|ा व|र प| जि|ो स|र उ|रक्|े म|पूर| लि|ाएग| भा|इस |त क|ाव |स्थ|पने|ा औ|द्ध|श्य|र्व| घो|घोष|रूप|भाव|ाने|कृत|ो प|े ल|लिए|शिक|ूर्| उन|। इ|ं स|य क|्ध |दी |ी र|र्य|णा |एगा|न्य|रीय|ेश |रति|े ब| रू|ूप |परा|्र |तर्| पा| सु|जिस|तिक|सार|जो |ेशो| शि|ानव|ी अ|चित|े औ| पू|ियो|ा उ|म क|ी भ|शों| बु|म्म|स्त|िश्|्रो|्म |ो क| यह|र द|नव |चार|दिय|े य|र्ण|राध|ोगा|ले |नून|ानू|ोषण|षणा|विश| जन|ारी|परि|गी |वाह|साम|ाना|रका| जो|ाज |ी ज|ध क|बन्|ताओ|ंकि|ूंक|ास |कर |चूं|ी व|य ह|ा ग|य स|न स|त र|कोई|ुक्|ोई | ।क|ं न|हित|निय|याद|ादी|्मा|्था|ामा|ाह |ी म|े ज",
+    "mar": "्या|या |त्य|याच|चा | व |ण्य|प्र|कार|ाचा| प्|धिक|िका| अध|अधि|च्य|ार |आहे| आह|ा अ|हे | स्|्रत|्ये|ा क|स्व| कर|्वा|ता |ास |ा स|ा व|त्र| त्|वा |ांच|यां|िक |मान| या|्य | का| अस|रत्|ष्ट|र्य|येक|ल्य|र आ|ाहि|क्ष| को|ामा|कोण| सं|ाच्|ात |ा न| रा|ंत्|ून |ेका| सा|राष|ाष्|चे |्ट्|ट्र|तंत| मा|ने |किं| कि|व्य|वात|े स|करण|ंवा|िंव|ये |क्त| सम|ा प|ना | मि|कास|ातं|्र्|र्व|समा|मिळ| जा|े प|व स|यास|ोणत|रण्|काम|ीय |ा आ| दे|े क|ांन|हि |रां| व्|्यक|ा म|िळण|ही | पा|्षण|ार्|ान |े अ| आप| वि|ळण्|ाही|ची |े व|्रा|मा |ली |ंच्|ारा|ा द| आण| नि|णे |द्ध| नय|ला |ा ह|नये| सर|सर्|्री|बंध|ी प|आपल|ले |ील |माज| हो|्त |त क|ाचे|्व |षण |ंना|लेल|ी अ|देश|आणि|णि |ध्य| शि|ी स|े ज|शिक|रीय|ानव|पाह|हिज|िजे|जे |क स|यक्|न क|व त|ा ज|यात|पल्|न्य|वी |स्थ|ज्य| ज्|े आ|रक्|त स|िक्|ंबं|संब| के|क व|केल|असल|य अ|य क|त व|ीत |णत्|त्व|ाने| उप|्वत|भाव|े त|करत|याह|रता|िष्|व म|कां|साम|रति|सार|ंचा|र व|क आ|याय|ासा|साठ|ाठी|्ती|ठी |ेण्|र्थ|ीने|े य|जाह|ोणा|संर|ायद|च्छ|स स|ंरक|तील|ी व|त आ|ी आ|ंधा|ेशा|ित | अश|हीर| हक|हक्|क्क|य व|शा |व आ|तीन|ण म|ूर्|ेल्|द्य|ेले|ांत|ा य|ा ब|ी म|ंचे|याव|देण|कृत|ारण|ेत |िवा|वस्|स्त|ाची|नवी| अर|थवा|अथव|ा त| अथ|अर्|ती |पूर|इतर|र्ण|ी क|यत्| इत| शा|रका|तिष|ण स|तिक|्रक|्ध |रणा| आल|ेल |ाजि| न्|धात|रून|श्र|असे|ष्ठ|ुक्|ेश |तो |जिक|े म",
+    "mai": "ाक | आ |प्र|कार|िका|धिक|ार |्रत|ेँ |क अ|्यक|िक |्ति| अध|व्य|अधि|क स| प्|क्त| व्|केँ|यक्|तिक|न्त| स्|हि |क व|मे |बाक|मान| सम|त्य|क्ष| छै|छैक|ेक |स्व|त्र|रत्|्ये|ष्ट| अप|येक|र छ|सँ |वा | एह|ैक।|ित | वि| जा|ति |्त्|ट्र|िके|राष|ाष्| हो|्ट्| रा|्य | सा| अन| कर|अपन|।प्|कोन|अछि|वतन|्वत|तन्|क आ| अछ|ताक|था | पर| वा| को|ार्|एहि|पन |ा आ|नहि|नो |समा| मा|्री|रता| नि| का|देश| नह|्षा|क प| दे| कए|रक | सं|ोनो|ि क|न्य|आ स|छि |्त |ल ज|्वा|ारक|ा स|तथा|ान्| तथ|्या|आ अ|ना |ँ क|ान | जे|जाए|वार|ता |ीय |र आ|क ह|करब|िवा|ामा|र्व| आओ|्रस|परि|त क|स्थ|ा प|ानव|रीय|धार|्तर|अन्|घोष|साम|माज|आओर|ारण| एक|कएल|ँ अ|ओर |एबा|स्त|द्ध|्रा|ँ स|रण | सभ|ोषण|क।प|ाहि|रबा|क ज|ा अ|चित|यक |कर |पूर|रक्|नक | घो|षा |िक्|सम्|एहन| उप|र प| अव|एल |ूर्|षणा| हे|त अ|शिक|तु |ाधि|ेतु|हेत|हन |िमे|र अ|वक |ँ ए|जाह| शि|आ प|भाव|े स|्ध |क क|ि ज|प्त|रूप|निर|िर्| सक|च्छ|होए|रति|अनु|सभ |हो |ेल |त आ|चार|ण स|रा |त ह|जिक|ाजि|र्ण|्रक|एत।|ि आ|र्य|सभक|ैक |क उ| जन|त स|ाप्|न प|श्य|न अ|कृत|हु |रसं|री |राप|ा व|जे |क ब|ि घ| भा|उद्|ाएत|्ण |विव| उद|वाध|िसँ|आ व|ि स|न व|ारा|ोएत| ओ |य आ|कान|िश्|न क| दो|णाक| द्|हिम| अथ|अथव|ामे|द्व|ेश |ओ व|ि अ|क ए|वास| पू|षाक|त्त|य प| बी|यता|धक |ए स|थवा|ि द|पर | भे|जेँ| कि|कि |क ल| रू|विश|न स| ले|सार|ाके|िष्|रिव|क र|ास |ेओ |्थि|केओ|राज",
+    "bho": " के|के |ार |े क|य्व|कार|िका|धिक|ओर | आओ|आओर|अधि| अध|े स|ा क|वे |े अ| सं| हो|में|ें | मे|िक |र स| कर|्रा|्वे|र ह|ा स|र क| से| सम|मान|रा |न क|से |े ब|क्ष|नो | चा|ता |ष्ट| रा|चाह|्टघ|प्र| का|ाष्| सा|राष|टघ्|े आ| प्| सक| मा| स्| य्|ि क|ति |ोय्|त क|ौनो|कौन| जा|्वा|पन | बा|होय|करे|था | कौ|िर | आप|ला |तथा|्त |ेला|आपन| ओक|रे |ाति|कर | हव|हवे| तथ|सबह|र आ|ही |जा | और| ह।|वे।|े ओ|हे |त्र|र म|ना |तिर|बहि|सके|केल| पर|वात|ान |।सब|े म|े च|ा आ|न स|ावे|र ब| लो|ाहे|षा |ओकर|ी क|्षा|माज|ल ज| सब|संग|े ज|्वत|घ् |ं क|ित |मिल|े ह|हिं|िं |रक्|ंत्|स्व|ाज |ा प|और | जे|ो स|कान|करा|क्त|क स|लोग|्ीय|घ्ी|े। |समा|हु |नइय|इय्|ला।| नइ|ानव|िया|े व|वतं|तंत|ी स|े न|स्थ| ओ |े उ|नून|ानू|ाही|ाम |पर |्वल|साम|व्य|्य |ून |े त|या |वल |केह| आद| सु|े य| दे|ीय |र अ| वि|। स|भे |सभे|प्त|दी |बा।|ा म|ा।स|योग| मि| नि|े द|चार| या| इ |हि |ल ह|् क|ले |री |ाधि|र न|ा ह|र प| पा| ही|ादी| बि|राप|ाप्|नवा|ए क|ु क|यता|आदि| दो|तिक|ेहु|दिम|ोग |मी |पूर|े भ|्या|ाजि|म क|ि म| जर|िमी|े प|्तर| अप| उप|जे |जाद|ेकर| सभ|देश|ुक्|क आ| सह|षण |ाव |जिक|शिक|िक्|न ह|ंगठ|गठन|ठन | अं|े ल|सब |पयो|उपय| शा|र व|दोस|न म| व्|ास |।के| शि|न आ|िल |ज क| आज|य क|आजा| ले| जी|ेश |ी ब| पू|रो | भी|्म |ा। |साथ| घो|घोष|ने |वाध|े र| उच|निय|चित|बा |ामा|रात|संर|ाता|्षण|ंरक|हो |होए|ेल ",
+    "nep": "को | र |कार|प्र|ार |ने |िका|क्त|धिक|्यक| गर|व्य|्रत| प्|अधि|्ति| अध| व्|यक्|मा |िक |त्य|ाई |लाई|न्त|मान| सम|त्र|गर्|र्न|क व| वा|्ने|वा | स्|रत्|र स|्ये|तिल|येक|ेक |छ ।|ो स|ा स|हरू| वि|क्ष|्त्|िला| । |स्व|हुन|ति | हु|ले | रा| मा|ष्ट|समा|वतन|तन्| छ |र छ| सं|्ट्|ट्र|ाष्|ो अ|राष|्वत|ुने|नेछ|हरु|ान |ता |े अ|्र | का|िने|ाको|गरि|े छ|ना | अन| नि|रता|नै | सा|ित |तिक|क स|र र|रू |ा अ|था |स्त|कुन|ा र|ुनै| छै|्त |छैन|ा प|ार्|वार|ा व| पर|तथा| तथ|का |्या|एको|रु |्षा|माज|रक्|परि|द्ध|। प| ला|सको|ामा| यस|ाहर|ेछ |धार|्रा|ो प|नि |देश|भाव|िवा|्य |र ह|र व|र म|सबै|न अ|े र|न स|रको|अन्|ताक|ंरक|संर|्वा| त्|सम्|री |ो व|ा भ|रहर| कु|्रि|त र|रिन|श्य|पनि|ै व|यस्|ारा|ानव| शि|ा त|लाग|रा |शिक| सब|ाउन|िक्|्न |ारक|ा न|रिय|्यस|द्व|रति|चार| सह|्षण| सु|ारम|ुक्|ुद्|साम|षा |ैन | अप| भए|बाट|ुन | उप|ान्|ो आ|्तर|िय |कान|ि र|रूक|द्द|र प|ाव |ो ल|तो | पन|ैन।| आव|ा ग|।प्|बै |ूर्|िएक|र त|निज|त्प| भे|जिक|ेछ।|िको|्तो|वाह|त स|ाट | अर|ाजि|्ध | उस|रमा|ात्|र्य|नको|ाय |जको|ित्|ागि| अभ|न ग|गि |ा म| आध|स्थ| पा|ारह|घोष|त्व|यता|ा क|र्द| मत|विध| सक|सार|परा|युक|राध| घो|णको|अपर|े स|ारी|।कु| दि| जन|भेद|रिव|उसक|क र|र अ|ि स|ानु|ो ह|रुद| छ।|ूको|रका|नमा| भन|र्म|हित|पूर|न्य|क अ|ा ब|ो भ|राज|अनु|ोषण|षणा|य र| मन| बि|्धा| दे|निर|ताह|र उ|यस |उने|रण |विक",
+    "mag": "के | के|ार | हई|कार|िका|धिक|हई।|े अ| और|और | अध|अधि|ा क|े स|र ह|े क|सब |ें |में| मे| कर|्रा|था | सम|से |तथा| से| हो|िक | तथ|र क|र स| सब| सं|क्ष|मान|प्र|ना | सा|ा स|ब क|कर |रा | भी|ति | प्|ई। |भी | अप|त क| का|अपन|या |क ह| को|ट्र|पन | मा| रा| पर| या|ता | स्|ी क|ष्ट|ान |य्व|्त |करे|ही | ओक|्ट्| सक|ओकर|न क|त्र|।सब|राष|ाष्|हई |रे |ेल |े ब| जा|ई।स| ही|े म|रक्| ले|ंत्|सक |नो |ाम |दी |ा प|होए|व्य|र म|क्त|स्व| ना|तंत|पर |माज|र औ|षा |े उ|्य |ित |ोग |ी स|्वत|वतं| शा|ानव|ादी| इ |ल ज|े भ|वे |ा म|ावे|न स|्ति| दे|करा| एक|्षा|लेल|कान|े ल|म क| वि|प्त|साथ|ाथ |ला |र अ|ई।क|्र |क स|य क|नून|ानू|ेकर|्वा|े ह|ोए |ा ह| जे|कोई|वार| य्|राप|जा |ोई |े प|ून |। स|बे |ाप्| चा|रो |ि क|साम|समा| व्|मिल|े य|चाह|रात|कोन|योग|र प|ोनो|र व|े व|स्त|काम|ए क|एल |ाता|्म | पा|नवा|ाधि|ो स|े ओ| दो|व क| नि| सु|्रत|चार|संर|ल ह|पूर| सह|े च|ो क|एक |ाजि|्यक|ास | उप|।के|ं स|न ह|सम्|ंरक|ई क|्तर|ुक्|ीय |ामा|जिक|होब|परि|े आ|षण |तिक|न औ| लो|ा द|स्थ| घो|घोष|्मा|म्म| उच|वाध|री |ा त|केक|र आ|ा औ|ा ब|दोस|निय|ाही|न प| आद|मी |ब अ|देश|ेश |य स|े त|यक्|रीय|ाति|रति|्री|वा |रिव|पयो|उपय|कि |ि म|ी ह|म स|भाव|ढ़ा|बढ़|शिक|िक्| बढ|ौनो|त र|ो भ|व ह|ाव |ग क|न द|युक|ंयु| भा|ारा|संय| कए|कएल|र्म|दमी|करो|कौन|वन |आदम|िया|ोसर| आज|इ स|आजा|लोग|जाद|उचि|चित|े न|त स|ाज "
+  },
+  "Ethiopic": {
+    "amh": "፡መብ|ሰው፡|ት፡አ|ብት፡|መብት|፡ሰው|፡አለ|፡ወይ|ወይም|ይም፡|ነት፡|ንዱ፡|አለው|ለው።|ዳንዱ|ያንዳ|ንዳን|እያን|ዱ፡ሰ|ት፡መ|፡እን|፡የመ|።እያ|እንዲ|፡ነጻ|፡የተ|ም፡በ|ው፡የ|ም፡የ|፡የሚ|ና፡በ|ን፡የ|፡የማ|፡አይ|ነጻነ|ና፡የ|ው፡በ|ቶች፡|ው።፡|ሆነ፡|ት፡የ|፡በሚ|፡መን|ው።እ|ትና፡|ኀብረ|ትን፡|ውም፡|ንኛው|እኩል|ብቻ፡|ኛውም|ንም፡|፡ለመ|፡ያለ|ም፡ሰ|ማንኛ|መብቶ|፡አገ|ት፡በ|ራዊ፡|፡እኩ|፡ለማ|ለት፡|በት፡|ሆን፡|መንግ|፡በተ|ረት፡|ብቶች|ጋብቻ|ዎች፡|ህንነ|ጻነት|ም፡እ|ወንጀ|፡ልዩ|ሰብ፡|ማንም|ጠበቅ|ኩል፡|ደህን|።ማን|ነጻ፡|ግኘት|ማግኘ|።፡እ|፡የሆ|፡ሁሉ|ች፡በ|፡በመ|ሥራ፡|፡ደህ|ፈጸም|ል፡መ|ተግባ|፡ድር|ት፡ወ|ው።ማ|ፍርድ|ርድ፡|፡በሆ|ር፡ወ|በትም|ትም፡|ይነት|ቸው፡|ብ፡የ|ነትና|ቱን፡|ሕግ፡|ንና፡|፡ሥራ|የማግ|፡መሠ|ኘት፡|፡ጊዜ|ጻነቶ|ነቶች|በር፡|በኀብ|ዩነት|ልዩነ|፡በኀ|፡ዓይ|ዓይነ|ችና፡|ግባር|ባር፡|፡ደረ|ነው።|፡ነው|ደረጃ|ም።እ|ም፡መ|፡ወን|ይማኖ|ማኀበ|ሃይማ|፡ኑሮ|መሠረ|ሁሉ፡|ነቱ፡|ሌሎች|ንግሥ|በቅ፡|የሆነ|፡ይህ|ንዲጠ|ገር፡|ተባበ|ትክክ|ጸም፡|ር፡የ|ዲጠበ|ትም።|ው፡ከ|፡እያ|ሩት፡|ድርጅ|፡ብቻ|ና፡ለ|ይገባ|የመኖ|፡ማን|ንነት|ቤተሰ|ርጅት|ት፡ድ|፡መሰ|እንደ|፡አላ|ብሔራ|ት፡ለ|ሔራዊ|ርት፡|ህርት|ውን፡|የሚያ|ል።እ|ሆኑ፡|ምህር|ትምህ|በት።|ለበት|አለበ|፡አስ|ሎች፡|ች፡የ|፡በሕ|ብረ፡|፡ከሚ|ን፡አ|ት፡እ|ን፡ወ|ረግ፡|በሆነ|የኀብ|፡የኀ|መሆን|፡መሆ|ን፡መ|፡ውሳ|ንጀል|ፈላጊ|ህም፡|ረታዊ|ክለኛ|ክክለ|ታዊ፡|ጀል፡|ኑሮ፡|።፡ይ|ዓዊ፡|ዜግነ|ንዲሁ|ዲሁም|፡ማኀ|ገሩ፡|ር፡በ|ብዓዊ|አገሩ|ሁም፡|ና፡ነ|ሰብዓ|የተባ|ጅት፡|ማኖት|ር፡አ|ንግስ|ኖት፡|በሕግ|መኖር|ው፡ያ|መጠበ|ረጃ፡|፡በማ|ነትን|ብነት|ገብነ|፡ገብ|መፈጸ|፡ሁኔ|ሁኔታ|ን፡ለ|ው፡ለ|፡ተግ|፡የአ|፡ይገ|፡በአ|ችን፡|፡ትም|ነቱን|፡ቢሆ|ቢሆን|ጊዜ፡|ረ፡ሰ|ት፡ጊ|ሰቡ፡|ምበት|ላቸው|አላቸ|በነጻ|፡በነ|አንድ|ቅ፡መ|፡መጠ|ት፡ይ|መሰረ|ጥ፡የ|ስጥ፡|ፈጸመ|ውስጥ|ንድ፡|፡ውስ|፡በግ|፡ሆኖ|ሉ፡በ|፡ጋብ|ንስ፡|ንነቱ|መው፡|የሚፈ|አይፈ|ብረሰ|ነ፡መ|፡የሃ|ም፡ከ|ች፡እ|ስት፡|ሙሉ፡|አገር|ሆኖ፡|ደረግ|ኢንተ|ንተር|ተርና|ርናሽ|ናሽና|ሽናል",
+    "tir": " መሰ| ሰብ|ሰብ | ኦለ|ትን |ኦለዎ|ናይ | ናይ| ኦብ|ዎ፡፡|ለዎ፡|ሕድሕ|ኦብ |ድሕድ|ሕድ |መሰል|ውን |ሰል |ድ ሰ|ይ ም|ል ኦ|ካብ |፡ሕድ|፡፡ሕ| ወይ|ወይ | መን| ነፃ|ን መ|ዝኾነ|፡፡ |ታት |ብ ዝ|ነት |ን ነ| ካብ|መሰላ|ነፃነ| እዚ|ብ መ|ኦዊ |ታትን|መንግ|ዊ መ| እን|ብ ብ|ንግስ|ት ኦ|ሰላት|ን ም|ኾነ |እዚ |ብኦዊ|ሰብኦ|ን ኦ|ን፡፡| ንክ| ዝኾ|ን ን| ምር|ኹን |ይኹን| ይኹ|ምርካ|ርካብ| ኦይ| ሃገ|ሕጊ |ራት |ሎም | ብሕ|ነ ይ| ከም|ማዕሪ|ይ ብ| ንም| ዝተ|ርን |ን ብ|ራዊ | ፣ |ብ ሕ|ላትን|ብ ኦ|ማሕበ|ነታት| ኦድ|ዕሪ | ማዕ|ስታት|ግስታ|’ውን|ት መ|ን ዝ|ታዊ |፣ ብ| ማሕ|ነትን|ንጋገ|ድንጋ| ስለ| ድን|ስራሕ|ኩሎም|ሕበራ|ኦት |ን ሰ|ዓለም|ፃነታ| ብም|ት ወ|መሰሪ| ስራ|ፃነት|ተሰብ|ካልኦ|ልኦት|ን ሓ|ዓት |ዋን |ቡራት|ሕቡራ| ሕቡ|ብሕጊ|ድብ |ውድብ| ውድ|ብን |ትምህ|ነቱ |ዚ ድ|፣ ኦ|ሃገራ| ኩሎ|ለዎም|ምህር|ም፡፡|ም መ| ብዝ|ምኡ’|ኡ’ው|እንት| ዓለ| ብዘ|በራዊ| ሓለ|ሓለዋ|ዎም፡|ቱ ን|ት ብ|ጋገ |ነፃ | ምዃ|ን ዘ| ገበ|ት፣ | ትም|ኸውን|ራሕ | ዘይ|ህርቲ|ርቲ |ከምኡ|ሃይማ| ምስ|ነ፣ |እንተ| ስር|ስርዓ|ርዓት|ባት |ይማኖ|ሰሪታ|ን ና| ክብ|ልን | ብማ|ገሩ | ህዝ|ላት |ት ና|ይ ኦ|ዕሊ |ለዝኾ|ስለዝ|ሪተሰ|ብሪተ|ሕብሪ| ሕብ|ን ተ|ኾነ፣|በን |ሃገሩ|ገ እ|ኻዊ | ሃይ|እን |ሪጋገ| ምሕ|ን እ|ለኻዊ|ር፣ | ብሓ| ብሃ| ክኸ|ክኸው|ብ ዘ|ዃኑ |ዊ ክ|ምን |ሓደ |ምዃኑ|ም ን|ት እ|ዊ ወ|ታውን| ሕድ|ብዘይ| ሕጊ|ት ን| ልዕ| ካል|ን ካ|ሰባት|ን ስ|ናን |ቤተሰ|ሕን |ለምለ|ት ስ|ምለኻ|፣ ከ|ተደን|ባል |ኦድላ|እዋን| እዋ|ደቂ | ደቂ| ሰባ|ፃን |ነፃን|ግስቲ|፣ ን|ዚ ብ|ስቲ | ቤተ|ምጥሓ| ክሳ| ነዚ|ን ክ|ነቲ | ነቲ|ነዚ | ምእ|ብነፃ| ምዕ|ምዕባ|ዕባለ|ክሳብ| ብነ|ል እ|ዚ መ|ልዕሊ|ክብሩ|ብማዕ|ሳብ |ህይወ|ኦቶም|ምስ |ንገገ|እምነ| እም|ድ ኦ|ቶም |ቲ ክ|ፍትሓ|ለም | ፍት|ብ ን|ን ዓ|ራውን|ሓፈሻ|ደንገ|ም ብ|ትዮን| ዝሰ|ዝተደ|ሉ መ|ብ ና|ጊ ካ|ልዎ |ኦባል| ኦባ|ድልዎ|ን ድ|ኦድል|ዜግነ|ላውን| ድሕ"
+  },
+  "Hebrew": {
+    "heb": "ות |ים |כל |ת ה| כל|דם |אדם|יות| של| זכ|ל א| אד|של |ל ה|אי |ויו|כאי|ת ו|י ל|זכא| ול|לא | וה|רות|זכו|ית |ירו|ין | או|ם ז| לא| הח|או | הא| וב| המ|חיר|ת ל|יים|ם ל|את |ת ב|ת ש|רה |ון | לה|נה |כוי|ותי|ה ש|ו ל|ו ב| הו|ת א|ם ב|ם ו|תו | את|לה |ני |אומ| במ|דה |א י|ה ה|ה ב|על |ם ה| על|הוא|וך |ה א|בוד|וד |ואי|נות|ה ו|ת כ|י ה|יה |ם ש|ו ו| שה|ם א|ו כ|ינו|ן ה| שו|שוו|החי|כות|לאו|בות|דות|ה ל|לית|ה מ| בי|וה |וא | הי| לפ|ור | לב|ל ב|בחי|הכר|לו |ת מ|ן ש|החו|ה כ| בכ|ומי|בין|ן ו|ן ל|רוי|פלי|ולה|ליה| הז|חינ| לע| בנ|יבו|חוק| אח|חבר| יה| חי|מי |ירה| חו|האד|ווה|חופ|ופש|וק |נו |יו |ל מ|מדי|כבו| הע|נוך| הד|י א|י ו| הכ|בני|עה |ו א|רצו|דינ|בזכ|מות|יפו| אל|סוד|לם |איש|רך | אי|הגנ|הם |פי |ם כ|חות|ל ו|איל|ילי|תיה|כלל|אלי|יסו|האו|זש | בא|ר א|ו ה|זו |אחר| הפ| בע| בז|משפ| בה| לח|דרך|ומו| בח| דר| מע|ל י|תוך|מנו| בש|לל |רבו| למ|פני| לק|תם |שה |שית|ללא|לפי|היה|מעש|דו |שות|להג|וצי|שוא|אין|וי |תי |ונו|ליל| לו|חיי|ל ז| זו|היא|יא |נתו|ה פ|לת |ובי| לכ|ך ה|יל |י ש|שיו|ן ב|עול|המד|ודה|ולם| ומ|א ה|ולא| בת|הכל| סו| מש| עב|סוצ|ארצ| אר|ציא|ד א|לחי|הן |יחס| יח|יאל|הזכ|ם נ| שר|בו |עבו|היס| לי|ת ז|פול|יהי|גבל|תיו|המא|שהי|א ל|מאו| יו|ותו|ישי|גנה|פשי|וחד|יהם|חרו|לכל|ידה|עות|ונה|ום |חה |עם |שרי|ם י|שר |והח| אש| הג|ק ב|הפל|נשו|הגב|ד ו",
+    "ydd": " פֿ|ון |ער |ן א| אַ|דער|ט א| או|און|אַר|ען |פֿו| אױ| אי|ן פ|ֿון|רעכ| דע| רע|עכט|פֿא|ן ד|כט | די|די |אַ |אױף|ױף |ֿאַ| זײ| גע|אַל|אָס| אָ|ונג| הא|האָ|זײַ| מע|אָל|נג |װאָ|ַן |אַנ|רײַ| װא|ָס |באַ| יע|יעד|ניט|ן ז|ר א|יט |אָט|אָר|עדע|מען|זאָ|ָט |פֿר|ײַן| בא|טן |אין|ן ג|ין |ן װ|נאַ|ֿרײ|ר ה| זא|לעכ|ע א|אָד|ַ ר|ענט|אַצ|ַצי|אָנ| צו| װע|יז |מענ|ָדע|איז|ן מ|ַלע|בן |ר מ|טער| מי| פּ|מיט|טלע|ָל |עכע|ײט |ַנד|ע פ|לע |געז|לאַ|אַפ|עזע|ראַ| ני|ַפֿ|רן |ײַנ|נען|טיק|כע |פֿע|יע |הײט|ַהײ|נטש|ײַה|ט ד|ן ב|לן |ן נ|פֿט|שאַ|רונ| זי| װי|ט פ| דא|טאָ|דיק|קן |ר פ|ר ג|יקן|אָב|ף א|אַק|קער|ערע|כער|י פ|ות |ַרב|פּר|קט |עם |יאָ|ציע|ציא|יט־|צו |ישע| קײ|ן ק|סער| גל|דאָ|ונט|גן |ַרא|יקע| טא|ענע|לײַ|שן |ַנע|יק |טאַ|ס א|עט |נגע|ט־א|ָנא|־אי|יקט|נטע|ײנע|־ני|ָר |װער|י א|ן י|יך |זיך|ער־|ערן|אױס|ָבן|נדע|ָסע|װי |ֿעל|ר־נ|ן ה| גר|גלײ| צי|ראָ|זעל|עלק|נד |לקע|אָפ| כּ|ט װ|ג א| נא|ט צ|ר ד|עס |דור|גען|קע |ג פ|ֿט |ן ל|שע |ר ז|רע |ײטן|פּע|קלא|קײט|יטע|ים |ס ז|ײַ | דו|אַט| לא|ר װ|קײנ|עלש|י ד|לשא|יות|נט |ַרז|ע ר|ל ז|אַמ|ן ש| שו|אינ|נטל| הי|בעט|ָפּ|ף פ|ײַכ|בער|ן צ|מאָ| שט| לע|גער|ורך|רך |נעם|גרו|פֿן|לער|װעל|ע מ|ום |שפּ|ך א|יונ|רבע|עפֿ|טעט|ן כ|רעס|ערצ|ז א|עמע|ם א|שטע|כן |רט |י ג|סן |נער|ליט|ט ז|נעמ|ּרא|היו|אַש|ת װ|אומ|ק א|יבע|ֿן |ץ א|פֿי|ײן |ם ט"
+  }
+}
 },{}],6:[function(require,module,exports){
+module.exports = {
+  cmn: /[\u2E80-\u2E99\u2E9B-\u2EF3\u2F00-\u2FD5\u3005\u3007\u3021-\u3029\u3038-\u303B\u3400-\u4DB5\u4E00-\u9FCC\uF900-\uFA6D\uFA70-\uFAD9]|[\uD840-\uD868\uD86A-\uD86C][\uDC00-\uDFFF]|\uD869[\uDC00-\uDED6\uDF00-\uDFFF]|\uD86D[\uDC00-\uDF34\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1D]|\uD87E[\uDC00-\uDE1D]/g,
+  Latin: /[A-Za-z\xAA\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02B8\u02E0-\u02E4\u1D00-\u1D25\u1D2C-\u1D5C\u1D62-\u1D65\u1D6B-\u1D77\u1D79-\u1DBE\u1E00-\u1EFF\u2071\u207F\u2090-\u209C\u212A\u212B\u2132\u214E\u2160-\u2188\u2C60-\u2C7F\uA722-\uA787\uA78B-\uA78E\uA790-\uA7AD\uA7B0\uA7B1\uA7F7-\uA7FF\uAB30-\uAB5A\uAB5C-\uAB5F\uAB64\uFB00-\uFB06\uFF21-\uFF3A\uFF41-\uFF5A]/g,
+  Cyrillic: /[\u0400-\u0484\u0487-\u052F\u1D2B\u1D78\u2DE0-\u2DFF\uA640-\uA69D\uA69F]/g,
+  Arabic: /[\u0600-\u0604\u0606-\u060B\u060D-\u061A\u061E\u0620-\u063F\u0641-\u064A\u0656-\u065F\u066A-\u066F\u0671-\u06DC\u06DE-\u06FF\u0750-\u077F\u08A0-\u08B2\u08E4-\u08FF\uFB50-\uFBC1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFD\uFE70-\uFE74\uFE76-\uFEFC]|\uD803[\uDE60-\uDE7E]|\uD83B[\uDE00-\uDE03\uDE05-\uDE1F\uDE21\uDE22\uDE24\uDE27\uDE29-\uDE32\uDE34-\uDE37\uDE39\uDE3B\uDE42\uDE47\uDE49\uDE4B\uDE4D-\uDE4F\uDE51\uDE52\uDE54\uDE57\uDE59\uDE5B\uDE5D\uDE5F\uDE61\uDE62\uDE64\uDE67-\uDE6A\uDE6C-\uDE72\uDE74-\uDE77\uDE79-\uDE7C\uDE7E\uDE80-\uDE89\uDE8B-\uDE9B\uDEA1-\uDEA3\uDEA5-\uDEA9\uDEAB-\uDEBB\uDEF0\uDEF1]/g,
+  ben: /[\u0980-\u0983\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BC-\u09C4\u09C7\u09C8\u09CB-\u09CE\u09D7\u09DC\u09DD\u09DF-\u09E3\u09E6-\u09FB]/g,
+  Devanagari: /[\u0900-\u0950\u0953-\u0963\u0966-\u097F\uA8E0-\uA8FB]/g,
+  jpn: /[\u3041-\u3096\u309D-\u309F]|\uD82C\uDC01|\uD83C\uDE00|[\u30A1-\u30FA\u30FD-\u30FF\u31F0-\u31FF\u32D0-\u32FE\u3300-\u3357\uFF66-\uFF6F\uFF71-\uFF9D]|\uD82C\uDC00/g,
+  kor: /[\u1100-\u11FF\u302E\u302F\u3131-\u318E\u3200-\u321E\u3260-\u327E\uA960-\uA97C\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uFFA0-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]/g,
+  tel: /[\u0C00-\u0C03\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D-\u0C44\u0C46-\u0C48\u0C4A-\u0C4D\u0C55\u0C56\u0C58\u0C59\u0C60-\u0C63\u0C66-\u0C6F\u0C78-\u0C7F]/g,
+  tam: /[\u0B82\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BBE-\u0BC2\u0BC6-\u0BC8\u0BCA-\u0BCD\u0BD0\u0BD7\u0BE6-\u0BFA]/g,
+  guj: /[\u0A81-\u0A83\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABC-\u0AC5\u0AC7-\u0AC9\u0ACB-\u0ACD\u0AD0\u0AE0-\u0AE3\u0AE6-\u0AF1]/g,
+  mal: /[\u0D01-\u0D03\u0D05-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D-\u0D44\u0D46-\u0D48\u0D4A-\u0D4E\u0D57\u0D60-\u0D63\u0D66-\u0D75\u0D79-\u0D7F]/g,
+  kan: /[\u0C81-\u0C83\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBC-\u0CC4\u0CC6-\u0CC8\u0CCA-\u0CCD\u0CD5\u0CD6\u0CDE\u0CE0-\u0CE3\u0CE6-\u0CEF\u0CF1\u0CF2]/g,
+  mya: /[\u1000-\u109F\uA9E0-\uA9FE\uAA60-\uAA7F]/g,
+  ori: /[\u0B01-\u0B03\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3C-\u0B44\u0B47\u0B48\u0B4B-\u0B4D\u0B56\u0B57\u0B5C\u0B5D\u0B5F-\u0B63\u0B66-\u0B77]/g,
+  pan: /[\u0A01-\u0A03\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A3C\u0A3E-\u0A42\u0A47\u0A48\u0A4B-\u0A4D\u0A51\u0A59-\u0A5C\u0A5E\u0A66-\u0A75]/g,
+  Ethiopic: /[\u1200-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u135D-\u137C\u1380-\u1399\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E]/g,
+  tha: /[\u0E01-\u0E3A\u0E40-\u0E5B]/g,
+  sin: /[\u0D82\u0D83\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0DCA\u0DCF-\u0DD4\u0DD6\u0DD8-\u0DDF\u0DE6-\u0DEF\u0DF2-\u0DF4]|\uD804[\uDDE1-\uDDF4]/g,
+  ell: /[\u0370-\u0373\u0375-\u0377\u037A-\u037D\u037F\u0384\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03E1\u03F0-\u03FF\u1D26-\u1D2A\u1D5D-\u1D61\u1D66-\u1D6A\u1DBF\u1F00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FC4\u1FC6-\u1FD3\u1FD6-\u1FDB\u1FDD-\u1FEF\u1FF2-\u1FF4\u1FF6-\u1FFE\u2126\uAB65]|\uD800[\uDD40-\uDD8C\uDDA0]|\uD834[\uDE00-\uDE45]/g,
+  khm: /[\u1780-\u17DD\u17E0-\u17E9\u17F0-\u17F9\u19E0-\u19FF]/g,
+  hye: /[\u0531-\u0556\u0559-\u055F\u0561-\u0587\u058A\u058D-\u058F\uFB13-\uFB17]/g,
+  sat: /[\u1C50-\u1C7F]/g,
+  bod: /[\u0F00-\u0F47\u0F49-\u0F6C\u0F71-\u0F97\u0F99-\u0FBC\u0FBE-\u0FCC\u0FCE-\u0FD4\u0FD9\u0FDA]/g,
+  Hebrew: /[\u0591-\u05C7\u05D0-\u05EA\u05F0-\u05F4\uFB1D-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFB4F]/g,
+  kat: /[\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u10FF\u2D00-\u2D25\u2D27\u2D2D]/g,
+  lao: /[\u0E81\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB9\u0EBB-\u0EBD\u0EC0-\u0EC4\u0EC6\u0EC8-\u0ECD\u0ED0-\u0ED9\u0EDC-\u0EDF]/g,
+  iii: /[\uA000-\uA48C\uA490-\uA4C6]/g,
+  aii: /[\u0700-\u070D\u070F-\u074A\u074D-\u074F]/g
+};
+
+},{}],7:[function(require,module,exports){
+'use strict';
+
+/*
+ * Load `trigram-utils`.
+ */
+
+var utilities = require('trigram-utils');
+
+/*
+ * Load `expressions` (regular expressions matching
+ * scripts).
+ */
+
+var expressions = require('./expressions.js');
+
+/*
+ * Load `data` (trigram information per language,
+ * per script).
+ */
+
+var data = require('./data.json');
+
+/*
+ * Construct trigram dictionaries.
+ */
+
+(function () {
+    var languages;
+    var name;
+    var trigrams;
+    var model;
+    var script;
+    var weight;
+
+    for (script in data) {
+        languages = data[script];
+
+        for (name in languages) {
+            model = languages[name].split('|');
+
+            weight = model.length;
+
+            trigrams = {};
+
+            while (weight--) {
+                trigrams[model[weight]] = weight;
+            }
+
+            languages[name] = trigrams;
+        }
+    }
+})();
+
+/*
+ * Maximum sample length.
+ */
+
+var MAX_LENGTH = 2048;
+
+/*
+ * Minimum sample length.
+ */
+
+var MIN_LENGTH = 10;
+
+/*
+ * The maximum distance to add when a given trigram does
+ * not exist in a trigram dictionary.
+ */
+
+var MAX_DIFFERENCE = 300;
+
+/**
+ * Deep regular sort on the number at `1` in both objects.
+ *
+ * @example
+ *   > [[0, 20], [0, 1], [0, 5]].sort(sort);
+ *   // [[0, 1], [0, 5], [0, 20]]
+ *
+ * @param {Object} a
+ * @param {Object} b
+ */
+function sort(a, b) {
+    return a[1] - b[1];
+}
+
+/**
+ * Filter `languages` by removing languages in
+ * `blacklist`, or including languages in `whitelist`.
+ *
+ * @param {Object.<string, Object>} languages - Languages
+ *   to filter
+ * @param {Array.<string>} whitelist - Whitelisted
+ *   languages; if non-empty, only included languages
+ *   are kept.
+ * @param {Array.<string>} blacklist - Blacklisted
+ *   languages; included languages are ignored.
+ * @return {Object.<string, Object>} - Filtered array of
+ *   languages.
+ */
+function filterLanguages(languages, whitelist, blacklist) {
+    var filteredLanguages;
+    var language;
+
+    if (whitelist.length === 0 && blacklist.length === 0) {
+        return languages;
+    }
+
+    filteredLanguages = {};
+
+    for (language in languages) {
+        if (
+            (
+                whitelist.length === 0 ||
+                whitelist.indexOf(language) !== -1
+            ) &&
+            blacklist.indexOf(language) === -1
+        ) {
+            filteredLanguages[language] = languages[language];
+        }
+    }
+
+    return filteredLanguages;
+}
+
+/**
+ * Get the distance between an array of trigram--count
+ * tuples, and a language dictionary.
+ *
+ * @param {Array.<Array.<string, number>>} trigrams - An
+ *   array containing trigram--count tuples.
+ * @param {Object.<string, number>} model - Object
+ *   containing weighted trigrams.
+ * @return {number} - The distance between the two.
+ */
+function getDistance(trigrams, model) {
+    var distance = 0;
+    var index = -1;
+    var length = trigrams.length;
+    var trigram;
+    var difference;
+
+    while (++index < length) {
+        trigram = trigrams[index];
+
+        if (trigram[0] in model) {
+            difference = trigram[1] - model[trigram[0]] - 1;
+
+            if (difference < 0) {
+                difference = -difference;
+            }
+        } else {
+            difference = MAX_DIFFERENCE;
+        }
+
+        distance += difference;
+    }
+
+    return distance;
+}
+
+/**
+ * Create a single tuple as a list of tuples from a given
+ * language code.
+ *
+ * @param {string} language - A single language.
+ * @return {Array.<Array.<string, number>>} An array
+ *   containing a single language--distance.
+ */
+function singleLanguageTuples(language) {
+    return [[language, 1]];
+}
+
+/**
+ * Create a single `und` tuple.
+ *
+ * @return {Array.<Array.<string, number>>} An array
+ *   containing a single language--distance.
+ */
+function und() {
+    return singleLanguageTuples('und');
+}
+
+/**
+ * Get the distance between an array of trigram--count
+ * tuples, and multiple trigram dictionaries.
+ *
+ * @param {Array.<Array.<string, number>>} trigrams - An
+ *   array containing trigram--count tuples.
+ * @param {Object.<string, Object>} languages - multiple
+ *   trigrams to test against.
+ * @return {Array.<Array.<string, number>>} An array
+ *   containing language--distance tuples.
+ */
+function getDistances(trigrams, languages, options) {
+    var distances = [];
+    var whitelist = options.whitelist || [];
+    var blacklist = options.blacklist || [];
+    var language;
+
+    languages = filterLanguages(languages, whitelist, blacklist);
+
+    for (language in languages) {
+        distances.push([
+            language,
+            getDistance(trigrams, languages[language])
+        ]);
+    }
+
+    return distances.length ? distances.sort(sort) : und();
+}
+
+/**
+ * Get the occurrence ratio of `expression` for `value`.
+ *
+ * @param {string} value
+ * @param {RegExp} expression
+ * @return {number} Float between 0 and 1.
+ */
+function getOccurrence(value, expression) {
+    var count = value.match(expression);
+
+    return (count ? count.length : 0) / value.length || 0;
+}
+
+/**
+ * From `scripts`, get the most occurring expression for
+ * `value`.
+ *
+ * @param {string} value
+ * @param {Object.<string, RegExp>} scripts
+ * @return {Array} Top script and its
+ *   occurrence percentage.
+ */
+function getTopScript(value, scripts) {
+    var topCount = -1;
+    var topScript;
+    var script;
+    var count;
+
+    for (script in scripts) {
+        count = getOccurrence(value, scripts[script]);
+
+        if (count > topCount) {
+            topCount = count;
+            topScript = script;
+        }
+    }
+
+    return [topScript, topCount];
+}
+
+/**
+ * Normalize the difference for each tuple in
+ * `distances`.
+ *
+ * @param {string} value
+ * @param {Array.<Array.<string, number>>} distances
+ * @return {Array.<Array.<string, number>>} - Normalized
+ *   distances.
+ */
+function normalize(value, distances) {
+    var min = distances[0][1];
+    var max = (value.length * MAX_DIFFERENCE) - min;
+    var index = -1;
+    var length = distances.length;
+
+    while (++index < length) {
+        distances[index][1] = 1 - ((distances[index][1] - min) / max) || 0;
+    }
+
+    return distances;
+}
+
+/**
+ * Get a list of probable languages the given value is
+ * written in.
+ *
+ * @param {string} value - The value to test.
+ * @return {Array.<Array.<string, number>>} An array
+ *   containing language--distance tuples.
+ */
+function detectAll(value, options) {
+    var settings = options || {};
+    var minLength = MIN_LENGTH;
+    var script;
+
+    if (settings.minLength !== null && settings.minLength !== undefined) {
+        minLength = settings.minLength;
+    }
+
+    if (!value || value.length < minLength) {
+        return und();
+    }
+
+    value = value.substr(0, MAX_LENGTH);
+
+    /*
+     * Get the script which characters occur the most
+     * in `value`.
+     */
+
+    script = getTopScript(value, expressions);
+
+    /*
+     * One languages exists for the most-used script.
+     *
+     * If no matches occured, such as a digit only string,
+     * exit with `und`.
+     */
+
+    if (!(script[0] in data)) {
+        return script[1] === 0 ? und() : singleLanguageTuples(script[0]);
+    }
+
+    /*
+     * Get all distances for a given script, and
+     * normalize the distance values.
+     */
+
+    return normalize(value, getDistances(
+        utilities.asTuples(value), data[script[0]], settings
+    ));
+}
+
+/**
+ * Get the most probable language for the given value.
+ *
+ * @param {string} value - The value to test.
+ * @return {string} The most probable language.
+ */
+function detect(value, options) {
+    return detectAll(value, options)[0][0];
+}
+
+/*
+ * Expose `detectAll` on `detect`.
+ */
+
+detect.all = detectAll;
+
+/*
+ * Expose `detect`.
+ */
+
+module.exports = detect;
+
+},{"./data.json":5,"./expressions.js":6,"trigram-utils":8}],8:[function(require,module,exports){
+'use strict';
+
+var getTrigrams,
+    EXPRESSION_SYMBOLS,
+    has;
+
+/**
+ * Dependencies.
+ */
+
+getTrigrams = require('n-gram').trigram;
+
+/**
+ * Cache.
+ */
+
+has = Object.prototype.hasOwnProperty;
+
+/**
+ * An expression matching general non-important (as in, for
+ * language detection) punctuation marks, symbols, and numbers.
+ *
+ * | Unicode | Character | Name               |
+ * | ------: | :-------: | :----------------- |
+ * |  \u0021 |     !     | EXCLAMATION MARK   |
+ * |  \u0022 |     "     | QUOTATION MARK     |
+ * |  \u0023 |     #     | NUMBER SIGN        |
+ * |  \u0024 |     $     | DOLLAR SIGN        |
+ * |  \u0025 |     %     | PERCENT SIGN       |
+ * |  \u0026 |     &     | AMPERSAND          |
+ * |  \u0027 |     '     | APOSTROPHE         |
+ * |  \u0028 |     (     | LEFT PARENTHESIS   |
+ * |  \u0029 |     )     | RIGHT PARENTHESIS  |
+ * |  \u002A |     *     | ASTERISK           |
+ * |  \u002B |     +     | PLUS SIGN          |
+ * |  \u002C |     ,     | COMMA              |
+ * |  \u002D |     -     | HYPHEN-MINUS       |
+ * |  \u002E |     .     | FULL STOP          |
+ * |  \u002F |     /     | SOLIDUS            |
+ * |  \u0030 |     0     | DIGIT ZERO         |
+ * |  \u0031 |     1     | DIGIT ONE          |
+ * |  \u0032 |     2     | DIGIT TWO          |
+ * |  \u0033 |     3     | DIGIT THREE        |
+ * |  \u0034 |     4     | DIGIT FOUR         |
+ * |  \u0035 |     5     | DIGIT FIVE         |
+ * |  \u0036 |     6     | DIGIT SIX          |
+ * |  \u0037 |     7     | DIGIT SEVEN        |
+ * |  \u0038 |     8     | DIGIT EIGHT        |
+ * |  \u0039 |     9     | DIGIT NINE         |
+ * |  \u003A |     :     | COLON              |
+ * |  \u003B |     ;     | SEMICOLON          |
+ * |  \u003C |     <     | LESS-THAN SIGN     |
+ * |  \u003D |     =     | EQUALS SIGN        |
+ * |  \u003E |     >     | GREATER-THAN SIGN  |
+ * |  \u003F |     ?     | QUESTION MARK      |
+ * |  \u0040 |     @     | COMMERCIAL AT      |
+ */
+
+EXPRESSION_SYMBOLS = /[\u0021-\u0040]+/g;
+
+/**
+ * Clean `value`.
+ *
+ * @example
+ *   > clean('Some dirty  text.')
+ *   // 'some dirty text'
+ *
+ * @param {string} value
+ * @return {string}
+ */
+
+function clean(value) {
+    if (value === null || value === undefined) {
+        value = '';
+    }
+
+    return String(value)
+        .replace(EXPRESSION_SYMBOLS, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
+}
+
+/**
+ * Deep regular sort on item at `1` in both `Object`s.
+ *
+ * @example
+ *   > [[0, 20], [0, 1], [0, 5]].sort(sort);
+ *   // [[0, 1], [0, 5], [0, 20]]
+ *
+ * @param {{1: number}} a
+ * @param {{1: number}} b
+ */
+
+function sort(a, b) {
+    return a[1] - b[1];
+}
+
+/**
+ * Get clean, padded, trigrams.
+ *
+ * @param {string} value
+ * @return {Array.<string>}
+ */
+
+function getCleanTrigrams(value) {
+    return getTrigrams(' ' + clean(value) + ' ');
+}
+
+/**
+ * Get an `Object` with trigrams as its attributes, and
+ * their occurence count as their values
+ *
+ * @param {string} value
+ * @return {Object.<string, number>} - `Object` containing
+ *   weighted trigrams.
+ */
+
+function getCleanTrigramsAsDictionary(value) {
+    var trigrams,
+        dictionary,
+        index,
+        trigram;
+
+    trigrams = getCleanTrigrams(value);
+    dictionary = {};
+    index = trigrams.length;
+
+    while (index--) {
+        trigram = trigrams[index];
+
+        if (has.call(dictionary, trigram)) {
+            dictionary[trigram]++;
+        } else {
+            dictionary[trigram] = 1;
+        }
+    }
+
+    return dictionary;
+}
+
+/**
+ * Get an `Array` containing trigram--count tuples from a
+ * given value.
+ *
+ * @param {string} value
+ * @return {Array.<Array.<string, number>>} `Array`
+ *   containing trigram--count tupples, sorted by
+ *   count (low to high).
+ */
+
+function getCleanTrigramsAsTuples(value) {
+    var dictionary,
+        tuples,
+        trigram;
+
+    dictionary = getCleanTrigramsAsDictionary(value);
+    tuples = [];
+
+    for (trigram in dictionary) {
+        tuples.push([trigram, dictionary[trigram]]);
+    }
+
+    tuples.sort(sort);
+
+    return tuples;
+}
+
+/**
+ * Get an `Array` containing trigram--count tuples from a
+ * given value.
+ *
+ * @param {Array.<Array.<string, number>>} tuples - Tuples
+ *   to transform into a dictionary.
+ * @return {Object.<string, number>}
+ */
+
+function getCleanTrigramTuplesAsDictionary(tuples) {
+    var dictionary,
+        index,
+        tuple;
+
+    dictionary = {};
+    index = tuples.length;
+
+    while (index--) {
+        tuple = tuples[index];
+        dictionary[tuple[0]] = tuple[1];
+    }
+
+    return dictionary;
+}
+
+/**
+ * Expose utilities.
+ */
+
+module.exports = {
+    'clean': clean,
+    'trigrams': getCleanTrigrams,
+    'asDictionary': getCleanTrigramsAsDictionary,
+    'asTuples': getCleanTrigramsAsTuples,
+    'tuplesAsDictionary': getCleanTrigramTuplesAsDictionary
+};
+
+},{"n-gram":9}],9:[function(require,module,exports){
+'use strict';
+
+/**
+ * A factory returning a function that converts a given string to n-grams.
+ *
+ * @example
+ *   nGram(2) // [Function]
+ *
+ * @example
+ *   nGram(4) // [Function]
+ *
+ *
+ * @param {number} n - The `n` in n-gram.
+ * @throws {Error} When `n` is not a number (incl. NaN), Infinity, or lt 1.
+ * @return {Function} A function creating n-grams from a given value.
+ */
+function nGram(n) {
+    if (
+        typeof n !== 'number' ||
+        n < 1 ||
+        n !== n ||
+        n === Infinity
+    ) {
+        throw new Error(
+            'Type error: `' + n + '` is not a valid argument for n-gram'
+        );
+    }
+
+    /*
+     * Create n-grams from a given value.
+     *
+     * @example
+     *   nGram(4)('n-gram')
+     *   // ['n-gr', '-gra', 'gram']
+     *
+     * @param {*} value - The value to stringify and convert into n-grams.
+     * @return {Array.<string>} n-grams
+     */
+
+    return function (value) {
+        var nGrams,
+            index;
+
+        nGrams = [];
+
+        if (value === null || value === undefined) {
+            return nGrams;
+        }
+
+        value = String(value);
+
+        index = value.length - n + 1;
+
+        if (index < 1) {
+            return nGrams;
+        }
+
+        while (index--) {
+            nGrams[index] = value.substr(index, n);
+        }
+
+        return nGrams;
+    };
+}
+
+/*
+ * Export `n-gram`.
+ */
+
+module.exports = nGram;
+
+/*
+ * Create bigrams from a given value.
+ *
+ * @example
+ *   bigram('n-gram')
+ *   // ["n-", "-g", "gr", "ra", "am"]
+ *
+ * @param {*} value - The value to stringify and convert into bigrams.
+ * @return {Array.<string>} bigrams
+ */
+
+nGram.bigram = nGram(2);
+
+/*
+ * Create trigrams from a given value.
+ *
+ * @example
+ *   trigram('n-gram')
+ *   // ["n-g", "-gr", "gra", "ram"]
+ *
+ * @param {*} value - The value to stringify and convert into trigrams.
+ * @return {Array.<string>} trigrams
+ */
+
+nGram.trigram = nGram(3);
+
+},{}],10:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2014-2015 Titus Wormer
+ * @license MIT
+ * @module retext:language
+ * @fileoverview Detect the language of text with Retext.
+ */
+
+'use strict';
+
+/*
+ * Dependencies.
+ */
+
+var franc = require('franc');
+var visit = require('unist-util-visit');
+var nlcstToString = require('nlcst-to-string');
+
+/**
+ * Patch a `language` and `languages` properties on `node`.
+ *
+ * @param {NLCSTNode} node - Node.
+ * @param {Array.<Array.<string, number>>} languages - Languages.
+ */
+function patch(node, languages) {
+    var data = node.data || {};
+    var primary = languages[0][0];
+
+    data.language = primary === 'und' ? null : primary;
+    data.languages = languages;
+
+    node.data = data;
+}
+
+/**
+ * Deep regular sort on the number at `1` in both objects.
+ *
+ * @example
+ *   > [[0, 20], [0, 1], [0, 5]].sort(sort);
+ *   // [[0, 1], [0, 5], [0, 20]]
+ *
+ * @param {Object} a - Value.
+ * @param {Object} b - Comparator.
+ */
+function sort(a, b) {
+    return a[1] - b[1];
+}
+
+/**
+ * Get a sorted array containing language--distance
+ * tuples from an object with trigrams as its
+ * attributes, and their occurence count as their
+ * values.
+ *
+ * @param {Object.<string, number>} dictionary - Map of
+ *   language-codes to distances.
+ * @return {Array.<Array.<string, number>>} An
+ *   array containing language--distance tupples,
+ *   sorted by count (low to high).
+ */
+function sortDistanceObject(dictionary) {
+    var distances,
+        distance;
+
+    distances = [];
+
+    for (distance in dictionary) {
+        distances.push([distance, dictionary[distance]]);
+    }
+
+    return distances.sort(sort);
+}
+
+/**
+ * Patch a properties on `SentenceNode`s.
+ *
+ * @param {NLCSTSentenceNode} node - Sentence.
+ */
+function any(node) {
+    patch(node, franc.all(nlcstToString(node)));
+}
+
+/**
+ * Factory to gather parents and patch them based on their
+ * childrens directionality.
+ *
+ * @return {function(node, index, parent)} - Can be passed
+ *   to `visit`.
+ */
+function concatenateFactory() {
+    var queue = [];
+
+    /**
+     * Gather a parent if not already gathered.
+     *
+     * @param {NLCSTChildNode} node - Child.
+     * @param {number} index - Position of `node` in
+     *   `parent`.
+     * @param {NLCSTParentNode} parent - Parent of `child`.
+     */
+    function concatenate(node, index, parent) {
+        if (
+            parent &&
+            (parent.type === 'ParagraphNode' || parent.type === 'RootNode') &&
+            queue.indexOf(parent) === -1
+        ) {
+            queue.push(parent);
+        }
+    }
+
+    /**
+     * Patch one parent.
+     *
+     * @param {NLCSTParentNode} node - Parent
+     * @return {Array.<Array.<string, number>>} - Language
+     *  map.
+     */
+    function one(node) {
+        var children = node.children;
+        var length = children.length;
+        var index = -1;
+        var languages;
+        var child;
+        var dictionary = {};
+        var tuple;
+
+        while (++index < length) {
+            child = children[index];
+            languages = child.data && child.data.languages;
+
+            if (languages) {
+                tuple = languages[0];
+
+                if (tuple[0] in dictionary) {
+                    dictionary[tuple[0]] += tuple[1];
+                } else {
+                    dictionary[tuple[0]] = tuple[1];
+                }
+            }
+        }
+
+        return sortDistanceObject(dictionary);
+    }
+
+    /**
+     * Patch all parents in reverse order: this means
+     * that first the last and deepest parent is invoked
+     * up to the first and highest parent.
+     */
+    function done() {
+        var index = queue.length;
+
+        while (index--) {
+            patch(queue[index], one(queue[index]));
+        }
+    }
+
+    concatenate.done = done;
+
+    return concatenate;
+}
+
+/**
+ * Transformer.
+ *
+ * @param {NLCSTNode} cst - Syntax tree.
+ */
+function transformer(cst) {
+    var concatenate = concatenateFactory();
+
+    visit(cst, 'SentenceNode', any);
+    visit(cst, concatenate);
+
+    concatenate.done();
+}
+
+/**
+ * Attacher.
+ *
+ * @return {Function} - `transformer`.
+ */
+function attacher() {
+    return transformer;
+}
+
+/*
+ * Expose.
+ */
+
+module.exports = attacher;
+
+},{"franc":4,"nlcst-to-string":11,"unist-util-visit":12}],11:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2014-2015 Titus Wormer
+ * @license MIT
+ * @module nlcst:to-string
+ * @fileoverview Transform an NLCST node into a string.
+ */
+
+'use strict';
+
+/* eslint-env commonjs */
+
+/**
+ * Stringify an NLCST node.
+ *
+ * @param {NLCSTNode|Array.<NLCSTNode>} node - Node to to
+ *   stringify.
+ * @param {string} separator - Value to separate each item
+ *   with.
+ * @return {string} - Stringified `node`.
+ */
+function nlcstToString(node, separator) {
+    var values;
+    var length;
+    var children;
+
+    separator = separator || '';
+
+    if (typeof node.value === 'string') {
+        return node.value;
+    }
+
+    children = 'length' in node ? node : node.children;
+    length = children.length;
+
+    /*
+     * Shortcut: This is pretty common, and a small performance win.
+     */
+
+    if (length === 1 && 'value' in children[0]) {
+        return children[0].value;
+    }
+
+    values = [];
+
+    while (length--) {
+        values[length] = nlcstToString(children[length], separator);
+    }
+
+    return values.join(separator);
+}
+
+/*
+ * Expose.
+ */
+
+module.exports = nlcstToString;
+
+},{}],12:[function(require,module,exports){
+'use strict';
+
+/* Expose. */
+module.exports = visit;
+
+/* Visit. */
+function visit(tree, type, visitor, reverse) {
+  if (typeof type === 'function') {
+    reverse = visitor;
+    visitor = type;
+    type = null;
+  }
+
+  one(tree);
+
+  return;
+
+  /* Visit a single node. */
+  function one(node, index, parent) {
+    var result;
+
+    index = index || (parent ? 0 : null);
+
+    if (!type || node.type === type) {
+      result = visitor(node, index, parent || null);
+    }
+
+    if (node.children && result !== false) {
+      return all(node.children, node);
+    }
+
+    return result;
+  }
+
+  /* Visit children in `parent`. */
+  function all(children, parent) {
+    var step = reverse ? -1 : 1;
+    var max = children.length;
+    var min = -1;
+    var index = (reverse ? max : min) + step;
+    var child;
+
+    while (index > min && index < max) {
+      child = children[index];
+
+      if (child && one(child, index, parent) === false) {
+        return false;
+      }
+
+      index += step;
+    }
+
+    return true;
+  }
+}
+
+},{}],13:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2014-2015 Titus Wormer.
+ * @license MIT
+ * @module retext
+ * @fileoverview Extensible system for analysing and manipulating
+ *   natural language.
+ */
+
+'use strict';
+
+/* eslint-env commonjs */
+
+/*
+ * Dependencies.
+ */
+
+var unified = require('unified');
+var Parser = require('parse-latin');
+var Compiler = require('./lib/compile.js');
+
+/*
+ * Exports.
+ */
+
+module.exports = unified({
+    'name': 'retext',
+    'Parser': Parser,
+    'Compiler': Compiler
+});
+
+},{"./lib/compile.js":14,"parse-latin":16,"unified":43}],14:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2014-2015 Titus Wormer. All rights reserved.
+ * @license MIT
+ * @module retext:compile
+ * @fileoverview Compile nlcst to string.
+ */
+
+/* eslint-env commonjs */
+
+'use strict';
+
+/*
+ * Dependencies.
+ */
+
+var toString = require('nlcst-to-string');
+
+/**
+ * Construct a new compiler.
+ *
+ * @example
+ *   var file = new VFile('Hello World.');
+ *
+ *   file.namespace('retext').cst = {
+ *       'type': 'SentenceNode',
+ *       'children': [
+ *           {
+ *               'type': 'WordNode',
+ *               'children': [{
+ *                   'type': 'TextNode',
+ *                   'value': 'Hello'
+ *               }]
+ *           },
+ *           {
+ *               'type': 'WhiteSpaceNode',
+ *               'value': ' '
+ *           },
+ *           {
+ *               'type': 'WordNode',
+ *               'children': [{
+ *                   'type': 'TextNode',
+ *                   'value': 'World'
+ *               }]
+ *           },
+ *           {
+ *               'type': 'PunctuationNode',
+ *               'value': '.'
+ *           }
+ *       ]
+ *   };
+ *
+ *   var compiler = new Compiler(file);
+ *
+ * @constructor
+ * @class {Compiler}
+ * @param {File} file - Virtual file.
+ */
+function Compiler(file) {
+    this.file = file;
+}
+
+/**
+ * Stringify the bound file.
+ *
+ * @example
+ *   var file = new VFile('Hello');
+ *
+ *   file.namespace('retext').cst = {
+ *     type: 'WordNode',
+ *     children: [{
+ *       type: 'TextNode',
+ *       value: 'Hello'
+ *     }]
+ *   });
+ *
+ *   new Compiler(file).compile();
+ *   // 'Foo'
+ *
+ * @this {Compiler}
+ * @return {string} - Document.
+ */
+function compile() {
+    return toString(this.file.namespace('retext').tree);
+}
+
+/*
+ * Expose `compile`.
+ */
+
+Compiler.prototype.compile = compile;
+
+/*
+ * Expose.
+ */
+
+module.exports = Compiler;
+
+},{"nlcst-to-string":15}],15:[function(require,module,exports){
+arguments[4][11][0].apply(exports,arguments)
+},{"dup":11}],16:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2014-2015 Titus Wormer
+ * @license MIT
+ * @module parse-latin
+ * @fileoverview Latin-script (natural language) parser.
+ */
+
+'use strict';
+
+/* eslint-env commonjs */
+
+module.exports = require('./lib/parse-latin');
+
+},{"./lib/parse-latin":18}],17:[function(require,module,exports){
+/* This module is generated by `script/build-expressions.js` */
+'use strict'
+/* eslint-env commonjs */
+module.exports = {
+    'affixSymbol': /^([\)\]\}\u0F3B\u0F3D\u169C\u2046\u207E\u208E\u2309\u230B\u232A\u2769\u276B\u276D\u276F\u2771\u2773\u2775\u27C6\u27E7\u27E9\u27EB\u27ED\u27EF\u2984\u2986\u2988\u298A\u298C\u298E\u2990\u2992\u2994\u2996\u2998\u29D9\u29DB\u29FD\u2E23\u2E25\u2E27\u2E29\u3009\u300B\u300D\u300F\u3011\u3015\u3017\u3019\u301B\u301E\u301F\uFD3E\uFE18\uFE36\uFE38\uFE3A\uFE3C\uFE3E\uFE40\uFE42\uFE44\uFE48\uFE5A\uFE5C\uFE5E\uFF09\uFF3D\uFF5D\uFF60\uFF63]|["'\xBB\u2019\u201D\u203A\u2E03\u2E05\u2E0A\u2E0D\u2E1D\u2E21]|[!\.\?\u2026\u203D])\1*$/,
+    'newLine': /^(\r?\n|\r)+$/,
+    'newLineMulti': /^(\r?\n|\r){2,}$/,
+    'terminalMarker': /^((?:[!\.\?\u2026\u203D])+)$/,
+    'wordSymbolInner': /^((?:[&'\-\.:=\?@\xAD\xB7\u2010\u2011\u2019\u2027])|(?:[\/_])+)$/,
+    'punctuation': /^(?:[!"'-\),-\/:;\?\[-\]_\{\}\xA1\xA7\xAB\xB6\xB7\xBB\xBF\u037E\u0387\u055A-\u055F\u0589\u058A\u05BE\u05C0\u05C3\u05C6\u05F3\u05F4\u0609\u060A\u060C\u060D\u061B\u061E\u061F\u066A-\u066D\u06D4\u0700-\u070D\u07F7-\u07F9\u0830-\u083E\u085E\u0964\u0965\u0970\u0AF0\u0DF4\u0E4F\u0E5A\u0E5B\u0F04-\u0F12\u0F14\u0F3A-\u0F3D\u0F85\u0FD0-\u0FD4\u0FD9\u0FDA\u104A-\u104F\u10FB\u1360-\u1368\u1400\u166D\u166E\u169B\u169C\u16EB-\u16ED\u1735\u1736\u17D4-\u17D6\u17D8-\u17DA\u1800-\u180A\u1944\u1945\u1A1E\u1A1F\u1AA0-\u1AA6\u1AA8-\u1AAD\u1B5A-\u1B60\u1BFC-\u1BFF\u1C3B-\u1C3F\u1C7E\u1C7F\u1CC0-\u1CC7\u1CD3\u2010-\u201F\u2022-\u2027\u2032-\u203A\u203C-\u2043\u2045-\u2051\u2053-\u205E\u207D\u207E\u208D\u208E\u2308-\u230B\u2329\u232A\u2768-\u2775\u27C5\u27C6\u27E6-\u27EF\u2983-\u2998\u29D8-\u29DB\u29FC\u29FD\u2CF9-\u2CFC\u2CFE\u2CFF\u2D70\u2E00-\u2E2E\u2E30-\u2E42\u3001-\u3003\u3008-\u3011\u3014-\u301F\u3030\u303D\u30A0\u30FB\uA4FE\uA4FF\uA60D-\uA60F\uA673\uA67E\uA6F2-\uA6F7\uA874-\uA877\uA8CE\uA8CF\uA8F8-\uA8FA\uA8FC\uA92E\uA92F\uA95F\uA9C1-\uA9CD\uA9DE\uA9DF\uAA5C-\uAA5F\uAADE\uAADF\uAAF0\uAAF1\uABEB\uFD3E\uFD3F\uFE10-\uFE19\uFE30-\uFE52\uFE54-\uFE61\uFE63\uFE68\uFE6A\uFE6B\uFF01-\uFF03\uFF05-\uFF0A\uFF0C-\uFF0F\uFF1A\uFF1B\uFF1F\uFF20\uFF3B-\uFF3D\uFF3F\uFF5B\uFF5D\uFF5F-\uFF65]|\uD800[\uDD00-\uDD02\uDF9F\uDFD0]|\uD801\uDD6F|\uD802[\uDC57\uDD1F\uDD3F\uDE50-\uDE58\uDE7F\uDEF0-\uDEF6\uDF39-\uDF3F\uDF99-\uDF9C]|\uD804[\uDC47-\uDC4D\uDCBB\uDCBC\uDCBE-\uDCC1\uDD40-\uDD43\uDD74\uDD75\uDDC5-\uDDC9\uDDCD\uDDDB\uDDDD-\uDDDF\uDE38-\uDE3D\uDEA9]|\uD805[\uDCC6\uDDC1-\uDDD7\uDE41-\uDE43\uDF3C-\uDF3E]|\uD809[\uDC70-\uDC74]|\uD81A[\uDE6E\uDE6F\uDEF5\uDF37-\uDF3B\uDF44]|\uD82F\uDC9F|\uD836[\uDE87-\uDE8B])+$/,
+    'numerical': /^(?:[0-9\xB2\xB3\xB9\xBC-\xBE\u0660-\u0669\u06F0-\u06F9\u07C0-\u07C9\u0966-\u096F\u09E6-\u09EF\u09F4-\u09F9\u0A66-\u0A6F\u0AE6-\u0AEF\u0B66-\u0B6F\u0B72-\u0B77\u0BE6-\u0BF2\u0C66-\u0C6F\u0C78-\u0C7E\u0CE6-\u0CEF\u0D66-\u0D75\u0DE6-\u0DEF\u0E50-\u0E59\u0ED0-\u0ED9\u0F20-\u0F33\u1040-\u1049\u1090-\u1099\u1369-\u137C\u16EE-\u16F0\u17E0-\u17E9\u17F0-\u17F9\u1810-\u1819\u1946-\u194F\u19D0-\u19DA\u1A80-\u1A89\u1A90-\u1A99\u1B50-\u1B59\u1BB0-\u1BB9\u1C40-\u1C49\u1C50-\u1C59\u2070\u2074-\u2079\u2080-\u2089\u2150-\u2182\u2185-\u2189\u2460-\u249B\u24EA-\u24FF\u2776-\u2793\u2CFD\u3007\u3021-\u3029\u3038-\u303A\u3192-\u3195\u3220-\u3229\u3248-\u324F\u3251-\u325F\u3280-\u3289\u32B1-\u32BF\uA620-\uA629\uA6E6-\uA6EF\uA830-\uA835\uA8D0-\uA8D9\uA900-\uA909\uA9D0-\uA9D9\uA9F0-\uA9F9\uAA50-\uAA59\uABF0-\uABF9\uFF10-\uFF19]|\uD800[\uDD07-\uDD33\uDD40-\uDD78\uDD8A\uDD8B\uDEE1-\uDEFB\uDF20-\uDF23\uDF41\uDF4A\uDFD1-\uDFD5]|\uD801[\uDCA0-\uDCA9]|\uD802[\uDC58-\uDC5F\uDC79-\uDC7F\uDCA7-\uDCAF\uDCFB-\uDCFF\uDD16-\uDD1B\uDDBC\uDDBD\uDDC0-\uDDCF\uDDD2-\uDDFF\uDE40-\uDE47\uDE7D\uDE7E\uDE9D-\uDE9F\uDEEB-\uDEEF\uDF58-\uDF5F\uDF78-\uDF7F\uDFA9-\uDFAF]|\uD803[\uDCFA-\uDCFF\uDE60-\uDE7E]|\uD804[\uDC52-\uDC6F\uDCF0-\uDCF9\uDD36-\uDD3F\uDDD0-\uDDD9\uDDE1-\uDDF4\uDEF0-\uDEF9]|\uD805[\uDCD0-\uDCD9\uDE50-\uDE59\uDEC0-\uDEC9\uDF30-\uDF3B]|\uD806[\uDCE0-\uDCF2]|\uD809[\uDC00-\uDC6E]|\uD81A[\uDE60-\uDE69\uDF50-\uDF59\uDF5B-\uDF61]|\uD834[\uDF60-\uDF71]|\uD835[\uDFCE-\uDFFF]|\uD83A[\uDCC7-\uDCCF]|\uD83C[\uDD00-\uDD0C])+$/,
+    'lowerInitial': /^(?:[a-z\xB5\xDF-\xF6\xF8-\xFF\u0101\u0103\u0105\u0107\u0109\u010B\u010D\u010F\u0111\u0113\u0115\u0117\u0119\u011B\u011D\u011F\u0121\u0123\u0125\u0127\u0129\u012B\u012D\u012F\u0131\u0133\u0135\u0137\u0138\u013A\u013C\u013E\u0140\u0142\u0144\u0146\u0148\u0149\u014B\u014D\u014F\u0151\u0153\u0155\u0157\u0159\u015B\u015D\u015F\u0161\u0163\u0165\u0167\u0169\u016B\u016D\u016F\u0171\u0173\u0175\u0177\u017A\u017C\u017E-\u0180\u0183\u0185\u0188\u018C\u018D\u0192\u0195\u0199-\u019B\u019E\u01A1\u01A3\u01A5\u01A8\u01AA\u01AB\u01AD\u01B0\u01B4\u01B6\u01B9\u01BA\u01BD-\u01BF\u01C6\u01C9\u01CC\u01CE\u01D0\u01D2\u01D4\u01D6\u01D8\u01DA\u01DC\u01DD\u01DF\u01E1\u01E3\u01E5\u01E7\u01E9\u01EB\u01ED\u01EF\u01F0\u01F3\u01F5\u01F9\u01FB\u01FD\u01FF\u0201\u0203\u0205\u0207\u0209\u020B\u020D\u020F\u0211\u0213\u0215\u0217\u0219\u021B\u021D\u021F\u0221\u0223\u0225\u0227\u0229\u022B\u022D\u022F\u0231\u0233-\u0239\u023C\u023F\u0240\u0242\u0247\u0249\u024B\u024D\u024F-\u0293\u0295-\u02AF\u0371\u0373\u0377\u037B-\u037D\u0390\u03AC-\u03CE\u03D0\u03D1\u03D5-\u03D7\u03D9\u03DB\u03DD\u03DF\u03E1\u03E3\u03E5\u03E7\u03E9\u03EB\u03ED\u03EF-\u03F3\u03F5\u03F8\u03FB\u03FC\u0430-\u045F\u0461\u0463\u0465\u0467\u0469\u046B\u046D\u046F\u0471\u0473\u0475\u0477\u0479\u047B\u047D\u047F\u0481\u048B\u048D\u048F\u0491\u0493\u0495\u0497\u0499\u049B\u049D\u049F\u04A1\u04A3\u04A5\u04A7\u04A9\u04AB\u04AD\u04AF\u04B1\u04B3\u04B5\u04B7\u04B9\u04BB\u04BD\u04BF\u04C2\u04C4\u04C6\u04C8\u04CA\u04CC\u04CE\u04CF\u04D1\u04D3\u04D5\u04D7\u04D9\u04DB\u04DD\u04DF\u04E1\u04E3\u04E5\u04E7\u04E9\u04EB\u04ED\u04EF\u04F1\u04F3\u04F5\u04F7\u04F9\u04FB\u04FD\u04FF\u0501\u0503\u0505\u0507\u0509\u050B\u050D\u050F\u0511\u0513\u0515\u0517\u0519\u051B\u051D\u051F\u0521\u0523\u0525\u0527\u0529\u052B\u052D\u052F\u0561-\u0587\u13F8-\u13FD\u1D00-\u1D2B\u1D6B-\u1D77\u1D79-\u1D9A\u1E01\u1E03\u1E05\u1E07\u1E09\u1E0B\u1E0D\u1E0F\u1E11\u1E13\u1E15\u1E17\u1E19\u1E1B\u1E1D\u1E1F\u1E21\u1E23\u1E25\u1E27\u1E29\u1E2B\u1E2D\u1E2F\u1E31\u1E33\u1E35\u1E37\u1E39\u1E3B\u1E3D\u1E3F\u1E41\u1E43\u1E45\u1E47\u1E49\u1E4B\u1E4D\u1E4F\u1E51\u1E53\u1E55\u1E57\u1E59\u1E5B\u1E5D\u1E5F\u1E61\u1E63\u1E65\u1E67\u1E69\u1E6B\u1E6D\u1E6F\u1E71\u1E73\u1E75\u1E77\u1E79\u1E7B\u1E7D\u1E7F\u1E81\u1E83\u1E85\u1E87\u1E89\u1E8B\u1E8D\u1E8F\u1E91\u1E93\u1E95-\u1E9D\u1E9F\u1EA1\u1EA3\u1EA5\u1EA7\u1EA9\u1EAB\u1EAD\u1EAF\u1EB1\u1EB3\u1EB5\u1EB7\u1EB9\u1EBB\u1EBD\u1EBF\u1EC1\u1EC3\u1EC5\u1EC7\u1EC9\u1ECB\u1ECD\u1ECF\u1ED1\u1ED3\u1ED5\u1ED7\u1ED9\u1EDB\u1EDD\u1EDF\u1EE1\u1EE3\u1EE5\u1EE7\u1EE9\u1EEB\u1EED\u1EEF\u1EF1\u1EF3\u1EF5\u1EF7\u1EF9\u1EFB\u1EFD\u1EFF-\u1F07\u1F10-\u1F15\u1F20-\u1F27\u1F30-\u1F37\u1F40-\u1F45\u1F50-\u1F57\u1F60-\u1F67\u1F70-\u1F7D\u1F80-\u1F87\u1F90-\u1F97\u1FA0-\u1FA7\u1FB0-\u1FB4\u1FB6\u1FB7\u1FBE\u1FC2-\u1FC4\u1FC6\u1FC7\u1FD0-\u1FD3\u1FD6\u1FD7\u1FE0-\u1FE7\u1FF2-\u1FF4\u1FF6\u1FF7\u210A\u210E\u210F\u2113\u212F\u2134\u2139\u213C\u213D\u2146-\u2149\u214E\u2184\u2C30-\u2C5E\u2C61\u2C65\u2C66\u2C68\u2C6A\u2C6C\u2C71\u2C73\u2C74\u2C76-\u2C7B\u2C81\u2C83\u2C85\u2C87\u2C89\u2C8B\u2C8D\u2C8F\u2C91\u2C93\u2C95\u2C97\u2C99\u2C9B\u2C9D\u2C9F\u2CA1\u2CA3\u2CA5\u2CA7\u2CA9\u2CAB\u2CAD\u2CAF\u2CB1\u2CB3\u2CB5\u2CB7\u2CB9\u2CBB\u2CBD\u2CBF\u2CC1\u2CC3\u2CC5\u2CC7\u2CC9\u2CCB\u2CCD\u2CCF\u2CD1\u2CD3\u2CD5\u2CD7\u2CD9\u2CDB\u2CDD\u2CDF\u2CE1\u2CE3\u2CE4\u2CEC\u2CEE\u2CF3\u2D00-\u2D25\u2D27\u2D2D\uA641\uA643\uA645\uA647\uA649\uA64B\uA64D\uA64F\uA651\uA653\uA655\uA657\uA659\uA65B\uA65D\uA65F\uA661\uA663\uA665\uA667\uA669\uA66B\uA66D\uA681\uA683\uA685\uA687\uA689\uA68B\uA68D\uA68F\uA691\uA693\uA695\uA697\uA699\uA69B\uA723\uA725\uA727\uA729\uA72B\uA72D\uA72F-\uA731\uA733\uA735\uA737\uA739\uA73B\uA73D\uA73F\uA741\uA743\uA745\uA747\uA749\uA74B\uA74D\uA74F\uA751\uA753\uA755\uA757\uA759\uA75B\uA75D\uA75F\uA761\uA763\uA765\uA767\uA769\uA76B\uA76D\uA76F\uA771-\uA778\uA77A\uA77C\uA77F\uA781\uA783\uA785\uA787\uA78C\uA78E\uA791\uA793-\uA795\uA797\uA799\uA79B\uA79D\uA79F\uA7A1\uA7A3\uA7A5\uA7A7\uA7A9\uA7B5\uA7B7\uA7FA\uAB30-\uAB5A\uAB60-\uAB65\uAB70-\uABBF\uFB00-\uFB06\uFB13-\uFB17\uFF41-\uFF5A]|\uD801[\uDC28-\uDC4F]|\uD803[\uDCC0-\uDCF2]|\uD806[\uDCC0-\uDCDF]|\uD835[\uDC1A-\uDC33\uDC4E-\uDC54\uDC56-\uDC67\uDC82-\uDC9B\uDCB6-\uDCB9\uDCBB\uDCBD-\uDCC3\uDCC5-\uDCCF\uDCEA-\uDD03\uDD1E-\uDD37\uDD52-\uDD6B\uDD86-\uDD9F\uDDBA-\uDDD3\uDDEE-\uDE07\uDE22-\uDE3B\uDE56-\uDE6F\uDE8A-\uDEA5\uDEC2-\uDEDA\uDEDC-\uDEE1\uDEFC-\uDF14\uDF16-\uDF1B\uDF36-\uDF4E\uDF50-\uDF55\uDF70-\uDF88\uDF8A-\uDF8F\uDFAA-\uDFC2\uDFC4-\uDFC9\uDFCB])/,
+    'token': /(?:[0-9A-Za-z\xAA\xB2\xB3\xB5\xB9\xBA\xBC-\xBE\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0300-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u0483-\u052F\u0531-\u0556\u0559\u0561-\u0587\u0591-\u05BD\u05BF\u05C1\u05C2\u05C4\u05C5\u05C7\u05D0-\u05EA\u05F0-\u05F2\u0610-\u061A\u0620-\u0669\u066E-\u06D3\u06D5-\u06DC\u06DF-\u06E8\u06EA-\u06FC\u06FF\u0710-\u074A\u074D-\u07B1\u07C0-\u07F5\u07FA\u0800-\u082D\u0840-\u085B\u08A0-\u08B4\u08E3-\u0963\u0966-\u096F\u0971-\u0983\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BC-\u09C4\u09C7\u09C8\u09CB-\u09CE\u09D7\u09DC\u09DD\u09DF-\u09E3\u09E6-\u09F1\u09F4-\u09F9\u0A01-\u0A03\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A3C\u0A3E-\u0A42\u0A47\u0A48\u0A4B-\u0A4D\u0A51\u0A59-\u0A5C\u0A5E\u0A66-\u0A75\u0A81-\u0A83\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABC-\u0AC5\u0AC7-\u0AC9\u0ACB-\u0ACD\u0AD0\u0AE0-\u0AE3\u0AE6-\u0AEF\u0AF9\u0B01-\u0B03\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3C-\u0B44\u0B47\u0B48\u0B4B-\u0B4D\u0B56\u0B57\u0B5C\u0B5D\u0B5F-\u0B63\u0B66-\u0B6F\u0B71-\u0B77\u0B82\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BBE-\u0BC2\u0BC6-\u0BC8\u0BCA-\u0BCD\u0BD0\u0BD7\u0BE6-\u0BF2\u0C00-\u0C03\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D-\u0C44\u0C46-\u0C48\u0C4A-\u0C4D\u0C55\u0C56\u0C58-\u0C5A\u0C60-\u0C63\u0C66-\u0C6F\u0C78-\u0C7E\u0C81-\u0C83\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBC-\u0CC4\u0CC6-\u0CC8\u0CCA-\u0CCD\u0CD5\u0CD6\u0CDE\u0CE0-\u0CE3\u0CE6-\u0CEF\u0CF1\u0CF2\u0D01-\u0D03\u0D05-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D-\u0D44\u0D46-\u0D48\u0D4A-\u0D4E\u0D57\u0D5F-\u0D63\u0D66-\u0D75\u0D7A-\u0D7F\u0D82\u0D83\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0DCA\u0DCF-\u0DD4\u0DD6\u0DD8-\u0DDF\u0DE6-\u0DEF\u0DF2\u0DF3\u0E01-\u0E3A\u0E40-\u0E4E\u0E50-\u0E59\u0E81\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB9\u0EBB-\u0EBD\u0EC0-\u0EC4\u0EC6\u0EC8-\u0ECD\u0ED0-\u0ED9\u0EDC-\u0EDF\u0F00\u0F18\u0F19\u0F20-\u0F33\u0F35\u0F37\u0F39\u0F3E-\u0F47\u0F49-\u0F6C\u0F71-\u0F84\u0F86-\u0F97\u0F99-\u0FBC\u0FC6\u1000-\u1049\u1050-\u109D\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u135D-\u135F\u1369-\u137C\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16EE-\u16F8\u1700-\u170C\u170E-\u1714\u1720-\u1734\u1740-\u1753\u1760-\u176C\u176E-\u1770\u1772\u1773\u1780-\u17D3\u17D7\u17DC\u17DD\u17E0-\u17E9\u17F0-\u17F9\u180B-\u180D\u1810-\u1819\u1820-\u1877\u1880-\u18AA\u18B0-\u18F5\u1900-\u191E\u1920-\u192B\u1930-\u193B\u1946-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u19D0-\u19DA\u1A00-\u1A1B\u1A20-\u1A5E\u1A60-\u1A7C\u1A7F-\u1A89\u1A90-\u1A99\u1AA7\u1AB0-\u1ABE\u1B00-\u1B4B\u1B50-\u1B59\u1B6B-\u1B73\u1B80-\u1BF3\u1C00-\u1C37\u1C40-\u1C49\u1C4D-\u1C7D\u1CD0-\u1CD2\u1CD4-\u1CF6\u1CF8\u1CF9\u1D00-\u1DF5\u1DFC-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2070\u2071\u2074-\u2079\u207F-\u2089\u2090-\u209C\u20D0-\u20F0\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2150-\u2189\u2460-\u249B\u24EA-\u24FF\u2776-\u2793\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CF3\u2CFD\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D7F-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2DE0-\u2DFF\u2E2F\u3005-\u3007\u3021-\u302F\u3031-\u3035\u3038-\u303C\u3041-\u3096\u3099\u309A\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312D\u3131-\u318E\u3192-\u3195\u31A0-\u31BA\u31F0-\u31FF\u3220-\u3229\u3248-\u324F\u3251-\u325F\u3280-\u3289\u32B1-\u32BF\u3400-\u4DB5\u4E00-\u9FD5\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA62B\uA640-\uA672\uA674-\uA67D\uA67F-\uA6F1\uA717-\uA71F\uA722-\uA788\uA78B-\uA7AD\uA7B0-\uA7B7\uA7F7-\uA827\uA830-\uA835\uA840-\uA873\uA880-\uA8C4\uA8D0-\uA8D9\uA8E0-\uA8F7\uA8FB\uA8FD\uA900-\uA92D\uA930-\uA953\uA960-\uA97C\uA980-\uA9C0\uA9CF-\uA9D9\uA9E0-\uA9FE\uAA00-\uAA36\uAA40-\uAA4D\uAA50-\uAA59\uAA60-\uAA76\uAA7A-\uAAC2\uAADB-\uAADD\uAAE0-\uAAEF\uAAF2-\uAAF6\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB65\uAB70-\uABEA\uABEC\uABED\uABF0-\uABF9\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE00-\uFE0F\uFE20-\uFE2F\uFE70-\uFE74\uFE76-\uFEFC\uFF10-\uFF19\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]|\uD800[\uDC00-\uDC0B\uDC0D-\uDC26\uDC28-\uDC3A\uDC3C\uDC3D\uDC3F-\uDC4D\uDC50-\uDC5D\uDC80-\uDCFA\uDD07-\uDD33\uDD40-\uDD78\uDD8A\uDD8B\uDDFD\uDE80-\uDE9C\uDEA0-\uDED0\uDEE0-\uDEFB\uDF00-\uDF23\uDF30-\uDF4A\uDF50-\uDF7A\uDF80-\uDF9D\uDFA0-\uDFC3\uDFC8-\uDFCF\uDFD1-\uDFD5]|\uD801[\uDC00-\uDC9D\uDCA0-\uDCA9\uDD00-\uDD27\uDD30-\uDD63\uDE00-\uDF36\uDF40-\uDF55\uDF60-\uDF67]|\uD802[\uDC00-\uDC05\uDC08\uDC0A-\uDC35\uDC37\uDC38\uDC3C\uDC3F-\uDC55\uDC58-\uDC76\uDC79-\uDC9E\uDCA7-\uDCAF\uDCE0-\uDCF2\uDCF4\uDCF5\uDCFB-\uDD1B\uDD20-\uDD39\uDD80-\uDDB7\uDDBC-\uDDCF\uDDD2-\uDE03\uDE05\uDE06\uDE0C-\uDE13\uDE15-\uDE17\uDE19-\uDE33\uDE38-\uDE3A\uDE3F-\uDE47\uDE60-\uDE7E\uDE80-\uDE9F\uDEC0-\uDEC7\uDEC9-\uDEE6\uDEEB-\uDEEF\uDF00-\uDF35\uDF40-\uDF55\uDF58-\uDF72\uDF78-\uDF91\uDFA9-\uDFAF]|\uD803[\uDC00-\uDC48\uDC80-\uDCB2\uDCC0-\uDCF2\uDCFA-\uDCFF\uDE60-\uDE7E]|\uD804[\uDC00-\uDC46\uDC52-\uDC6F\uDC7F-\uDCBA\uDCD0-\uDCE8\uDCF0-\uDCF9\uDD00-\uDD34\uDD36-\uDD3F\uDD50-\uDD73\uDD76\uDD80-\uDDC4\uDDCA-\uDDCC\uDDD0-\uDDDA\uDDDC\uDDE1-\uDDF4\uDE00-\uDE11\uDE13-\uDE37\uDE80-\uDE86\uDE88\uDE8A-\uDE8D\uDE8F-\uDE9D\uDE9F-\uDEA8\uDEB0-\uDEEA\uDEF0-\uDEF9\uDF00-\uDF03\uDF05-\uDF0C\uDF0F\uDF10\uDF13-\uDF28\uDF2A-\uDF30\uDF32\uDF33\uDF35-\uDF39\uDF3C-\uDF44\uDF47\uDF48\uDF4B-\uDF4D\uDF50\uDF57\uDF5D-\uDF63\uDF66-\uDF6C\uDF70-\uDF74]|\uD805[\uDC80-\uDCC5\uDCC7\uDCD0-\uDCD9\uDD80-\uDDB5\uDDB8-\uDDC0\uDDD8-\uDDDD\uDE00-\uDE40\uDE44\uDE50-\uDE59\uDE80-\uDEB7\uDEC0-\uDEC9\uDF00-\uDF19\uDF1D-\uDF2B\uDF30-\uDF3B]|\uD806[\uDCA0-\uDCF2\uDCFF\uDEC0-\uDEF8]|\uD808[\uDC00-\uDF99]|\uD809[\uDC00-\uDC6E\uDC80-\uDD43]|[\uD80C\uD840-\uD868\uD86A-\uD86C\uD86F-\uD872][\uDC00-\uDFFF]|\uD80D[\uDC00-\uDC2E]|\uD811[\uDC00-\uDE46]|\uD81A[\uDC00-\uDE38\uDE40-\uDE5E\uDE60-\uDE69\uDED0-\uDEED\uDEF0-\uDEF4\uDF00-\uDF36\uDF40-\uDF43\uDF50-\uDF59\uDF5B-\uDF61\uDF63-\uDF77\uDF7D-\uDF8F]|\uD81B[\uDF00-\uDF44\uDF50-\uDF7E\uDF8F-\uDF9F]|\uD82C[\uDC00\uDC01]|\uD82F[\uDC00-\uDC6A\uDC70-\uDC7C\uDC80-\uDC88\uDC90-\uDC99\uDC9D\uDC9E]|\uD834[\uDD65-\uDD69\uDD6D-\uDD72\uDD7B-\uDD82\uDD85-\uDD8B\uDDAA-\uDDAD\uDE42-\uDE44\uDF60-\uDF71]|\uD835[\uDC00-\uDC54\uDC56-\uDC9C\uDC9E\uDC9F\uDCA2\uDCA5\uDCA6\uDCA9-\uDCAC\uDCAE-\uDCB9\uDCBB\uDCBD-\uDCC3\uDCC5-\uDD05\uDD07-\uDD0A\uDD0D-\uDD14\uDD16-\uDD1C\uDD1E-\uDD39\uDD3B-\uDD3E\uDD40-\uDD44\uDD46\uDD4A-\uDD50\uDD52-\uDEA5\uDEA8-\uDEC0\uDEC2-\uDEDA\uDEDC-\uDEFA\uDEFC-\uDF14\uDF16-\uDF34\uDF36-\uDF4E\uDF50-\uDF6E\uDF70-\uDF88\uDF8A-\uDFA8\uDFAA-\uDFC2\uDFC4-\uDFCB\uDFCE-\uDFFF]|\uD836[\uDE00-\uDE36\uDE3B-\uDE6C\uDE75\uDE84\uDE9B-\uDE9F\uDEA1-\uDEAF]|\uD83A[\uDC00-\uDCC4\uDCC7-\uDCD6]|\uD83B[\uDE00-\uDE03\uDE05-\uDE1F\uDE21\uDE22\uDE24\uDE27\uDE29-\uDE32\uDE34-\uDE37\uDE39\uDE3B\uDE42\uDE47\uDE49\uDE4B\uDE4D-\uDE4F\uDE51\uDE52\uDE54\uDE57\uDE59\uDE5B\uDE5D\uDE5F\uDE61\uDE62\uDE64\uDE67-\uDE6A\uDE6C-\uDE72\uDE74-\uDE77\uDE79-\uDE7C\uDE7E\uDE80-\uDE89\uDE8B-\uDE9B\uDEA1-\uDEA3\uDEA5-\uDEA9\uDEAB-\uDEBB]|\uD83C[\uDD00-\uDD0C]|\uD869[\uDC00-\uDED6\uDF00-\uDFFF]|\uD86D[\uDC00-\uDF34\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1D\uDC20-\uDFFF]|\uD873[\uDC00-\uDEA1]|\uD87E[\uDC00-\uDE1D]|\uDB40[\uDD00-\uDDEF])+|(?:[\t-\r \x85\xA0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000])+|(?:[\uD800-\uDFFF])+|([\s\S])\1*/g,
+    'word': /^(?:[0-9A-Za-z\xAA\xB2\xB3\xB5\xB9\xBA\xBC-\xBE\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0300-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u0483-\u052F\u0531-\u0556\u0559\u0561-\u0587\u0591-\u05BD\u05BF\u05C1\u05C2\u05C4\u05C5\u05C7\u05D0-\u05EA\u05F0-\u05F2\u0610-\u061A\u0620-\u0669\u066E-\u06D3\u06D5-\u06DC\u06DF-\u06E8\u06EA-\u06FC\u06FF\u0710-\u074A\u074D-\u07B1\u07C0-\u07F5\u07FA\u0800-\u082D\u0840-\u085B\u08A0-\u08B4\u08E3-\u0963\u0966-\u096F\u0971-\u0983\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BC-\u09C4\u09C7\u09C8\u09CB-\u09CE\u09D7\u09DC\u09DD\u09DF-\u09E3\u09E6-\u09F1\u09F4-\u09F9\u0A01-\u0A03\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A3C\u0A3E-\u0A42\u0A47\u0A48\u0A4B-\u0A4D\u0A51\u0A59-\u0A5C\u0A5E\u0A66-\u0A75\u0A81-\u0A83\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABC-\u0AC5\u0AC7-\u0AC9\u0ACB-\u0ACD\u0AD0\u0AE0-\u0AE3\u0AE6-\u0AEF\u0AF9\u0B01-\u0B03\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3C-\u0B44\u0B47\u0B48\u0B4B-\u0B4D\u0B56\u0B57\u0B5C\u0B5D\u0B5F-\u0B63\u0B66-\u0B6F\u0B71-\u0B77\u0B82\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BBE-\u0BC2\u0BC6-\u0BC8\u0BCA-\u0BCD\u0BD0\u0BD7\u0BE6-\u0BF2\u0C00-\u0C03\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D-\u0C44\u0C46-\u0C48\u0C4A-\u0C4D\u0C55\u0C56\u0C58-\u0C5A\u0C60-\u0C63\u0C66-\u0C6F\u0C78-\u0C7E\u0C81-\u0C83\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBC-\u0CC4\u0CC6-\u0CC8\u0CCA-\u0CCD\u0CD5\u0CD6\u0CDE\u0CE0-\u0CE3\u0CE6-\u0CEF\u0CF1\u0CF2\u0D01-\u0D03\u0D05-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D-\u0D44\u0D46-\u0D48\u0D4A-\u0D4E\u0D57\u0D5F-\u0D63\u0D66-\u0D75\u0D7A-\u0D7F\u0D82\u0D83\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0DCA\u0DCF-\u0DD4\u0DD6\u0DD8-\u0DDF\u0DE6-\u0DEF\u0DF2\u0DF3\u0E01-\u0E3A\u0E40-\u0E4E\u0E50-\u0E59\u0E81\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB9\u0EBB-\u0EBD\u0EC0-\u0EC4\u0EC6\u0EC8-\u0ECD\u0ED0-\u0ED9\u0EDC-\u0EDF\u0F00\u0F18\u0F19\u0F20-\u0F33\u0F35\u0F37\u0F39\u0F3E-\u0F47\u0F49-\u0F6C\u0F71-\u0F84\u0F86-\u0F97\u0F99-\u0FBC\u0FC6\u1000-\u1049\u1050-\u109D\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u135D-\u135F\u1369-\u137C\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16EE-\u16F8\u1700-\u170C\u170E-\u1714\u1720-\u1734\u1740-\u1753\u1760-\u176C\u176E-\u1770\u1772\u1773\u1780-\u17D3\u17D7\u17DC\u17DD\u17E0-\u17E9\u17F0-\u17F9\u180B-\u180D\u1810-\u1819\u1820-\u1877\u1880-\u18AA\u18B0-\u18F5\u1900-\u191E\u1920-\u192B\u1930-\u193B\u1946-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u19D0-\u19DA\u1A00-\u1A1B\u1A20-\u1A5E\u1A60-\u1A7C\u1A7F-\u1A89\u1A90-\u1A99\u1AA7\u1AB0-\u1ABE\u1B00-\u1B4B\u1B50-\u1B59\u1B6B-\u1B73\u1B80-\u1BF3\u1C00-\u1C37\u1C40-\u1C49\u1C4D-\u1C7D\u1CD0-\u1CD2\u1CD4-\u1CF6\u1CF8\u1CF9\u1D00-\u1DF5\u1DFC-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2070\u2071\u2074-\u2079\u207F-\u2089\u2090-\u209C\u20D0-\u20F0\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2150-\u2189\u2460-\u249B\u24EA-\u24FF\u2776-\u2793\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CF3\u2CFD\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D7F-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2DE0-\u2DFF\u2E2F\u3005-\u3007\u3021-\u302F\u3031-\u3035\u3038-\u303C\u3041-\u3096\u3099\u309A\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312D\u3131-\u318E\u3192-\u3195\u31A0-\u31BA\u31F0-\u31FF\u3220-\u3229\u3248-\u324F\u3251-\u325F\u3280-\u3289\u32B1-\u32BF\u3400-\u4DB5\u4E00-\u9FD5\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA62B\uA640-\uA672\uA674-\uA67D\uA67F-\uA6F1\uA717-\uA71F\uA722-\uA788\uA78B-\uA7AD\uA7B0-\uA7B7\uA7F7-\uA827\uA830-\uA835\uA840-\uA873\uA880-\uA8C4\uA8D0-\uA8D9\uA8E0-\uA8F7\uA8FB\uA8FD\uA900-\uA92D\uA930-\uA953\uA960-\uA97C\uA980-\uA9C0\uA9CF-\uA9D9\uA9E0-\uA9FE\uAA00-\uAA36\uAA40-\uAA4D\uAA50-\uAA59\uAA60-\uAA76\uAA7A-\uAAC2\uAADB-\uAADD\uAAE0-\uAAEF\uAAF2-\uAAF6\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB65\uAB70-\uABEA\uABEC\uABED\uABF0-\uABF9\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE00-\uFE0F\uFE20-\uFE2F\uFE70-\uFE74\uFE76-\uFEFC\uFF10-\uFF19\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]|\uD800[\uDC00-\uDC0B\uDC0D-\uDC26\uDC28-\uDC3A\uDC3C\uDC3D\uDC3F-\uDC4D\uDC50-\uDC5D\uDC80-\uDCFA\uDD07-\uDD33\uDD40-\uDD78\uDD8A\uDD8B\uDDFD\uDE80-\uDE9C\uDEA0-\uDED0\uDEE0-\uDEFB\uDF00-\uDF23\uDF30-\uDF4A\uDF50-\uDF7A\uDF80-\uDF9D\uDFA0-\uDFC3\uDFC8-\uDFCF\uDFD1-\uDFD5]|\uD801[\uDC00-\uDC9D\uDCA0-\uDCA9\uDD00-\uDD27\uDD30-\uDD63\uDE00-\uDF36\uDF40-\uDF55\uDF60-\uDF67]|\uD802[\uDC00-\uDC05\uDC08\uDC0A-\uDC35\uDC37\uDC38\uDC3C\uDC3F-\uDC55\uDC58-\uDC76\uDC79-\uDC9E\uDCA7-\uDCAF\uDCE0-\uDCF2\uDCF4\uDCF5\uDCFB-\uDD1B\uDD20-\uDD39\uDD80-\uDDB7\uDDBC-\uDDCF\uDDD2-\uDE03\uDE05\uDE06\uDE0C-\uDE13\uDE15-\uDE17\uDE19-\uDE33\uDE38-\uDE3A\uDE3F-\uDE47\uDE60-\uDE7E\uDE80-\uDE9F\uDEC0-\uDEC7\uDEC9-\uDEE6\uDEEB-\uDEEF\uDF00-\uDF35\uDF40-\uDF55\uDF58-\uDF72\uDF78-\uDF91\uDFA9-\uDFAF]|\uD803[\uDC00-\uDC48\uDC80-\uDCB2\uDCC0-\uDCF2\uDCFA-\uDCFF\uDE60-\uDE7E]|\uD804[\uDC00-\uDC46\uDC52-\uDC6F\uDC7F-\uDCBA\uDCD0-\uDCE8\uDCF0-\uDCF9\uDD00-\uDD34\uDD36-\uDD3F\uDD50-\uDD73\uDD76\uDD80-\uDDC4\uDDCA-\uDDCC\uDDD0-\uDDDA\uDDDC\uDDE1-\uDDF4\uDE00-\uDE11\uDE13-\uDE37\uDE80-\uDE86\uDE88\uDE8A-\uDE8D\uDE8F-\uDE9D\uDE9F-\uDEA8\uDEB0-\uDEEA\uDEF0-\uDEF9\uDF00-\uDF03\uDF05-\uDF0C\uDF0F\uDF10\uDF13-\uDF28\uDF2A-\uDF30\uDF32\uDF33\uDF35-\uDF39\uDF3C-\uDF44\uDF47\uDF48\uDF4B-\uDF4D\uDF50\uDF57\uDF5D-\uDF63\uDF66-\uDF6C\uDF70-\uDF74]|\uD805[\uDC80-\uDCC5\uDCC7\uDCD0-\uDCD9\uDD80-\uDDB5\uDDB8-\uDDC0\uDDD8-\uDDDD\uDE00-\uDE40\uDE44\uDE50-\uDE59\uDE80-\uDEB7\uDEC0-\uDEC9\uDF00-\uDF19\uDF1D-\uDF2B\uDF30-\uDF3B]|\uD806[\uDCA0-\uDCF2\uDCFF\uDEC0-\uDEF8]|\uD808[\uDC00-\uDF99]|\uD809[\uDC00-\uDC6E\uDC80-\uDD43]|[\uD80C\uD840-\uD868\uD86A-\uD86C\uD86F-\uD872][\uDC00-\uDFFF]|\uD80D[\uDC00-\uDC2E]|\uD811[\uDC00-\uDE46]|\uD81A[\uDC00-\uDE38\uDE40-\uDE5E\uDE60-\uDE69\uDED0-\uDEED\uDEF0-\uDEF4\uDF00-\uDF36\uDF40-\uDF43\uDF50-\uDF59\uDF5B-\uDF61\uDF63-\uDF77\uDF7D-\uDF8F]|\uD81B[\uDF00-\uDF44\uDF50-\uDF7E\uDF8F-\uDF9F]|\uD82C[\uDC00\uDC01]|\uD82F[\uDC00-\uDC6A\uDC70-\uDC7C\uDC80-\uDC88\uDC90-\uDC99\uDC9D\uDC9E]|\uD834[\uDD65-\uDD69\uDD6D-\uDD72\uDD7B-\uDD82\uDD85-\uDD8B\uDDAA-\uDDAD\uDE42-\uDE44\uDF60-\uDF71]|\uD835[\uDC00-\uDC54\uDC56-\uDC9C\uDC9E\uDC9F\uDCA2\uDCA5\uDCA6\uDCA9-\uDCAC\uDCAE-\uDCB9\uDCBB\uDCBD-\uDCC3\uDCC5-\uDD05\uDD07-\uDD0A\uDD0D-\uDD14\uDD16-\uDD1C\uDD1E-\uDD39\uDD3B-\uDD3E\uDD40-\uDD44\uDD46\uDD4A-\uDD50\uDD52-\uDEA5\uDEA8-\uDEC0\uDEC2-\uDEDA\uDEDC-\uDEFA\uDEFC-\uDF14\uDF16-\uDF34\uDF36-\uDF4E\uDF50-\uDF6E\uDF70-\uDF88\uDF8A-\uDFA8\uDFAA-\uDFC2\uDFC4-\uDFCB\uDFCE-\uDFFF]|\uD836[\uDE00-\uDE36\uDE3B-\uDE6C\uDE75\uDE84\uDE9B-\uDE9F\uDEA1-\uDEAF]|\uD83A[\uDC00-\uDCC4\uDCC7-\uDCD6]|\uD83B[\uDE00-\uDE03\uDE05-\uDE1F\uDE21\uDE22\uDE24\uDE27\uDE29-\uDE32\uDE34-\uDE37\uDE39\uDE3B\uDE42\uDE47\uDE49\uDE4B\uDE4D-\uDE4F\uDE51\uDE52\uDE54\uDE57\uDE59\uDE5B\uDE5D\uDE5F\uDE61\uDE62\uDE64\uDE67-\uDE6A\uDE6C-\uDE72\uDE74-\uDE77\uDE79-\uDE7C\uDE7E\uDE80-\uDE89\uDE8B-\uDE9B\uDEA1-\uDEA3\uDEA5-\uDEA9\uDEAB-\uDEBB]|\uD83C[\uDD00-\uDD0C]|\uD869[\uDC00-\uDED6\uDF00-\uDFFF]|\uD86D[\uDC00-\uDF34\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1D\uDC20-\uDFFF]|\uD873[\uDC00-\uDEA1]|\uD87E[\uDC00-\uDE1D]|\uDB40[\uDD00-\uDDEF])+$/,
+    'whiteSpace': /^(?:[\t-\r \x85\xA0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000])+$/
+};
+
+},{}],18:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2014-2015 Titus Wormer
+ * @license MIT
+ * @module parse-latin
+ * @fileoverview Latin-script (natural language) parser.
+ */
+
+'use strict';
+
+/* eslint-env commonjs */
+
+/*
+ * Dependencies.
+ */
+
+var createParser = require('./parser');
+var expressions = require('./expressions');
+
+/*
+ * == CLASSIFY ===============================================================
+ */
+
+/*
+ * Constants.
+ */
+
+/*
+ * Match all tokens:
+ * - One or more number, alphabetic, or
+ *   combining characters;
+ * - One or more white space characters;
+ * - One or more astral plane characters;
+ * - One or more of the same character;
+ */
+
+var EXPRESSION_TOKEN = expressions.token;
+
+/*
+ * Match a word.
+ */
+
+var EXPRESSION_WORD = expressions.word;
+
+/*
+ * Match a string containing ONLY punctuation.
+ */
+
+var EXPRESSION_PUNCTUATION = expressions.punctuation;
+
+/*
+ * Match a string containing ONLY white space.
+ */
+
+var EXPRESSION_WHITE_SPACE = expressions.whiteSpace;
+
+/**
+ * Classify a token.
+ *
+ * @param {string?} value - Value to classify.
+ * @return {string} - value's type.
+ */
+function classify(value) {
+    if (EXPRESSION_WHITE_SPACE.test(value)) {
+        return 'WhiteSpace';
+    }
+
+    if (EXPRESSION_WORD.test(value)) {
+        return 'Word';
+    }
+
+    if (EXPRESSION_PUNCTUATION.test(value)) {
+        return 'Punctuation';
+    }
+
+    return 'Symbol';
+}
+
+/**
+ * Transform a `value` into a list of `NLCSTNode`s.
+ *
+ * @param {ParseLatin} parser - Context.
+ * @param {string?} value - Value to tokenize.
+ * @return {Array.<NLCSTNode>}
+ */
+function tokenize(parser, value) {
+    var tokens;
+    var offset;
+    var line;
+    var column;
+    var match;
+
+    if (value === null || value === undefined) {
+        value = '';
+    } else if (value instanceof String) {
+        value = value.toString();
+    }
+
+    if (typeof value !== 'string') {
+        /**
+         * Return the given nodes if this is either an
+         * empty array, or an array with a node as a first
+         * child.
+         */
+
+        if ('length' in value && (!value[0] || value[0].type)) {
+            return value;
+        }
+
+        throw new Error(
+            'Illegal invocation: \'' + value + '\'' +
+            ' is not a valid argument for \'ParseLatin\''
+        );
+    }
+
+    tokens = [];
+
+    if (!value) {
+        return tokens;
+    }
+
+    offset = 0;
+    line = 1;
+    column = 1;
+
+    /**
+     * Get the current position.
+     *
+     * @example
+     *   position = now(); // {line: 1, column: 1}
+     *
+     * @return {Object}
+     */
+    function now() {
+        return {
+            'line': line,
+            'column': column,
+            'offset': offset
+        };
+    }
+
+    /**
+     * Store position information for a node.
+     *
+     * @example
+     *   start = now();
+     *   updatePosition('foo');
+     *   location = new Position(start);
+     *   // {start: {line: 1, column: 1}, end: {line: 1, column: 3}}
+     *
+     * @param {Object} start - Starting position.
+     */
+    function Position(start) {
+        this.start = start;
+        this.end = now();
+    }
+
+    /**
+     * Mark position and patch `node.position`.
+     *
+     * @example
+     *   var update = position();
+     *   updatePosition('foo');
+     *   update({});
+     *   // {
+     *   //   position: {
+     *   //     start: {line: 1, column: 1}
+     *   //     end: {line: 1, column: 3}
+     *   //   }
+     *   // }
+     *
+     * @returns {function(Node): Node}
+     */
+    function position() {
+        var before = now();
+
+        /**
+         * Add the position to a node.
+         *
+         * @example
+         *   update({type: 'text', value: 'foo'});
+         *
+         * @param {Node} node - Node to attach position
+         *   on.
+         * @return {Node} - `node`.
+         */
+        function patch(node) {
+            node.position = new Position(before);
+
+            return node;
+        }
+
+        return patch;
+    }
+
+    /**
+     * Update line and column based on `value`.
+     *
+     * @example
+     *   update('foo');
+     *
+     * @param {string} subvalue - Eaten value..
+     */
+    function update(subvalue) {
+        var subvalueLength = subvalue.length;
+        var character = -1;
+        var lastIndex = -1;
+
+        offset += subvalueLength;
+
+        while (++character < subvalueLength) {
+            if (subvalue.charAt(character) === '\n') {
+                lastIndex = character;
+                line++;
+            }
+        }
+
+        if (lastIndex === -1) {
+            column = column + subvalueLength;
+        } else {
+            column = subvalueLength - lastIndex;
+        }
+    }
+
+    /**
+     * Add mechanism.
+     *
+     * @param {NLCSTNode} node - Node to add.
+     * @param {NLCSTParentNode?} [parent] - Optional parent
+     *   node to insert into.
+     * @return {NLCSTNode} - `node`.
+     */
+    function add(node, parent) {
+        if (parent) {
+            parent.children.push(node);
+        } else {
+            tokens.push(node);
+        }
+
+        return node;
+    }
+
+    /**
+     * Remove `subvalue` from `value`.
+     * Expects `subvalue` to be at the start from
+     * `value`, and applies no validation.
+     *
+     * @example
+     *   eat('foo')({type: 'TextNode', value: 'foo'});
+     *
+     * @param {string} subvalue - Removed from `value`,
+     *   and passed to `update`.
+     * @return {Function} - Wrapper around `add`, which
+     *   also adds `position` to node.
+     */
+    function eat(subvalue) {
+        var pos = position();
+
+        /**
+         * Add the given arguments, add `position` to
+         * the returned node, and return the node.
+         *
+         * @return {Node}
+         */
+        function apply() {
+            return pos(add.apply(null, arguments));
+        }
+
+        value = value.substring(subvalue.length);
+
+        update(subvalue);
+
+        return apply;
+    }
+
+    /**
+     * Remove `subvalue` from `value`. Does not patch
+     * positional information.
+     *
+     * @param {string} subvalue - Value to eat.
+     * @return {Function}
+     */
+    function noPositionEat(subvalue) {
+        /**
+         * Add the given arguments and return the node.
+         *
+         * @return {Node}
+         */
+        function apply() {
+            return add.apply(null, arguments);
+        }
+
+        value = value.substring(subvalue.length);
+
+        return apply;
+    }
+
+    /*
+     * Eat mechanism to use.
+     */
+
+    var eater = parser.position ? eat : noPositionEat;
+
+    /**
+     * Continue matching.
+     */
+    function next() {
+        EXPRESSION_TOKEN.lastIndex = 0;
+
+        match = EXPRESSION_TOKEN.exec(value);
+    }
+
+    next();
+
+    while (match) {
+        parser['tokenize' + classify(match[0])](match[0], eater);
+
+        next();
+    }
+
+    return tokens;
+}
+
+/**
+ * Add mechanism used when text-tokenisers are called
+ * directly outside of the `tokenize` function.
+ *
+ * @param {NLCSTNode} node - Node to add.
+ * @param {NLCSTParentNode?} [parent] - Optional parent
+ *   node to insert into.
+ * @return {NLCSTNode} - `node`.
+ */
+function noopAdd(node, parent) {
+    if (parent) {
+        parent.children.push(node);
+    }
+
+    return node;
+}
+
+/**
+ * Eat and add mechanism without adding positional
+ * information, used when text-tokenisers are called
+ * directly outside of the `tokenize` function.
+ *
+ * @return {Function}
+ */
+function noopEat() {
+    return noopAdd;
+}
+
+/*
+ * == PARSE LATIN ============================================================
+ */
+
+/**
+ * Transform Latin-script natural language into
+ * an NLCST-tree.
+ *
+ * @param {VFile?} file - Virtual file.
+ * @param {Object?} options - Configuration.
+ * @constructor {ParseLatin}
+ */
+function ParseLatin(file, options) {
+    var position;
+
+    if (!(this instanceof ParseLatin)) {
+        return new ParseLatin(file, options);
+    }
+
+    if (file && file.message) {
+        this.file = file;
+    } else {
+        options = file;
+    }
+
+    position = options && options.position;
+
+    if (position !== null && position !== undefined) {
+        this.position = Boolean(position);
+    }
+}
+
+/*
+ * Quick access to the prototype.
+ */
+
+var parseLatinPrototype = ParseLatin.prototype;
+
+/*
+ * Default position.
+ */
+
+parseLatinPrototype.position = true;
+
+/*
+ * == TOKENIZE ===============================================================
+ */
+
+/**
+ * Transform a `value` into a list of `NLCSTNode`s.
+ *
+ * @see tokenize
+ */
+parseLatinPrototype.tokenize = function (value) {
+    return tokenize(this, value);
+};
+
+/*
+ * == TEXT NODES =============================================================
+ */
+
+/**
+ * Factory to create a `Text`.
+ *
+ * @param {string} type - Name of text node.
+ * @return {function(value): NLCSTText}
+ */
+function createTextFactory(type) {
+    type += 'Node';
+
+    /**
+     * Construct a `Text` from a bound `type`
+     *
+     * @param {value} value - Value of the node.
+     * @param {Function?} [eat] - Optional eat mechanism
+     *   to use.
+     * @param {NLCSTParentNode?} [parent] - Optional
+     *   parent to insert into.
+     * @return {NLCSTText}
+     */
+    return function (value, eat, parent) {
+        if (value === null || value === undefined) {
+            value = '';
+        }
+
+        return (eat || noopEat)(value)({
+            'type': type,
+            'value': String(value)
+        }, parent);
+    };
+}
+
+/**
+ * Create a `SymbolNode` with the given `value`.
+ *
+ * @param {string?} value
+ * @return {NLCSTSymbolNode}
+ */
+parseLatinPrototype.tokenizeSymbol = createTextFactory('Symbol');
+
+/**
+ * Create a `WhiteSpaceNode` with the given `value`.
+ *
+ * @param {string?} value
+ * @return {NLCSTWhiteSpaceNode}
+ */
+parseLatinPrototype.tokenizeWhiteSpace = createTextFactory('WhiteSpace');
+
+/**
+ * Create a `PunctuationNode` with the given `value`.
+ *
+ * @param {string?} value
+ * @return {NLCSTPunctuationNode}
+ */
+parseLatinPrototype.tokenizePunctuation = createTextFactory('Punctuation');
+
+/**
+ * Create a `SourceNode` with the given `value`.
+ *
+ * @param {string?} value
+ * @return {NLCSTSourceNode}
+ */
+parseLatinPrototype.tokenizeSource = createTextFactory('Source');
+
+/**
+ * Create a `TextNode` with the given `value`.
+ *
+ * @param {string?} value
+ * @return {NLCSTTextNode}
+ */
+parseLatinPrototype.tokenizeText = createTextFactory('Text');
+
+/*
+ * == PARENT NODES ===========================================================
+ *
+ * All these nodes are `pluggable`: they come with a
+ * `use` method which accepts a plugin
+ * (`function(NLCSTNode)`). Every time one of these
+ * methods are called, the plugin is invoked with the
+ * node, allowing for easy modification.
+ *
+ * In fact, the internal transformation from `tokenize`
+ * (a list of words, white space, punctuation, and
+ * symbols) to `tokenizeRoot` (an NLCST tree), is also
+ * implemented through this mechanism.
+ */
+
+/**
+ * Run transform plug-ins for `key` on `nodes`.
+ *
+ * @param {string} key - Unique name.
+ * @param {Array.<Node>} nodes - List of nodes.
+ * @return {Array.<Node>} - `nodes`.
+ */
+function run(key, nodes) {
+    var wareKey = key + 'Plugins';
+    var plugins = this[wareKey];
+    var index = -1;
+
+    if (plugins) {
+        while (plugins[++index]) {
+            plugins[index](nodes);
+        }
+    }
+
+    return nodes;
+}
+
+/*
+ * Expose `run`.
+ */
+
+parseLatinPrototype.run = run;
+
+/**
+ * @param {Function} Constructor - Context.
+ * @param {string} key - Unique name.
+ * @param {function(*): undefined} callback - Wrapped.
+ */
+function pluggable(Constructor, key, callback) {
+    /**
+     * Set a pluggable version of `callback`
+     * on `Constructor`.
+     */
+    Constructor.prototype[key] = function () {
+        return this.run(key, callback.apply(this, arguments));
+    };
+}
+
+/**
+ * Factory to inject `plugins`. Takes `callback` for
+ * the actual inserting.
+ *
+ * @param {function(Object, string, Array.<Function>)} callback - Wrapped.
+ * @return {function(string, Array.<Function>)}
+ */
+function useFactory(callback) {
+    /*
+     * Validate if `plugins` can be inserted. Invokes
+     * the bound `callback` to do the actual inserting.
+     *
+     * @param {string} key - Method to inject on
+     * @param {Array.<Function>|Function} plugins - One
+     *   or more plugins.
+     */
+
+    return function (key, plugins) {
+        var self = this;
+        var wareKey;
+
+        /*
+         * Throw if the method is not pluggable.
+         */
+
+        if (!(key in self)) {
+            throw new Error(
+                'Illegal Invocation: Unsupported `key` for ' +
+                '`use(key, plugins)`. Make sure `key` is a ' +
+                'supported function'
+            );
+        }
+
+        /*
+         * Fail silently when no plugins are given.
+         */
+
+        if (!plugins) {
+            return;
+        }
+
+        wareKey = key + 'Plugins';
+
+        /*
+         * Make sure `plugins` is a list.
+         */
+
+        if (typeof plugins === 'function') {
+            plugins = [plugins];
+        } else {
+            plugins = plugins.concat();
+        }
+
+        /*
+         * Make sure `wareKey` exists.
+         */
+
+        if (!self[wareKey]) {
+            self[wareKey] = [];
+        }
+
+        /*
+         * Invoke callback with the ware key and plugins.
+         */
+
+        callback(self, wareKey, plugins);
+    };
+}
+
+/*
+ * Inject `plugins` to modifiy the result of the method
+ * at `key` on the operated on context.
+ *
+ * @param {string} key
+ * @param {Function|Array.<Function>} plugins
+ * @this {ParseLatin|Object}
+ */
+
+parseLatinPrototype.use = useFactory(function (context, key, plugins) {
+    context[key] = context[key].concat(plugins);
+});
+
+/*
+ * Inject `plugins` to modifiy the result of the method
+ * at `key` on the operated on context, before any other.
+ *
+ * @param {string} key
+ * @param {Function|Array.<Function>} plugins
+ * @this {ParseLatin|Object}
+ */
+
+parseLatinPrototype.useFirst = useFactory(function (context, key, plugins) {
+    context[key] = plugins.concat(context[key]);
+});
+
+/**
+ * Create a `WordNode` with its children set to a single
+ * `TextNode`, its value set to the given `value`.
+ *
+ * @see pluggable
+ *
+ * @param {string?} value - Value to classify as a word.
+ * @return {NLCSTWordNode}
+ */
+pluggable(ParseLatin, 'tokenizeWord', function (value, eat) {
+    var add = (eat || noopEat)('');
+    var parent = {
+        'type': 'WordNode',
+        'children': []
+    };
+
+    this.tokenizeText(value, eat, parent);
+
+    return add(parent);
+});
+
+/**
+ * Create a `SentenceNode` with its children set to
+ * `Node`s, their values set to the tokenized given
+ * `value`.
+ *
+ * Unless plugins add new nodes, the sentence is
+ * populated by `WordNode`s, `SymbolNode`s,
+ * `PunctuationNode`s, and `WhiteSpaceNode`s.
+ *
+ * @see pluggable
+ *
+ * @param {string?} value
+ * @return {NLCSTSentenceNode}
+ */
+pluggable(ParseLatin, 'tokenizeSentence', createParser({
+    'type': 'SentenceNode',
+    'tokenizer': 'tokenize'
+}));
+
+/**
+ * Create a `ParagraphNode` with its children set to
+ * `Node`s, their values set to the tokenized given
+ * `value`.
+ *
+ * Unless plugins add new nodes, the paragraph is
+ * populated by `SentenceNode`s and `WhiteSpaceNode`s.
+ *
+ * @see pluggable
+ *
+ * @param {string?} value
+ * @return {NLCSTParagraphNode}
+ */
+pluggable(ParseLatin, 'tokenizeParagraph', createParser({
+    'type': 'ParagraphNode',
+    'delimiter': expressions.terminalMarker,
+    'delimiterType': 'PunctuationNode',
+    'tokenizer': 'tokenizeSentence'
+}));
+
+/**
+ * Create a `RootNode` with its children set to `Node`s,
+ * their values set to the tokenized given `value`.
+ *
+ * Unless plugins add new nodes, the root is populated by
+ * `ParagraphNode`s and `WhiteSpaceNode`s.
+ *
+ * @see pluggable
+ *
+ * @param {string?} value
+ * @return {NLCSTRootNode}
+ */
+pluggable(ParseLatin, 'tokenizeRoot', createParser({
+    'type': 'RootNode',
+    'delimiter': expressions.newLine,
+    'delimiterType': 'WhiteSpaceNode',
+    'tokenizer': 'tokenizeParagraph'
+}));
+
+/**
+ * Easy access to the document parser. This additionally
+ * supports retext-style invocation: where an instance is
+ * created for each file, and the file is given on
+ * instanciation.
+ *
+ * @see ParseLatin#tokenizeRoot
+ */
+parseLatinPrototype.parse = function (value) {
+    return this.tokenizeRoot(this.file ? this.file.toString() : value);
+};
+
+/*
+ * == PLUGINS ================================================================
+ */
+
+parseLatinPrototype.use('tokenizeSentence', [
+    require('./plugin/merge-initial-word-symbol'),
+    require('./plugin/merge-final-word-symbol'),
+    require('./plugin/merge-inner-word-symbol'),
+    require('./plugin/merge-initialisms'),
+    require('./plugin/merge-words'),
+    require('./plugin/patch-position')
+]);
+
+parseLatinPrototype.use('tokenizeParagraph', [
+    require('./plugin/merge-non-word-sentences'),
+    require('./plugin/merge-affix-symbol'),
+    require('./plugin/merge-initial-lower-case-letter-sentences'),
+    require('./plugin/merge-prefix-exceptions'),
+    require('./plugin/merge-affix-exceptions'),
+    require('./plugin/merge-remaining-full-stops'),
+    require('./plugin/make-initial-white-space-siblings'),
+    require('./plugin/make-final-white-space-siblings'),
+    require('./plugin/break-implicit-sentences'),
+    require('./plugin/remove-empty-nodes'),
+    require('./plugin/patch-position')
+]);
+
+parseLatinPrototype.use('tokenizeRoot', [
+    require('./plugin/make-initial-white-space-siblings'),
+    require('./plugin/make-final-white-space-siblings'),
+    require('./plugin/remove-empty-nodes'),
+    require('./plugin/patch-position')
+]);
+
+/*
+ * == EXPORT =================================================================
+ */
+
+/*
+ * Expose.
+ */
+
+module.exports = ParseLatin;
+
+},{"./expressions":17,"./parser":19,"./plugin/break-implicit-sentences":20,"./plugin/make-final-white-space-siblings":21,"./plugin/make-initial-white-space-siblings":22,"./plugin/merge-affix-exceptions":23,"./plugin/merge-affix-symbol":24,"./plugin/merge-final-word-symbol":25,"./plugin/merge-initial-lower-case-letter-sentences":26,"./plugin/merge-initial-word-symbol":27,"./plugin/merge-initialisms":28,"./plugin/merge-inner-word-symbol":29,"./plugin/merge-non-word-sentences":30,"./plugin/merge-prefix-exceptions":31,"./plugin/merge-remaining-full-stops":32,"./plugin/merge-words":33,"./plugin/patch-position":34,"./plugin/remove-empty-nodes":35}],19:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2014-2015 Titus Wormer
+ * @license MIT
+ * @module parse-latin:parser
+ * @fileoverview Construct a parser for a given node.
+ */
+
+'use strict';
+
+/* eslint-env commonjs */
+
+/*
+ * Dependencies.
+ */
+
+var tokenizer = require('./tokenizer');
+
+/**
+ * Construct a parser based on `options`.
+ *
+ * @param {Object} options - Configuration.
+ * @return {function(string): NLCSTNode}
+ */
+function parserFactory(options) {
+    var type = options.type;
+    var tokenizerProperty = options.tokenizer;
+    var delimiter = options.delimiter;
+    var tokenize = delimiter && tokenizer(options.delimiterType, delimiter);
+
+    return function (value) {
+        var children = this[tokenizerProperty](value);
+
+        return {
+            'type': type,
+            'children': tokenize ? tokenize(children) : children
+        };
+    };
+}
+
+/*
+ * Expose.
+ */
+
+module.exports = parserFactory;
+
+},{"./tokenizer":36}],20:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2014-2015 Titus Wormer
+ * @license MIT
+ * @module parse-latin:plugin:break-implicit-sentencs
+ * @fileoverview Break a sentence if a white space with
+ *   more than one new-line is found.
+ */
+
+'use strict';
+
+/* eslint-env commonjs */
+
+/*
+ * Dependencies.
+ */
+
+var nlcstToString = require('nlcst-to-string');
+var modifyChildren = require('unist-util-modify-children');
+var expressions = require('../expressions');
+
+/*
+ * Constants.
+ *
+ * - Two or more new line characters.
+ */
+
+var EXPRESSION_MULTI_NEW_LINE = expressions.newLineMulti;
+
+/**
+ * Break a sentence if a white space with more
+ * than one new-line is found.
+ *
+ * @param {NLCSTNode} child - Node.
+ * @param {number} index - Position of `child` in `parent`.
+ * @param {NLCSTParagraphNode} parent - Parent of `child`.
+ * @return {undefined}
+ */
+function breakImplicitSentences(child, index, parent) {
+    var children;
+    var position;
+    var length;
+    var tail;
+    var head;
+    var end;
+    var insertion;
+    var node;
+
+    if (child.type !== 'SentenceNode') {
+        return;
+    }
+
+    children = child.children;
+
+    /*
+     * Ignore first and last child.
+     */
+
+    length = children.length - 1;
+    position = 0;
+
+    while (++position < length) {
+        node = children[position];
+
+        if (
+            node.type !== 'WhiteSpaceNode' ||
+            !EXPRESSION_MULTI_NEW_LINE.test(nlcstToString(node))
+        ) {
+            continue;
+        }
+
+        child.children = children.slice(0, position);
+
+        insertion = {
+            'type': 'SentenceNode',
+            'children': children.slice(position + 1)
+        };
+
+        tail = children[position - 1];
+        head = children[position + 1];
+
+        parent.children.splice(index + 1, 0, node, insertion);
+
+        if (child.position && tail.position && head.position) {
+            end = child.position.end;
+
+            child.position.end = tail.position.end;
+
+            insertion.position = {
+                'start': head.position.start,
+                'end': end
+            };
+        }
+
+        return index + 1;
+    }
+}
+
+/*
+ * Expose `breakImplicitSentences` as a plugin.
+ */
+
+module.exports = modifyChildren(breakImplicitSentences);
+
+},{"../expressions":17,"nlcst-to-string":15,"unist-util-modify-children":41}],21:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2014-2015 Titus Wormer
+ * @license MIT
+ * @module parse-latin:plugin:make-final-white-space-siblings
+ * @fileoverview Make final white-space siblings.
+ */
+
+'use strict';
+
+/* eslint-env commonjs */
+
+/*
+ * Dependencies.
+ */
+
+var modifyChildren = require('unist-util-modify-children');
+
+/**
+ * Move white space ending a paragraph up, so they are
+ * the siblings of paragraphs.
+ *
+ * @param {NLCSTNode} child - Node.
+ * @param {number} index - Position of `child` in `parent`.
+ * @param {NLCSTParent} parent - Parent of `child`.
+ * @return {undefined|number}
+ */
+function makeFinalWhiteSpaceSiblings(child, index, parent) {
+    var children = child.children;
+    var prev;
+
+    if (
+        children &&
+        children.length !== 0 &&
+        children[children.length - 1].type === 'WhiteSpaceNode'
+    ) {
+        parent.children.splice(index + 1, 0, child.children.pop());
+        prev = children[children.length - 1];
+
+        if (prev && prev.position && child.position) {
+            child.position.end = prev.position.end;
+        }
+
+        /*
+         * Next, iterate over the current node again.
+         */
+
+        return index;
+    }
+}
+
+/*
+ * Expose `makeFinalWhiteSpaceSiblings` as a modifier.
+ */
+
+module.exports = modifyChildren(makeFinalWhiteSpaceSiblings);
+
+},{"unist-util-modify-children":41}],22:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2014-2015 Titus Wormer
+ * @license MIT
+ * @module parse-latin:plugin:make-initial-white-space-siblings
+ * @fileoverview Make initial white-space siblings.
+ */
+
+'use strict';
+
+/* eslint-env commonjs */
+
+/*
+ * Dependencies.
+ */
+
+var visitChildren = require('unist-util-visit-children');
+
+/**
+ * Move white space starting a sentence up, so they are
+ * the siblings of sentences.
+ *
+ * @param {NLCSTNode} child - Node.
+ * @param {number} index - Position of `child` in `parent`.
+ * @param {NLCSTParent} parent - Parent of `child`.
+ */
+function makeInitialWhiteSpaceSiblings(child, index, parent) {
+    var children = child.children;
+    var next;
+
+    if (
+        children &&
+        children.length !== 0 &&
+        children[0].type === 'WhiteSpaceNode'
+    ) {
+        parent.children.splice(index, 0, children.shift());
+        next = children[0];
+
+        if (next && next.position && child.position) {
+            child.position.start = next.position.start;
+        }
+    }
+}
+
+/*
+ * Expose `makeInitialWhiteSpaceSiblings` as a plugin.
+ */
+
+module.exports = visitChildren(makeInitialWhiteSpaceSiblings);
+
+},{"unist-util-visit-children":42}],23:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2014-2015 Titus Wormer
+ * @license MIT
+ * @module parse-latin:plugin:merge-affix-exceptions
+ * @fileoverview Merge a sentence into its previous
+ *   sentence, when the sentence starts with a comma.
+ */
+
+'use strict';
+
+/* eslint-env commonjs */
+
+/*
+ * Dependencies.
+ */
+
+var nlcstToString = require('nlcst-to-string');
+var modifyChildren = require('unist-util-modify-children');
+
+/**
+ * Merge a sentence into its previous sentence, when
+ * the sentence starts with a comma.
+ *
+ * @param {NLCSTNode} child - Node.
+ * @param {number} index - Position of `child` in `parent`.
+ * @param {NLCSTParagraphNode} parent - Parent of `child`.
+ * @return {undefined|number}
+ */
+function mergeAffixExceptions(child, index, parent) {
+    var children = child.children;
+    var node;
+    var position;
+    var value;
+    var previousChild;
+
+    if (!children || !children.length || index === 0) {
+        return;
+    }
+
+    position = -1;
+
+    while (children[++position]) {
+        node = children[position];
+
+        if (node.type === 'WordNode') {
+            return;
+        }
+
+        if (
+            node.type === 'SymbolNode' ||
+            node.type === 'PunctuationNode'
+        ) {
+            value = nlcstToString(node);
+
+            if (value !== ',' && value !== ';') {
+                return;
+            }
+
+            previousChild = parent.children[index - 1];
+
+            previousChild.children = previousChild.children.concat(children);
+
+            /*
+             * Update position.
+             */
+
+            if (previousChild.position && child.position) {
+                previousChild.position.end = child.position.end;
+            }
+
+            parent.children.splice(index, 1);
+
+            /*
+             * Next, iterate over the node *now* at the current
+             * position.
+             */
+
+            return index;
+        }
+    }
+}
+
+/*
+ * Expose `mergeAffixExceptions` as a modifier.
+ */
+
+module.exports = modifyChildren(mergeAffixExceptions);
+
+},{"nlcst-to-string":15,"unist-util-modify-children":41}],24:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2014-2015 Titus Wormer
+ * @license MIT
+ * @module parse-latin:plugin:merge-affix-symbol
+ * @fileoverview Move certain punctuation following a
+ *   terminal marker (thus in the next sentence) to the
+ *   previous sentence.
+ */
+
+'use strict';
+
+/* eslint-env commonjs */
+
+/*
+ * Dependencies.
+ */
+
+var nlcstToString = require('nlcst-to-string');
+var modifyChildren = require('unist-util-modify-children');
+var expressions = require('../expressions');
+
+/*
+ * Constants.
+ *
+ * - Closing or final punctuation, or terminal markers
+ *   that should still be included in the previous
+ *   sentence, even though they follow the sentence's
+ *   terminal marker.
+ */
+
+var EXPRESSION_AFFIX_SYMBOL = expressions.affixSymbol;
+
+/**
+ * Move certain punctuation following a terminal
+ * marker (thus in the next sentence) to the
+ * previous sentence.
+ *
+ * @param {NLCSTNode} child - Node.
+ * @param {number} index - Position of `child` in `parent`.
+ * @param {NLCSTParagraphNode} parent - Parent of `child`.
+ * @return {undefined|number}
+ */
+function mergeAffixSymbol(child, index, parent) {
+    var children = child.children;
+    var first;
+    var second;
+    var prev;
+
+    if (
+        children &&
+        children.length &&
+        index !== 0
+    ) {
+        first = children[0];
+        second = children[1];
+        prev = parent.children[index - 1];
+
+        if (
+            (
+                first.type === 'SymbolNode' ||
+                first.type === 'PunctuationNode'
+            ) &&
+            EXPRESSION_AFFIX_SYMBOL.test(nlcstToString(first))
+        ) {
+            prev.children.push(children.shift());
+
+            /*
+             * Update position.
+             */
+
+            if (first.position && prev.position) {
+                prev.position.end = first.position.end;
+            }
+
+            if (second && second.position && child.position) {
+                child.position.start = second.position.start;
+            }
+
+            /*
+             * Next, iterate over the previous node again.
+             */
+
+            return index - 1;
+        }
+    }
+}
+
+/*
+ * Expose `mergeAffixSymbol` as a modifier.
+ */
+
+module.exports = modifyChildren(mergeAffixSymbol);
+
+},{"../expressions":17,"nlcst-to-string":15,"unist-util-modify-children":41}],25:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2014-2015 Titus Wormer
+ * @license MIT
+ * @module parse-latin:plugin:merge-final-word-symbol
+ * @fileoverview Merge certain symbols into their preceding word.
+ */
+
+'use strict';
+
+/* eslint-env commonjs */
+
+/*
+ * Dependencies.
+ */
+
+var nlcstToString = require('nlcst-to-string');
+var modifyChildren = require('unist-util-modify-children');
+
+/**
+ * Merge certain punctuation marks into their
+ * preceding words.
+ *
+ * @param {NLCSTNode} child - Node.
+ * @param {number} index - Position of `child` in `parent`.
+ * @param {NLCSTSentenceNode} parent - Parent of `child`.
+ * @return {undefined|number}
+ */
+function mergeFinalWordSymbol(child, index, parent) {
+    var children;
+    var prev;
+    var next;
+
+    if (
+        index !== 0 &&
+        (
+            child.type === 'SymbolNode' ||
+            child.type === 'PunctuationNode'
+        ) &&
+        nlcstToString(child) === '-'
+    ) {
+        children = parent.children;
+
+        prev = children[index - 1];
+        next = children[index + 1];
+
+        if (
+            (
+                !next ||
+                next.type !== 'WordNode'
+            ) &&
+            (
+                prev &&
+                prev.type === 'WordNode'
+            )
+        ) {
+            /*
+             * Remove `child` from parent.
+             */
+
+            children.splice(index, 1);
+
+            /*
+             * Add the punctuation mark at the end of the
+             * previous node.
+             */
+
+            prev.children.push(child);
+
+            /*
+             * Update position.
+             */
+
+            if (prev.position && child.position) {
+                prev.position.end = child.position.end;
+            }
+
+            /*
+             * Next, iterate over the node *now* at the
+             * current position (which was the next node).
+             */
+
+            return index;
+        }
+    }
+}
+
+/*
+ * Expose `mergeFinalWordSymbol` as a modifier.
+ */
+
+module.exports = modifyChildren(mergeFinalWordSymbol);
+
+},{"nlcst-to-string":15,"unist-util-modify-children":41}],26:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2014-2015 Titus Wormer
+ * @license MIT
+ * @module parse-latin:plugin:merge-initial-lower-case-letter-sentences
+ * @fileoverview Merge a sentence into its previous
+ *   sentence, when the sentence starts with a lower case
+ *   letter.
+ */
+
+'use strict';
+
+/* eslint-env commonjs */
+
+/*
+ * Dependencies.
+ */
+
+var nlcstToString = require('nlcst-to-string');
+var modifyChildren = require('unist-util-modify-children');
+var expressions = require('../expressions');
+
+/*
+ * Constants.
+ *
+ * - Initial lowercase letter.
+ */
+
+var EXPRESSION_LOWER_INITIAL = expressions.lowerInitial;
+
+/**
+ * Merge a sentence into its previous sentence, when
+ * the sentence starts with a lower case letter.
+ *
+ * @param {NLCSTNode} child - Node.
+ * @param {number} index - Position of `child` in `parent`.
+ * @param {NLCSTParagraphNode} parent - Parent of `child`.
+ * @return {undefined|number}
+ */
+function mergeInitialLowerCaseLetterSentences(child, index, parent) {
+    var children = child.children;
+    var position;
+    var node;
+    var siblings;
+    var prev;
+
+    if (
+        children &&
+        children.length &&
+        index !== 0
+    ) {
+        position = -1;
+
+        while (children[++position]) {
+            node = children[position];
+
+            if (node.type === 'WordNode') {
+                if (!EXPRESSION_LOWER_INITIAL.test(nlcstToString(node))) {
+                    return;
+                }
+
+                siblings = parent.children;
+
+                prev = siblings[index - 1];
+
+                prev.children = prev.children.concat(children);
+
+                siblings.splice(index, 1);
+
+                /*
+                 * Update position.
+                 */
+
+                if (prev.position && child.position) {
+                    prev.position.end = child.position.end;
+                }
+
+                /*
+                 * Next, iterate over the node *now* at
+                 * the current position.
+                 */
+
+                return index;
+            }
+
+            if (
+                node.type === 'SymbolNode' ||
+                node.type === 'PunctuationNode'
+            ) {
+                return;
+            }
+        }
+    }
+}
+
+/*
+ * Expose `mergeInitialLowerCaseLetterSentences` as a modifier.
+ */
+
+module.exports = modifyChildren(mergeInitialLowerCaseLetterSentences);
+
+},{"../expressions":17,"nlcst-to-string":15,"unist-util-modify-children":41}],27:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2014-2015 Titus Wormer
+ * @license MIT
+ * @module parse-latin:plugin:merge-initial-word-symbol
+ * @fileoverview Merge certain symbols into their next word.
+ */
+
+'use strict';
+
+/* eslint-env commonjs */
+
+/*
+ * Dependencies.
+ */
+
+var nlcstToString = require('nlcst-to-string');
+var modifyChildren = require('unist-util-modify-children');
+
+/**
+ * Merge certain punctuation marks into their
+ * following words.
+ *
+ * @param {NLCSTNode} child - Node.
+ * @param {number} index - Position of `child` in `parent`.
+ * @param {NLCSTSentenceNode} parent - Parent of `child`.
+ * @return {undefined|number}
+ */
+function mergeInitialWordSymbol(child, index, parent) {
+    var children;
+    var next;
+
+    if (
+        (
+            child.type !== 'SymbolNode' &&
+            child.type !== 'PunctuationNode'
+        ) ||
+        nlcstToString(child) !== '&'
+    ) {
+        return;
+    }
+
+    children = parent.children;
+
+    next = children[index + 1];
+
+    /*
+     * If either a previous word, or no following word,
+     * exists, exit early.
+     */
+
+    if (
+        (
+            index !== 0 &&
+            children[index - 1].type === 'WordNode'
+        ) ||
+        !(
+            next &&
+            next.type === 'WordNode'
+        )
+    ) {
+        return;
+    }
+
+    /*
+     * Remove `child` from parent.
+     */
+
+    children.splice(index, 1);
+
+    /*
+     * Add the punctuation mark at the start of the
+     * next node.
+     */
+
+    next.children.unshift(child);
+
+    /*
+     * Update position.
+     */
+
+    if (next.position && child.position) {
+        next.position.start = child.position.start;
+    }
+
+    /*
+     * Next, iterate over the node at the previous
+     * position, as it's now adjacent to a following
+     * word.
+     */
+
+    return index - 1;
+}
+
+/*
+ * Expose `mergeInitialWordSymbol` as a modifier.
+ */
+
+module.exports = modifyChildren(mergeInitialWordSymbol);
+
+},{"nlcst-to-string":15,"unist-util-modify-children":41}],28:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2014-2015 Titus Wormer
+ * @license MIT
+ * @module parse-latin:plugin:merge-initialisms
+ * @fileoverview Merge initialisms.
+ */
+
+'use strict';
+
+/* eslint-env commonjs */
+
+/*
+ * Dependencies.
+ */
+
+var nlcstToString = require('nlcst-to-string');
+var modifyChildren = require('unist-util-modify-children');
+var expressions = require('../expressions');
+
+/*
+ * Constants.
+ *
+ * - Numbers.
+ */
+
+var EXPRESSION_NUMERICAL = expressions.numerical;
+
+/**
+ * Merge initialisms.
+ *
+ * @param {NLCSTNode} child - Node.
+ * @param {number} index - Position of `child` in `parent`.
+ * @param {NLCSTSentenceNode} parent - Parent of `child`.
+ * @return {undefined|number}
+ */
+function mergeInitialisms(child, index, parent) {
+    var siblings;
+    var prev;
+    var children;
+    var length;
+    var position;
+    var otherChild;
+    var isAllDigits;
+    var value;
+
+    if (
+        index !== 0 &&
+        nlcstToString(child) === '.'
+    ) {
+        siblings = parent.children;
+
+        prev = siblings[index - 1];
+        children = prev.children;
+
+        length = children && children.length;
+
+        if (
+            prev.type === 'WordNode' &&
+            length !== 1 &&
+            length % 2 !== 0
+        ) {
+            position = length;
+
+            isAllDigits = true;
+
+            while (children[--position]) {
+                otherChild = children[position];
+
+                value = nlcstToString(otherChild);
+
+                if (position % 2 === 0) {
+                    /*
+                     * Initialisms consist of one
+                     * character values.
+                     */
+
+                    if (value.length > 1) {
+                        return;
+                    }
+
+                    if (!EXPRESSION_NUMERICAL.test(value)) {
+                        isAllDigits = false;
+                    }
+                } else if (value !== '.') {
+                    if (position < length - 2) {
+                        break;
+                    } else {
+                        return;
+                    }
+                }
+            }
+
+            if (!isAllDigits) {
+                /*
+                 * Remove `child` from parent.
+                 */
+
+                siblings.splice(index, 1);
+
+                /*
+                 * Add child to the previous children.
+                 */
+
+                children.push(child);
+
+                /*
+                 * Update position.
+                 */
+
+                if (prev.position && child.position) {
+                    prev.position.end = child.position.end;
+                }
+
+                /*
+                 * Next, iterate over the node *now* at the current
+                 * position.
+                 */
+
+                return index;
+            }
+        }
+    }
+}
+
+/*
+ * Expose `mergeInitialisms` as a modifier.
+ */
+
+module.exports = modifyChildren(mergeInitialisms);
+
+},{"../expressions":17,"nlcst-to-string":15,"unist-util-modify-children":41}],29:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2014-2015 Titus Wormer
+ * @license MIT
+ * @module parse-latin:plugin:merge-inner-word-symbol
+ * @fileoverview Merge words joined by certain punctuation
+ *   marks.
+ */
+
+'use strict';
+
+/* eslint-env commonjs */
+
+/*
+ * Dependencies.
+ */
+
+var nlcstToString = require('nlcst-to-string');
+var modifyChildren = require('unist-util-modify-children');
+var expressions = require('../expressions');
+
+/*
+ * Constants.
+ *
+ * - Symbols part of surrounding words.
+ */
+
+var EXPRESSION_INNER_WORD_SYMBOL = expressions.wordSymbolInner;
+
+/**
+ * Merge words joined by certain punctuation marks.
+ *
+ * @param {NLCSTNode} child - Node.
+ * @param {number} index - Position of `child` in `parent`.
+ * @param {NLCSTSentenceNode} parent - Parent of `child`.
+ * @return {undefined|number}
+ */
+function mergeInnerWordSymbol(child, index, parent) {
+    var siblings;
+    var sibling;
+    var prev;
+    var last;
+    var position;
+    var tokens;
+    var queue;
+
+    if (
+        index !== 0 &&
+        (
+            child.type === 'SymbolNode' ||
+            child.type === 'PunctuationNode'
+        )
+    ) {
+        siblings = parent.children;
+
+        prev = siblings[index - 1];
+
+        if (prev && prev.type === 'WordNode') {
+            position = index - 1;
+
+            tokens = [];
+            queue = [];
+
+            /*
+             * - If a token which is neither word nor
+             *   inner word symbol is found, the loop
+             *   is broken.
+             * - If an inner word symbol is found,
+             *   it's queued.
+             * - If a word is found, it's queued (and
+             *   the queue stored and emptied).
+             */
+
+            while (siblings[++position]) {
+                sibling = siblings[position];
+
+                if (sibling.type === 'WordNode') {
+                    tokens = tokens.concat(queue, sibling.children);
+
+                    queue = [];
+                } else if (
+                    (
+                        sibling.type === 'SymbolNode' ||
+                        sibling.type === 'PunctuationNode'
+                    ) &&
+                    EXPRESSION_INNER_WORD_SYMBOL.test(nlcstToString(sibling))
+                ) {
+                    queue.push(sibling);
+                } else {
+                    break;
+                }
+            }
+
+            if (tokens.length) {
+                /*
+                 * If there is a queue, remove its length
+                 * from `position`.
+                 */
+
+                if (queue.length) {
+                    position -= queue.length;
+                }
+
+                /*
+                 * Remove every (one or more) inner-word punctuation
+                 * marks and children of words.
+                 */
+
+                siblings.splice(index, position - index);
+
+                /*
+                 * Add all found tokens to `prev`s children.
+                 */
+
+                prev.children = prev.children.concat(tokens);
+
+                last = tokens[tokens.length - 1];
+
+                /*
+                 * Update position.
+                 */
+
+                if (prev.position && last.position) {
+                    prev.position.end = last.position.end;
+                }
+
+                /*
+                 * Next, iterate over the node *now* at the current
+                 * position.
+                 */
+
+                return index;
+            }
+        }
+    }
+}
+
+/*
+ * Expose `mergeInnerWordSymbol` as a modifier.
+ */
+
+module.exports = modifyChildren(mergeInnerWordSymbol);
+
+},{"../expressions":17,"nlcst-to-string":15,"unist-util-modify-children":41}],30:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2014-2015 Titus Wormer
+ * @license MIT
+ * @module parse-latin:plugin:merge-non-word-sentences
+ * @fileoverview Merge a sentence into the following
+ *   sentence, when the sentence does not contain word
+ *   tokens.
+ */
+
+'use strict';
+
+/* eslint-env commonjs */
+
+/*
+ * Dependencies.
+ */
+
+var modifyChildren = require('unist-util-modify-children');
+
+/**
+ * Merge a sentence into the following sentence, when
+ * the sentence does not contain word tokens.
+ *
+ * @param {NLCSTNode} child - Node.
+ * @param {number} index - Position of `child` in `parent`.
+ * @param {NLCSTParagraphNode} parent - Parent of `child`.
+ * @return {undefined|number}
+ */
+function mergeNonWordSentences(child, index, parent) {
+    var children = child.children;
+    var position = -1;
+    var prev;
+    var next;
+
+    while (children[++position]) {
+        if (children[position].type === 'WordNode') {
+            return;
+        }
+    }
+
+    prev = parent.children[index - 1];
+
+    if (prev) {
+        prev.children = prev.children.concat(children);
+
+        /*
+         * Remove the child.
+         */
+
+        parent.children.splice(index, 1);
+
+        /*
+         * Patch position.
+         */
+
+        if (prev.position && child.position) {
+            prev.position.end = child.position.end;
+        }
+
+        /*
+         * Next, iterate over the node *now* at
+         * the current position (which was the
+         * next node).
+         */
+
+        return index;
+    }
+
+    next = parent.children[index + 1];
+
+    if (next) {
+        next.children = children.concat(next.children);
+
+        /*
+         * Patch position.
+         */
+
+        if (next.position && child.position) {
+            next.position.start = child.position.start;
+        }
+
+        /*
+         * Remove the child.
+         */
+
+        parent.children.splice(index, 1);
+    }
+}
+
+/*
+ * Expose `mergeNonWordSentences` as a modifier.
+ */
+
+module.exports = modifyChildren(mergeNonWordSentences);
+
+},{"unist-util-modify-children":41}],31:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2014-2015 Titus Wormer
+ * @license MIT
+ * @module parse-latin:plugin:merge-prefix-exceptions
+ * @fileoverview Merge a sentence into its next sentence,
+ *   when the sentence ends with a certain word.
+ */
+
+'use strict';
+
+/* eslint-env commonjs */
+
+/*
+ * Dependencies.
+ */
+
+var nlcstToString = require('nlcst-to-string');
+var modifyChildren = require('unist-util-modify-children');
+
+/*
+ * Constants.
+ *
+ * - Blacklist of full stop characters that should not
+ *   be treated as terminal sentence markers: A
+ *   case-insensitive abbreviation.
+ */
+
+var EXPRESSION_ABBREVIATION_PREFIX = new RegExp(
+    '^(' +
+        '[0-9]+|' +
+        '[a-z]|' +
+
+        /*
+         * Common Latin Abbreviations:
+         * Based on: http://en.wikipedia.org/wiki/List_of_Latin_abbreviations
+         * Where only the abbreviations written without joining full stops,
+         * but with a final full stop, were extracted.
+         *
+         * circa, capitulus, confer, compare, centum weight, eadem, (et) alii,
+         * et cetera, floruit, foliis, ibidem, idem, nemine && contradicente,
+         * opere && citato, (per) cent, (per) procurationem, (pro) tempore,
+         * sic erat scriptum, (et) sequentia, statim, videlicet.
+         */
+
+        'al|ca|cap|cca|cent|cf|cit|con|cp|cwt|ead|etc|ff|' +
+        'fl|ibid|id|nem|op|pro|seq|sic|stat|tem|viz' +
+    ')$'
+);
+
+/**
+ * Merge a sentence into its next sentence, when the
+ * sentence ends with a certain word.
+ *
+ * @param {NLCSTNode} child - Node.
+ * @param {number} index - Position of `child` in `parent`.
+ * @param {NLCSTParagraphNode} parent - Parent of `child`.
+ * @return {undefined|number}
+ */
+function mergePrefixExceptions(child, index, parent) {
+    var children = child.children;
+    var node;
+    var next;
+
+    if (
+        children &&
+        children.length &&
+        index !== parent.children.length - 1
+    ) {
+        node = children[children.length - 1];
+
+        if (
+            node &&
+            nlcstToString(node) === '.'
+        ) {
+            node = children[children.length - 2];
+
+            if (
+                node &&
+                node.type === 'WordNode' &&
+                EXPRESSION_ABBREVIATION_PREFIX.test(
+                    nlcstToString(node).toLowerCase()
+                )
+            ) {
+                next = parent.children[index + 1];
+
+                child.children = children.concat(next.children);
+
+                parent.children.splice(index + 1, 1);
+
+                /*
+                 * Update position.
+                 */
+
+                if (next.position && child.position) {
+                    child.position.end = next.position.end;
+                }
+
+                /*
+                 * Next, iterate over the current node again.
+                 */
+
+                return index - 1;
+            }
+        }
+    }
+}
+
+/*
+ * Expose `mergePrefixExceptions` as a modifier.
+ */
+
+module.exports = modifyChildren(mergePrefixExceptions);
+
+},{"nlcst-to-string":15,"unist-util-modify-children":41}],32:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2014-2015 Titus Wormer
+ * @license MIT
+ * @module parse-latin:plugin:merge-remaining-full-stops
+ * @fileoverview Merge non-terminal-marker full stops into
+ *   previous or next adjacent words.
+ */
+
+'use strict';
+
+/* eslint-env commonjs */
+
+/*
+ * Dependencies.
+ */
+
+var nlcstToString = require('nlcst-to-string');
+var visitChildren = require('unist-util-visit-children');
+var expressions = require('../expressions');
+
+/*
+ * Constants.
+ *
+ * - Blacklist of full stop characters that should not
+ *   be treated as terminal sentence markers: A
+ *   case-insensitive abbreviation.
+ */
+
+var EXPRESSION_TERMINAL_MARKER = expressions.terminalMarker;
+
+/**
+ * Merge non-terminal-marker full stops into
+ * the previous word (if available), or the next
+ * word (if available).
+ *
+ * @param {NLCSTNode} child - Node.
+ */
+function mergeRemainingFullStops(child) {
+    var children = child.children;
+    var position = children.length;
+    var hasFoundDelimiter = false;
+    var grandchild;
+    var prev;
+    var next;
+    var nextNext;
+
+    while (children[--position]) {
+        grandchild = children[position];
+
+        if (
+            grandchild.type !== 'SymbolNode' &&
+            grandchild.type !== 'PunctuationNode'
+        ) {
+            /*
+             * This is a sentence without terminal marker,
+             * so we 'fool' the code to make it think we
+             * have found one.
+             */
+
+            if (grandchild.type === 'WordNode') {
+                hasFoundDelimiter = true;
+            }
+
+            continue;
+        }
+
+        /*
+         * Exit when this token is not a terminal marker.
+         */
+
+        if (!EXPRESSION_TERMINAL_MARKER.test(nlcstToString(grandchild))) {
+            continue;
+        }
+
+        /*
+         * Ignore the first terminal marker found
+         * (starting at the end), as it should not
+         * be merged.
+         */
+
+        if (!hasFoundDelimiter) {
+            hasFoundDelimiter = true;
+
+            continue;
+        }
+
+        /*
+         * Only merge a single full stop.
+         */
+
+        if (nlcstToString(grandchild) !== '.') {
+            continue;
+        }
+
+        prev = children[position - 1];
+        next = children[position + 1];
+
+        if (prev && prev.type === 'WordNode') {
+            nextNext = children[position + 2];
+
+            /*
+             * Continue when the full stop is followed by
+             * a space and another full stop, such as:
+             * `{.} .`
+             */
+
+            if (
+                next &&
+                nextNext &&
+                next.type === 'WhiteSpaceNode' &&
+                nlcstToString(nextNext) === '.'
+            ) {
+                continue;
+            }
+
+            /*
+             * Remove `child` from parent.
+             */
+
+            children.splice(position, 1);
+
+            /*
+             * Add the punctuation mark at the end of the
+             * previous node.
+             */
+
+            prev.children.push(grandchild);
+
+            /*
+             * Update position.
+             */
+
+            if (grandchild.position && prev.position) {
+                prev.position.end = grandchild.position.end;
+            }
+
+            position--;
+        } else if (next && next.type === 'WordNode') {
+            /*
+             * Remove `child` from parent.
+             */
+
+            children.splice(position, 1);
+
+            /*
+             * Add the punctuation mark at the start of
+             * the next node.
+             */
+
+            next.children.unshift(grandchild);
+
+            if (grandchild.position && next.position) {
+                next.position.start = grandchild.position.start;
+            }
+        }
+    }
+}
+
+/*
+ * Expose `mergeRemainingFullStops` as a plugin.
+ */
+
+module.exports = visitChildren(mergeRemainingFullStops);
+
+},{"../expressions":17,"nlcst-to-string":15,"unist-util-visit-children":42}],33:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2014-2015 Titus Wormer
+ * @license MIT
+ * @module parse-latin:plugin:merge-words
+ * @fileoverview Merge adjacent words.
+ */
+
+'use strict';
+
+/* eslint-env commonjs */
+
+/*
+ * Dependencies.
+ */
+
+var modifyChildren = require('unist-util-modify-children');
+
+/**
+ * Merge multiple words. This merges the children of
+ * adjacent words, something which should not occur
+ * naturally by parse-latin, but might happen when
+ * custom tokens were passed in.
+ *
+ * @param {NLCSTNode} child - Node.
+ * @param {number} index - Position of `child` in `parent`.
+ * @param {NLCSTSentenceNode} parent - Parent of `child`.
+ * @return {undefined|number}
+ */
+function mergeFinalWordSymbol(child, index, parent) {
+    var siblings = parent.children;
+    var next;
+
+    if (child.type === 'WordNode') {
+        next = siblings[index + 1];
+
+        if (next && next.type === 'WordNode') {
+            /*
+             * Remove `next` from parent.
+             */
+
+            siblings.splice(index + 1, 1);
+
+            /*
+             * Add the punctuation mark at the end of the
+             * previous node.
+             */
+
+            child.children = child.children.concat(next.children);
+
+            /*
+             * Update position.
+             */
+
+            if (next.position && child.position) {
+                child.position.end = next.position.end;
+            }
+
+            /*
+             * Next, re-iterate the current node.
+             */
+
+            return index;
+        }
+    }
+}
+
+/*
+ * Expose `mergeFinalWordSymbol` as a modifier.
+ */
+
+module.exports = modifyChildren(mergeFinalWordSymbol);
+
+},{"unist-util-modify-children":41}],34:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2014-2015 Titus Wormer
+ * @license MIT
+ * @module parse-latin:plugin:patch-position
+ * @fileoverview Patch `position` on a parent node based
+ *   on its first and last child.
+ */
+
+'use strict';
+
+/* eslint-env commonjs */
+
+/*
+ * Dependencies.
+ */
+
+var visitChildren = require('unist-util-visit-children');
+
+/**
+ * Add a `position` object when it does not yet exist
+ * on `node`.
+ *
+ * @param {NLCSTNode} node - Node to patch.
+ */
+function patch(node) {
+    if (!node.position) {
+        node.position = {};
+    }
+}
+
+/**
+ * Patch the position on a parent node based on its first
+ * and last child.
+ *
+ * @param {NLCSTNode} child - Node.
+ */
+function patchPosition(child, index, node) {
+    var siblings = node.children;
+
+    if (!child.position) {
+        return;
+    }
+
+    if (
+        index === 0 &&
+        (!node.position || /* istanbul ignore next */ !node.position.start)
+    ) {
+        patch(node);
+        node.position.start = child.position.start;
+    }
+
+    if (
+        index === siblings.length - 1 &&
+        (!node.position || !node.position.end)
+    ) {
+        patch(node);
+        node.position.end = child.position.end;
+    }
+}
+
+/*
+ * Expose `patchPosition` as a plugin.
+ */
+
+module.exports = visitChildren(patchPosition);
+
+},{"unist-util-visit-children":42}],35:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2014-2015 Titus Wormer
+ * @license MIT
+ * @module parse-latin:plugin:remove-empty-nodes
+ * @fileoverview Remove empty child nodes without children.
+ */
+
+'use strict';
+
+/* eslint-env commonjs */
+
+/*
+ * Dependencies.
+ */
+
+var modifyChildren = require('unist-util-modify-children');
+
+/**
+ * Remove empty children.
+ *
+ * @param {NLCSTNode} child - Node.
+ * @param {number} index - Position of `child` in `parent`.
+ * @param {NLCSTParagraphNode} parent - Parent of `child`.
+ * @return {undefined|number}
+ */
+function removeEmptyNodes(child, index, parent) {
+    if ('children' in child && !child.children.length) {
+        parent.children.splice(index, 1);
+
+        /*
+         * Next, iterate over the node *now* at
+         * the current position (which was the
+         * next node).
+         */
+
+        return index;
+    }
+}
+
+/*
+ * Expose `removeEmptyNodes` as a modifier.
+ */
+
+module.exports = modifyChildren(removeEmptyNodes);
+
+},{"unist-util-modify-children":41}],36:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2014-2015 Titus Wormer
+ * @license MIT
+ * @module parse-latin:tokenizer
+ * @fileoverview Tokenize tokens matching an expression as
+ *   a given node-type.
+ */
+
+'use strict';
+
+/* eslint-env commonjs */
+
+/*
+ * Dependencies.
+ */
+
+var nlcstToString = require('nlcst-to-string');
+
+/**
+ * Factory to create a tokenizer based on a given
+ * `expression`.
+ *
+ * @param {string} childType - Type of child to tokenize
+ *   as.
+ * @param {RegExp} expression - Expression to use for
+ *   tokenization.
+ * @return {function(NLCSTParent): Array.<NLCSTChild>}
+ */
+function tokenizerFactory(childType, expression) {
+    /**
+     * A function which splits
+     *
+     * @param {NLCSTParent} node - Parent node.
+     * @return {Array.<NLCSTChild>}
+     */
+    return function (node) {
+        var children = [];
+        var tokens = node.children;
+        var type = node.type;
+        var length = tokens.length;
+        var index = -1;
+        var lastIndex = length - 1;
+        var start = 0;
+        var first;
+        var last;
+        var parent;
+
+        while (++index < length) {
+            if (
+                index === lastIndex ||
+                (
+                    tokens[index].type === childType &&
+                    expression.test(nlcstToString(tokens[index]))
+                )
+            ) {
+                first = tokens[start];
+                last = tokens[index];
+
+                parent = {
+                    'type': type,
+                    'children': tokens.slice(start, index + 1)
+                };
+
+                if (first.position && last.position) {
+                    parent.position = {
+                        'start': first.position.start,
+                        'end': last.position.end
+                    };
+                }
+
+                children.push(parent);
+
+                start = index + 1;
+            }
+        }
+
+        return children;
+    };
+}
+
+/*
+ * Expose.
+ */
+
+module.exports = tokenizerFactory;
+
+},{"nlcst-to-string":15}],37:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2015 Titus Wormer
+ * @license MIT
+ * @module array-iterate
+ * @fileoverview `forEach` with the possibility to change the
+ *   next position.
+ */
+
+'use strict';
+
+/* Dependencies. */
+var has = require('has');
+
+/* Expose. */
+module.exports = iterate;
+
+/**
+ * `Array#forEach()` with the possibility to change
+ * the next position.
+ *
+ * @param {{length: number}} values - Values.
+ * @param {arrayIterate~callback} callback - Callback given to `iterate`.
+ * @param {*?} [context] - Context object to use when invoking `callback`.
+ */
+function iterate(values, callback, context) {
+  var index = -1;
+  var result;
+
+  if (!values) {
+    throw new Error('Iterate requires that |this| not be ' + values);
+  }
+
+  if (!has(values, 'length')) {
+    throw new Error('Iterate requires that |this| has a `length`');
+  }
+
+  if (typeof callback !== 'function') {
+    throw new Error('`callback` must be a function');
+  }
+
+  /* The length might change, so we do not cache it. */
+  while (++index < values.length) {
+    /* Skip missing values. */
+    if (!(index in values)) {
+      continue;
+    }
+
+    result = callback.call(context, values[index], index, values);
+
+    /*
+     * If `callback` returns a `number`, move `index` over to
+     * `number`.
+     */
+
+    if (typeof result === 'number') {
+      /* Make sure that negative numbers do not break the loop. */
+      if (result < 0) {
+        index = 0;
+      }
+
+      index = result - 1;
+    }
+  }
+}
+
+},{"has":40}],38:[function(require,module,exports){
+var ERROR_MESSAGE = 'Function.prototype.bind called on incompatible ';
+var slice = Array.prototype.slice;
+var toStr = Object.prototype.toString;
+var funcType = '[object Function]';
+
+module.exports = function bind(that) {
+    var target = this;
+    if (typeof target !== 'function' || toStr.call(target) !== funcType) {
+        throw new TypeError(ERROR_MESSAGE + target);
+    }
+    var args = slice.call(arguments, 1);
+
+    var bound;
+    var binder = function () {
+        if (this instanceof bound) {
+            var result = target.apply(
+                this,
+                args.concat(slice.call(arguments))
+            );
+            if (Object(result) === result) {
+                return result;
+            }
+            return this;
+        } else {
+            return target.apply(
+                that,
+                args.concat(slice.call(arguments))
+            );
+        }
+    };
+
+    var boundLength = Math.max(0, target.length - args.length);
+    var boundArgs = [];
+    for (var i = 0; i < boundLength; i++) {
+        boundArgs.push('$' + i);
+    }
+
+    bound = Function('binder', 'return function (' + boundArgs.join(',') + '){ return binder.apply(this,arguments); }')(binder);
+
+    if (target.prototype) {
+        var Empty = function Empty() {};
+        Empty.prototype = target.prototype;
+        bound.prototype = new Empty();
+        Empty.prototype = null;
+    }
+
+    return bound;
+};
+
+},{}],39:[function(require,module,exports){
+var implementation = require('./implementation');
+
+module.exports = Function.prototype.bind || implementation;
+
+},{"./implementation":38}],40:[function(require,module,exports){
+var bind = require('function-bind');
+
+module.exports = bind.call(Function.call, Object.prototype.hasOwnProperty);
+
+},{"function-bind":39}],41:[function(require,module,exports){
+'use strict';
+
+var iterate = require('array-iterate');
+
+module.exports = modifierFactory;
+
+/* Turn `callback` into a child-modifier accepting a parent.
+ * See `array-iterate` for more info. */
+function modifierFactory(callback) {
+  return iteratorFactory(wrapperFactory(callback));
+}
+
+/* Turn `callback` into a `iterator' accepting a parent. */
+function iteratorFactory(callback) {
+  return iterator;
+
+  function iterator(parent) {
+    var children = parent && parent.children;
+
+    if (!children) {
+      throw new Error('Missing children in `parent` for `modifier`');
+    }
+
+    return iterate(children, callback, parent);
+  }
+}
+
+/* Pass the context as the third argument to `callback`. */
+function wrapperFactory(callback) {
+  return wrapper;
+
+  function wrapper(value, index) {
+    return callback(value, index, this);
+  }
+}
+
+},{"array-iterate":37}],42:[function(require,module,exports){
+'use strict';
+
+/* Expose. */
+module.exports = visitorFactory;
+
+/* Turns `callback` into a child-visitor accepting a parent. */
+function visitorFactory(callback) {
+  return visitor;
+
+  /* Visit `parent`, invoking `callback` for each child. */
+  function visitor(parent) {
+    var index = -1;
+    var children = parent && parent.children;
+
+    if (!children) {
+      throw new Error('Missing children in `parent` for `visitor`');
+    }
+
+    while (++index in children) {
+      callback(children[index], index, parent);
+    }
+  }
+}
+
+},{}],43:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2015 Titus Wormer
+ * @license MIT
+ * @module unified
+ * @fileoverview Parse / Transform / Compile / Repeat.
+ */
+
+'use strict';
+
+/* eslint-env commonjs */
+
+/*
+ * Dependencies.
+ */
+
+var bail = require('bail');
+var ware = require('ware');
+var AttachWare = require('attach-ware')(ware);
+var VFile = require('vfile');
+var unherit = require('unherit');
+var extend;
+
+try {
+    extend = require('node-extend');
+} catch (e) {
+    extend = require('extend');
+}
+
+/*
+ * Processing pipeline.
+ */
+
+var pipeline = ware()
+    .use(function (ctx) {
+        ctx.tree = ctx.context.parse(ctx.file, ctx.settings);
+    })
+    .use(function (ctx, next) {
+        ctx.context.run(ctx.tree, ctx.file, next);
+    })
+    .use(function (ctx) {
+        ctx.result = ctx.context.stringify(ctx.tree, ctx.file, ctx.settings);
+    });
+
+/**
+ * Construct a new Processor class based on the
+ * given options.
+ *
+ * @param {Object} options - Configuration.
+ * @param {string} options.name - Private storage.
+ * @param {Function} options.Parser - Class to turn a
+ *   virtual file into a syntax tree.
+ * @param {Function} options.Compiler - Class to turn a
+ *   syntax tree into a string.
+ * @return {Processor} - A new constructor.
+ */
+function unified(options) {
+    var name = options.name;
+    var Parser = options.Parser;
+    var Compiler = options.Compiler;
+    var data = options.data;
+
+    /**
+     * Construct a Processor instance.
+     *
+     * @constructor
+     * @class {Processor}
+     */
+    function Processor(processor) {
+        var self = this;
+
+        if (!(self instanceof Processor)) {
+            return new Processor(processor);
+        }
+
+        self.ware = new AttachWare(processor && processor.ware);
+        self.ware.context = self;
+
+        self.Parser = unherit(Parser);
+        self.Compiler = unherit(Compiler);
+
+        if (self.data) {
+            self.data = extend(true, {}, self.data);
+        }
+    }
+
+    /**
+     * Either return `context` if its an instance
+     * of `Processor` or construct a new `Processor`
+     * instance.
+     *
+     * @private
+     * @param {Processor?} [context] - Context object.
+     * @return {Processor} - Either `context` or a new
+     *   Processor instance.
+     */
+    function instance(context) {
+        return context instanceof Processor ? context : new Processor();
+    }
+
+    /**
+     * Attach a plugin.
+     *
+     * @this {Processor?} - Either a Processor instance or
+     *   the Processor constructor.
+     * @return {Processor} - Either `context` or a new
+     *   Processor instance.
+     */
+    function use() {
+        var self = instance(this);
+
+        self.ware.use.apply(self.ware, arguments);
+
+        return self;
+    }
+
+    /**
+     * Transform.
+     *
+     * @this {Processor?} - Either a Processor instance or
+     *   the Processor constructor.
+     * @param {Node} [node] - Syntax tree.
+     * @param {VFile?} [file] - Virtual file.
+     * @param {Function?} [done] - Callback.
+     * @return {Node} - `node`.
+     */
+    function run(node, file, done) {
+        var self = this;
+        var space;
+
+        if (typeof file === 'function') {
+            done = file;
+            file = null;
+        }
+
+        if (!file && node && !node.type) {
+            file = node;
+            node = null;
+        }
+
+        file = new VFile(file);
+        space = file.namespace(name);
+
+        if (!node) {
+            node = space.tree || node;
+        } else if (!space.tree) {
+            space.tree = node;
+        }
+
+        if (!node) {
+            throw new Error('Expected node, got ' + node);
+        }
+
+        done = typeof done === 'function' ? done : bail;
+
+        /*
+         * Only run when this is an instance of Processor,
+         * and when there are transformers.
+         */
+
+        if (self.ware && self.ware.fns) {
+            self.ware.run(node, file, done);
+        } else {
+            done(null, node, file);
+        }
+
+        return node;
+    }
+
+    /**
+     * Parse a file.
+     *
+     * Patches the parsed node onto the `name`
+     * namespace on the `type` property.
+     *
+     * @this {Processor?} - Either a Processor instance or
+     *   the Processor constructor.
+     * @param {string|VFile} value - Input to parse.
+     * @param {Object?} [settings] - Configuration.
+     * @return {Node} - `node`.
+     */
+    function parse(value, settings) {
+        var file = new VFile(value);
+        var CustomParser = (this && this.Parser) || Parser;
+        var node = new CustomParser(file, settings, instance(this)).parse();
+
+        file.namespace(name).tree = node;
+
+        return node;
+    }
+
+    /**
+     * Compile a file.
+     *
+     * Used the parsed node at the `name`
+     * namespace at `'tree'` when no node was given.
+     *
+     * @this {Processor?} - Either a Processor instance or
+     *   the Processor constructor.
+     * @param {Object} [node] - Syntax tree.
+     * @param {VFile} [file] - File with syntax tree.
+     * @param {Object?} [settings] - Configuration.
+     * @return {string} - Compiled `file`.
+     */
+    function stringify(node, file, settings) {
+        var CustomCompiler = (this && this.Compiler) || Compiler;
+        var space;
+
+        if (settings === null || settings === undefined) {
+            settings = file;
+            file = null;
+        }
+
+        if (!file && node && !node.type) {
+            file = node;
+            node = null;
+        }
+
+        file = new VFile(file);
+        space = file.namespace(name);
+
+        if (!node) {
+            node = space.tree || node;
+        } else if (!space.tree) {
+            space.tree = node;
+        }
+
+        if (!node) {
+            throw new Error('Expected node, got ' + node);
+        }
+
+        return new CustomCompiler(file, settings, instance(this)).compile();
+    }
+
+    /**
+     * Parse / Transform / Compile.
+     *
+     * @this {Processor?} - Either a Processor instance or
+     *   the Processor constructor.
+     * @param {string|VFile} value - Input to process.
+     * @param {Object?} [settings] - Configuration.
+     * @param {Function?} [done] - Callback.
+     * @return {string?} - Parsed document, when
+     *   transformation was async.
+     */
+    function process(value, settings, done) {
+        var self = instance(this);
+        var file = new VFile(value);
+        var result = null;
+
+        if (typeof settings === 'function') {
+            done = settings;
+            settings = null;
+        }
+
+        pipeline.run({
+            'context': self,
+            'file': file,
+            'settings': settings || {}
+        }, function (err, res) {
+            result = res && res.result;
+
+            if (done) {
+                done(err, file, result);
+            } else if (err) {
+                bail(err);
+            }
+        });
+
+        return result;
+    }
+
+    /*
+     * Methods / functions.
+     */
+
+    var proto = Processor.prototype;
+
+    Processor.use = proto.use = use;
+    Processor.parse = proto.parse = parse;
+    Processor.run = proto.run = run;
+    Processor.stringify = proto.stringify = stringify;
+    Processor.process = proto.process = process;
+    Processor.data = proto.data = data || null;
+
+    return Processor;
+}
+
+/*
+ * Expose.
+ */
+
+module.exports = unified;
+
+},{"attach-ware":44,"bail":45,"extend":46,"node-extend":46,"unherit":47,"vfile":50,"ware":51}],44:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2015 Titus Wormer
+ * @license MIT
+ * @module attach-ware
+ * @fileoverview Middleware with configuration.
+ * @example
+ *   var ware = require('attach-ware')(require('ware'));
+ *
+ *   var middleware = ware()
+ *     .use(function (context, options) {
+ *         if (!options.condition) return;
+ *
+ *         return function (req, res, next) {
+ *           res.x = 'hello';
+ *           next();
+ *         };
+ *     }, {
+ *         'condition': true
+ *     })
+ *     .use(function (context, options) {
+ *         if (!options.condition) return;
+ *
+ *         return function (req, res, next) {
+ *           res.y = 'world';
+ *           next();
+ *         };
+ *     }, {
+ *         'condition': false
+ *     });
+ *
+ *   middleware.run({}, {}, function (err, req, res) {
+ *     res.x; // "hello"
+ *     res.y; // undefined
+ *   });
+ */
+
+'use strict';
+
+/* eslint-env commonjs */
+
+var slice = [].slice;
+var unherit = require('unherit');
+
+/**
+ * Clone `Ware` without affecting the super-class and
+ * turn it into configurable middleware.
+ *
+ * @param {Function} Ware - Ware-like constructor.
+ * @return {Function} AttachWare - Configurable middleware.
+ */
+function patch(Ware) {
+    /*
+     * Methods.
+     */
+
+    var useFn = Ware.prototype.use;
+
+    /**
+     * @constructor
+     * @class {AttachWare}
+     */
+    var AttachWare = unherit(Ware);
+
+    AttachWare.prototype.foo = true;
+
+    /**
+     * Attach configurable middleware.
+     *
+     * @memberof {AttachWare}
+     * @this {AttachWare}
+     * @param {Function} attach - Attacher.
+     * @return {AttachWare} - `this`.
+     */
+    function use(attach) {
+        var self = this;
+        var params = slice.call(arguments, 1);
+        var index;
+        var length;
+        var fn;
+
+        /*
+         * Accept other `AttachWare`.
+         */
+
+        if (attach instanceof AttachWare) {
+            if (attach.attachers) {
+                return self.use(attach.attachers);
+            }
+
+            return self;
+        }
+
+        /*
+         * Accept normal ware.
+         */
+
+        if (attach instanceof Ware) {
+            self.fns = self.fns.concat(attach.fns);
+            return self;
+        }
+
+        /*
+         * Multiple attachers.
+         */
+
+        if ('length' in attach && typeof attach !== 'function') {
+            index = -1;
+            length = attach.length;
+
+            while (++index < length) {
+                self.use.apply(self, [attach[index]].concat(params));
+            }
+
+            return self;
+        }
+
+        /*
+         * Single attacher.
+         */
+
+        fn = attach.apply(null, [self.context || self].concat(params));
+
+        /*
+         * Store the attacher to not break `new Ware(otherWare)`
+         * functionality.
+         */
+
+        if (!self.attachers) {
+            self.attachers = [];
+        }
+
+        self.attachers.push(attach);
+
+        /*
+         * Pass `fn` to the original `Ware#use()`.
+         */
+
+        if (fn) {
+            useFn.call(self, fn);
+        }
+
+        return self;
+    }
+
+    AttachWare.prototype.use = use;
+
+    return function (fn) {
+        return new AttachWare(fn);
+    };
+}
+
+module.exports = patch;
+
+},{"unherit":47}],45:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2015 Titus Wormer
+ * @license MIT
+ * @module bail
+ * @fileoverview Throw a given error.
+ */
+
+'use strict';
+
+/* Expose. */
+module.exports = bail;
+
+/**
+ * Throw a given error.
+ *
+ * @example
+ *   bail();
+ *
+ * @example
+ *   bail(new Error('failure'));
+ *   // Error: failure
+ *   //     at repl:1:6
+ *   //     at REPLServer.defaultEval (repl.js:154:27)
+ *   //     ...
+ *
+ * @param {Error?} [err] - Optional error.
+ * @throws {Error} - `err`, when given.
+ */
+function bail(err) {
+  if (err) {
+    throw err;
+  }
+}
+
+},{}],46:[function(require,module,exports){
+'use strict';
+
+var hasOwn = Object.prototype.hasOwnProperty;
+var toStr = Object.prototype.toString;
+
+var isArray = function isArray(arr) {
+	if (typeof Array.isArray === 'function') {
+		return Array.isArray(arr);
+	}
+
+	return toStr.call(arr) === '[object Array]';
+};
+
+var isPlainObject = function isPlainObject(obj) {
+	if (!obj || toStr.call(obj) !== '[object Object]') {
+		return false;
+	}
+
+	var hasOwnConstructor = hasOwn.call(obj, 'constructor');
+	var hasIsPrototypeOf = obj.constructor && obj.constructor.prototype && hasOwn.call(obj.constructor.prototype, 'isPrototypeOf');
+	// Not own constructor property must be Object
+	if (obj.constructor && !hasOwnConstructor && !hasIsPrototypeOf) {
+		return false;
+	}
+
+	// Own properties are enumerated firstly, so to speed up,
+	// if last one is own, then all properties are own.
+	var key;
+	for (key in obj) {/**/}
+
+	return typeof key === 'undefined' || hasOwn.call(obj, key);
+};
+
+module.exports = function extend() {
+	var options, name, src, copy, copyIsArray, clone,
+		target = arguments[0],
+		i = 1,
+		length = arguments.length,
+		deep = false;
+
+	// Handle a deep copy situation
+	if (typeof target === 'boolean') {
+		deep = target;
+		target = arguments[1] || {};
+		// skip the boolean and the target
+		i = 2;
+	} else if ((typeof target !== 'object' && typeof target !== 'function') || target == null) {
+		target = {};
+	}
+
+	for (; i < length; ++i) {
+		options = arguments[i];
+		// Only deal with non-null/undefined values
+		if (options != null) {
+			// Extend the base object
+			for (name in options) {
+				src = target[name];
+				copy = options[name];
+
+				// Prevent never-ending loop
+				if (target !== copy) {
+					// Recurse if we're merging plain objects or arrays
+					if (deep && copy && (isPlainObject(copy) || (copyIsArray = isArray(copy)))) {
+						if (copyIsArray) {
+							copyIsArray = false;
+							clone = src && isArray(src) ? src : [];
+						} else {
+							clone = src && isPlainObject(src) ? src : {};
+						}
+
+						// Never move original objects, clone them
+						target[name] = extend(deep, clone, copy);
+
+					// Don't bring in undefined values
+					} else if (typeof copy !== 'undefined') {
+						target[name] = copy;
+					}
+				}
+			}
+		}
+	}
+
+	// Return the modified object
+	return target;
+};
+
+
+},{}],47:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2015 Titus Wormer
+ * @license MIT
+ * @module unherit
+ * @fileoverview Create a custom constructor which can be modified
+ *   without affecting the original class.
+ */
+
+'use strict';
+
+/* Dependencies. */
+var xtend = require('xtend');
+var inherits = require('inherits');
+
+/* Expose. */
+module.exports = unherit;
+
+/**
+ * Create a custom constructor which can be modified
+ * without affecting the original class.
+ *
+ * @param {Function} Super - Super-class.
+ * @return {Function} - Constructor acting like `Super`,
+ *   which can be modified without affecting the original
+ *   class.
+ */
+function unherit(Super) {
+  var result;
+  var key;
+  var value;
+
+  inherits(Of, Super);
+  inherits(From, Of);
+
+  /* Clone values. */
+  result = Of.prototype;
+
+  for (key in result) {
+    value = result[key];
+
+    if (value && typeof value === 'object') {
+      result[key] = 'concat' in value ? value.concat() : xtend(value);
+    }
+  }
+
+  return Of;
+
+  /**
+   * Constructor accepting a single argument,
+   * which itself is an `arguments` object.
+   */
+  function From(parameters) {
+    return Super.apply(this, parameters);
+  }
+
+  /**
+   * Constructor accepting variadic arguments.
+   */
+  function Of() {
+    if (!(this instanceof Of)) {
+      return new From(arguments);
+    }
+
+    return Super.apply(this, arguments);
+  }
+}
+
+},{"inherits":48,"xtend":49}],48:[function(require,module,exports){
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+  };
+} else {
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    var TempCtor = function () {}
+    TempCtor.prototype = superCtor.prototype
+    ctor.prototype = new TempCtor()
+    ctor.prototype.constructor = ctor
+  }
+}
+
+},{}],49:[function(require,module,exports){
+module.exports = extend
+
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+function extend() {
+    var target = {}
+
+    for (var i = 0; i < arguments.length; i++) {
+        var source = arguments[i]
+
+        for (var key in source) {
+            if (hasOwnProperty.call(source, key)) {
+                target[key] = source[key]
+            }
+        }
+    }
+
+    return target
+}
+
+},{}],50:[function(require,module,exports){
+/**
+ * @author Titus Wormer
+ * @copyright 2015 Titus Wormer
+ * @license MIT
+ * @module vfile
+ * @fileoverview Virtual file format to attach additional
+ *   information related to processed input.  Similar to
+ *   `wearefractal/vinyl`.  Additionally, `VFile` can be
+ *   passed directly to ESLint formatters to visualise
+ *   warnings and errors relating to a file.
+ * @example
+ *   var VFile = require('vfile');
+ *
+ *   var file = new VFile({
+ *     'directory': '~',
+ *     'filename': 'example',
+ *     'extension': 'txt',
+ *     'contents': 'Foo *bar* baz'
+ *   });
+ *
+ *   file.toString(); // 'Foo *bar* baz'
+ *   file.filePath(); // '~/example.txt'
+ *
+ *   file.move({'extension': 'md'});
+ *   file.filePath(); // '~/example.md'
+ *
+ *   file.warn('Something went wrong', {'line': 2, 'column': 3});
+ *   // { [~/example.md:2:3: Something went wrong]
+ *   //   name: '~/example.md:2:3',
+ *   //   file: '~/example.md',
+ *   //   reason: 'Something went wrong',
+ *   //   line: 2,
+ *   //   column: 3,
+ *   //   fatal: false }
+ */
+
+'use strict';
+
+/* eslint-env commonjs */
+
+var proto;
+
+var SEPARATOR = '/';
+
+try {
+    SEPARATOR = require('pa' + 'th').sep;
+} catch (e) { /* empty */ }
+
+/**
+ * Construct a new file message.
+ *
+ * Note: We cannot invoke `Error` on the created context,
+ * as that adds readonly `line` and `column` attributes on
+ * Safari 9, thus throwing and failing the data.
+ *
+ * @example
+ *   var message = new VFileMessage('Whoops!');
+ *
+ *   message instanceof Error // true
+ *
+ * @constructor
+ * @class {VFileMessage}
+ * @param {string} reason - Reason for messaging.
+ * @property {boolean} [fatal=null] - Whether the message
+ *   is fatal.
+ * @property {string} [name=''] - File-name and positional
+ *   information.
+ * @property {string} [file=''] - File-path.
+ * @property {string} [reason=''] - Reason for messaging.
+ * @property {number} [line=null] - Start of message.
+ * @property {number} [column=null] - Start of message.
+ * @property {Position|Location} [location=null] - Place of
+ *   message.
+ * @property {string} [stack] - Stack-trace of warning.
+ */
+function VFileMessage(reason) {
+    this.message = reason;
+}
+
+/**
+ * Inherit from `Error#`.
+ */
+function VFileMessagePrototype() {}
+
+VFileMessagePrototype.prototype = Error.prototype;
+
+proto = new VFileMessagePrototype();
+
+VFileMessage.prototype = proto;
+
+/*
+ * Expose defaults.
+ */
+
+proto.file = proto.name = proto.reason = proto.message = proto.stack = '';
+proto.fatal = proto.column = proto.line = null;
+
+/**
+ * File-related message with location information.
+ *
+ * @typedef {Error} VFileMessage
+ * @property {string} name - (Starting) location of the
+ *   message, preceded by its file-path when available,
+ *   and joined by `:`. Used internally by the native
+ *   `Error#toString()`.
+ * @property {string} file - File-path.
+ * @property {string} reason - Reason for message.
+ * @property {number?} line - Line of message, when
+ *   available.
+ * @property {number?} column - Column of message, when
+ *   available.
+ * @property {string?} stack - Stack of message, when
+ *   available.
+ * @property {boolean?} fatal - Whether the associated file
+ *   is still processable.
+ */
+
+/**
+ * Stringify a position.
+ *
+ * @example
+ *   stringify({'line': 1, 'column': 3}) // '1:3'
+ *   stringify({'line': 1}) // '1:1'
+ *   stringify({'column': 3}) // '1:3'
+ *   stringify() // '1:1'
+ *
+ * @private
+ * @param {Object?} [position] - Single position, like
+ *   those available at `node.position.start`.
+ * @return {string} - Compiled location.
+ */
+function stringify(position) {
+    if (!position) {
+        position = {};
+    }
+
+    return (position.line || 1) + ':' + (position.column || 1);
+}
+
+/**
+ * ESLint's formatter API expects `filePath` to be a
+ * string.  This hack supports invocation as well as
+ * implicit coercion.
+ *
+ * @example
+ *   var file = new VFile({
+ *     'filename': 'example',
+ *     'extension': 'txt'
+ *   });
+ *
+ *   filePath = filePathFactory(file);
+ *
+ *   String(filePath); // 'example.txt'
+ *   filePath(); // 'example.txt'
+ *
+ * @private
+ * @param {VFile} file - Virtual file.
+ * @return {Function} - `filePath` getter.
+ */
+function filePathFactory(file) {
+    /**
+     * Get the filename, with extension and directory, if applicable.
+     *
+     * @example
+     *   var file = new VFile({
+     *     'directory': '~',
+     *     'filename': 'example',
+     *     'extension': 'txt'
+     *   });
+     *
+     *   String(file.filePath); // ~/example.txt
+     *   file.filePath() // ~/example.txt
+     *
+     * @memberof {VFile}
+     * @property {Function} toString - Itself. ESLint's
+     *   formatter API expects `filePath` to be `string`.
+     *   This hack supports invocation as well as implicit
+     *   coercion.
+     * @return {string} - If the `vFile` has a `filename`,
+     *   it will be prefixed with the directory (slashed),
+     *   if applicable, and suffixed with the (dotted)
+     *   extension (if applicable).  Otherwise, an empty
+     *   string is returned.
+     */
+    function filePath() {
+        var directory = file.directory;
+        var separator;
+
+        if (file.filename || file.extension) {
+            separator = directory.charAt(directory.length - 1);
+
+            if (separator === '/' || separator === '\\') {
+                directory = directory.slice(0, -1);
+            }
+
+            if (directory === '.') {
+                directory = '';
+            }
+
+            return (directory ? directory + SEPARATOR : '') +
+                file.filename +
+                (file.extension ? '.' + file.extension : '');
+        }
+
+        return '';
+    }
+
+    filePath.toString = filePath;
+
+    return filePath;
+}
+
+/**
+* Get the filename with extantion.
+*
+* @example
+*   var file = new VFile({
+*     'directory': '~/foo/bar'
+*     'filename': 'example',
+*     'extension': 'txt'
+*   });
+*
+*   file.basename() // example.txt
+*
+* @memberof {VFile}
+* @return {string} - name of file with extantion.
+*/
+function basename() {
+    var self = this;
+    var extension = self.extension;
+
+    if (self.filename || extension) {
+        return self.filename + (extension ? '.' + extension : '');
+    }
+
+    return '';
+}
+
+/**
+ * Construct a new file.
+ *
+ * @example
+ *   var file = new VFile({
+ *     'directory': '~',
+ *     'filename': 'example',
+ *     'extension': 'txt',
+ *     'contents': 'Foo *bar* baz'
+ *   });
+ *
+ *   file === VFile(file) // true
+ *   file === new VFile(file) // true
+ *   VFile('foo') instanceof VFile // true
+ *
+ * @constructor
+ * @class {VFile}
+ * @param {Object|VFile|string} [options] - either an
+ *   options object, or the value of `contents` (both
+ *   optional).  When a `file` is passed in, it's
+ *   immediately returned.
+ * @property {string} [contents=''] - Content of file.
+ * @property {string} [directory=''] - Path to parent
+ *   directory.
+ * @property {string} [filename=''] - Filename.
+ *   A file-path can still be generated when no filename
+ *   exists.
+ * @property {string} [extension=''] - Extension.
+ *   A file-path can still be generated when no extension
+ *   exists.
+ * @property {boolean?} quiet - Whether an error created by
+ *   `VFile#fail()` is returned (when truthy) or thrown
+ *   (when falsey). Ensure all `messages` associated with
+ *   a file are handled properly when setting this to
+ *   `true`.
+ * @property {Array.<VFileMessage>} messages - List of associated
+ *   messages.
+ */
+function VFile(options) {
+    var self = this;
+
+    /*
+     * No `new` operator.
+     */
+
+    if (!(self instanceof VFile)) {
+        return new VFile(options);
+    }
+
+    /*
+     * Given file.
+     */
+
+    if (
+        options &&
+        typeof options.message === 'function' &&
+        typeof options.hasFailed === 'function'
+    ) {
+        return options;
+    }
+
+    if (!options) {
+        options = {};
+    } else if (typeof options === 'string') {
+        options = {
+            'contents': options
+        };
+    }
+
+    self.contents = options.contents || '';
+
+    self.messages = [];
+
+    /*
+     * Make sure eslint’s formatters stringify `filePath`
+     * properly.
+     */
+
+    self.filePath = filePathFactory(self);
+
+    self.history = [];
+
+    self.move({
+        'filename': options.filename,
+        'directory': options.directory,
+        'extension': options.extension
+    });
+}
+
+/**
+ * Get the value of the file.
+ *
+ * @example
+ *   var vFile = new VFile('Foo');
+ *   String(vFile); // 'Foo'
+ *
+ * @this {VFile}
+ * @memberof {VFile}
+ * @return {string} - value at the `contents` property
+ *   in context.
+ */
+function toString() {
+    return this.contents;
+}
+
+/**
+ * Move a file by passing a new directory, filename,
+ * and extension.  When these are not given, the default
+ * values are kept.
+ *
+ * @example
+ *   var file = new VFile({
+ *     'directory': '~',
+ *     'filename': 'example',
+ *     'extension': 'txt',
+ *     'contents': 'Foo *bar* baz'
+ *   });
+ *
+ *   file.move({'directory': '/var/www'});
+ *   file.filePath(); // '/var/www/example.txt'
+ *
+ *   file.move({'extension': 'md'});
+ *   file.filePath(); // '/var/www/example.md'
+ *
+ * @this {VFile}
+ * @memberof {VFile}
+ * @param {Object?} [options] - Configuration.
+ * @return {VFile} - Context object.
+ */
+function move(options) {
+    var self = this;
+    var before = self.filePath();
+    var after;
+
+    if (!options) {
+        options = {};
+    }
+
+    self.directory = options.directory || self.directory || '';
+    self.filename = options.filename || self.filename || '';
+    self.extension = options.extension || self.extension || '';
+
+    after = self.filePath();
+
+    if (after && before !== after) {
+        self.history.push(after);
+    }
+
+    return self;
+}
+
+/**
+ * Create a message with `reason` at `position`.
+ * When an error is passed in as `reason`, copies the
+ * stack.  This does not add a message to `messages`.
+ *
+ * @example
+ *   var file = new VFile();
+ *
+ *   file.message('Something went wrong');
+ *   // { [1:1: Something went wrong]
+ *   //   name: '1:1',
+ *   //   file: '',
+ *   //   reason: 'Something went wrong',
+ *   //   line: null,
+ *   //   column: null }
+ *
+ * @this {VFile}
+ * @memberof {VFile}
+ * @param {string|Error} reason - Reason for message.
+ * @param {Node|Location|Position} [position] - Location
+ *   of message in file.
+ * @param {string} [ruleId] - Category of warning.
+ * @return {VFileMessage} - File-related message with
+ *   location information.
+ */
+function message(reason, position, ruleId) {
+    var filePath = this.filePath();
+    var range;
+    var err;
+    var location = {
+        'start': {
+            'line': null,
+            'column': null
+        },
+        'end': {
+            'line': null,
+            'column': null
+        }
+    };
+
+    /*
+     * Node / location / position.
+     */
+
+    if (position && position.position) {
+        position = position.position;
+    }
+
+    if (position && position.start) {
+        range = stringify(position.start) + '-' + stringify(position.end);
+        location = position;
+        position = position.start;
+    } else {
+        range = stringify(position);
+
+        if (position) {
+            location.start = position;
+            location.end.line = null;
+            location.end.column = null;
+        }
+    }
+
+    err = new VFileMessage(reason.message || reason);
+
+    err.name = (filePath ? filePath + ':' : '') + range;
+    err.file = filePath;
+    err.reason = reason.message || reason;
+    err.line = position ? position.line : null;
+    err.column = position ? position.column : null;
+    err.location = location;
+    err.ruleId = ruleId || null;
+
+    if (reason.stack) {
+        err.stack = reason.stack;
+    }
+
+    return err;
+}
+
+/**
+ * Warn. Creates a non-fatal message (see `VFile#message()`),
+ * and adds it to the file's `messages` list.
+ *
+ * @example
+ *   var file = new VFile();
+ *
+ *   file.warn('Something went wrong');
+ *   // { [1:1: Something went wrong]
+ *   //   name: '1:1',
+ *   //   file: '',
+ *   //   reason: 'Something went wrong',
+ *   //   line: null,
+ *   //   column: null,
+ *   //   fatal: false }
+ *
+ * @see VFile#message
+ * @this {VFile}
+ * @memberof {VFile}
+ */
+function warn() {
+    var err = this.message.apply(this, arguments);
+
+    err.fatal = false;
+
+    this.messages.push(err);
+
+    return err;
+}
+
+/**
+ * Fail. Creates a fatal message (see `VFile#message()`),
+ * sets `fatal: true`, adds it to the file's
+ * `messages` list.
+ *
+ * If `quiet` is not `true`, throws the error.
+ *
+ * @example
+ *   var file = new VFile();
+ *
+ *   file.fail('Something went wrong');
+ *   // 1:1: Something went wrong
+ *   //     at VFile.exception (vfile/index.js:296:11)
+ *   //     at VFile.fail (vfile/index.js:360:20)
+ *   //     at repl:1:6
+ *
+ *   file.quiet = true;
+ *   file.fail('Something went wrong');
+ *   // { [1:1: Something went wrong]
+ *   //   name: '1:1',
+ *   //   file: '',
+ *   //   reason: 'Something went wrong',
+ *   //   line: null,
+ *   //   column: null,
+ *   //   fatal: true }
+ *
+ * @this {VFile}
+ * @memberof {VFile}
+ * @throws {VFileMessage} - When not `quiet: true`.
+ * @param {string|Error} reason - Reason for failure.
+ * @param {Node|Location|Position} [position] - Place
+ *   of failure in file.
+ * @return {VFileMessage} - Unless thrown, of course.
+ */
+function fail(reason, position) {
+    var err = this.message(reason, position);
+
+    err.fatal = true;
+
+    this.messages.push(err);
+
+    if (!this.quiet) {
+        throw err;
+    }
+
+    return err;
+}
+
+/**
+ * Check if a fatal message occurred making the file no
+ * longer processable.
+ *
+ * @example
+ *   var file = new VFile();
+ *   file.quiet = true;
+ *
+ *   file.hasFailed(); // false
+ *
+ *   file.fail('Something went wrong');
+ *   file.hasFailed(); // true
+ *
+ * @this {VFile}
+ * @memberof {VFile}
+ * @return {boolean} - `true` if at least one of file's
+ *   `messages` has a `fatal` property set to `true`
+ */
+function hasFailed() {
+    var messages = this.messages;
+    var index = -1;
+    var length = messages.length;
+
+    while (++index < length) {
+        if (messages[index].fatal) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Access metadata.
+ *
+ * @example
+ *   var file = new VFile('Foo');
+ *
+ *   file.namespace('foo').bar = 'baz';
+ *
+ *   console.log(file.namespace('foo').bar) // 'baz';
+ *
+ * @this {VFile}
+ * @memberof {VFile}
+ * @param {string} key - Namespace key.
+ * @return {Object} - Private space.
+ */
+function namespace(key) {
+    var self = this;
+    var space = self.data;
+
+    if (!space) {
+        space = self.data = {};
+    }
+
+    if (!space[key]) {
+        space[key] = {};
+    }
+
+    return space[key];
+}
+
+/*
+ * Methods.
+ */
+
+proto = VFile.prototype;
+
+proto.basename = basename;
+proto.move = move;
+proto.toString = toString;
+proto.message = message;
+proto.warn = warn;
+proto.fail = fail;
+proto.hasFailed = hasFailed;
+proto.namespace = namespace;
+
+/*
+ * Expose.
+ */
+
+module.exports = VFile;
+
+},{}],51:[function(require,module,exports){
+/**
+ * Module Dependencies
+ */
+
+var slice = [].slice;
+var wrap = require('wrap-fn');
+
+/**
+ * Expose `Ware`.
+ */
+
+module.exports = Ware;
+
+/**
+ * Throw an error.
+ *
+ * @param {Error} error
+ */
+
+function fail (err) {
+  throw err;
+}
+
+/**
+ * Initialize a new `Ware` manager, with optional `fns`.
+ *
+ * @param {Function or Array or Ware} fn (optional)
+ */
+
+function Ware (fn) {
+  if (!(this instanceof Ware)) return new Ware(fn);
+  this.fns = [];
+  if (fn) this.use(fn);
+}
+
+/**
+ * Use a middleware `fn`.
+ *
+ * @param {Function or Array or Ware} fn
+ * @return {Ware}
+ */
+
+Ware.prototype.use = function (fn) {
+  if (fn instanceof Ware) {
+    return this.use(fn.fns);
+  }
+
+  if (fn instanceof Array) {
+    for (var i = 0, f; f = fn[i++];) this.use(f);
+    return this;
+  }
+
+  this.fns.push(fn);
+  return this;
+};
+
+/**
+ * Run through the middleware with the given `args` and optional `callback`.
+ *
+ * @param {Mixed} args...
+ * @param {Function} callback (optional)
+ * @return {Ware}
+ */
+
+Ware.prototype.run = function () {
+  var fns = this.fns;
+  var ctx = this;
+  var i = 0;
+  var last = arguments[arguments.length - 1];
+  var done = 'function' == typeof last && last;
+  var args = done
+    ? slice.call(arguments, 0, arguments.length - 1)
+    : slice.call(arguments);
+
+  // next step
+  function next (err) {
+    if (err) return (done || fail)(err);
+    var fn = fns[i++];
+    var arr = slice.call(args);
+
+    if (!fn) {
+      return done && done.apply(null, [null].concat(args));
+    }
+
+    wrap(fn, next).apply(ctx, arr);
+  }
+
+  next();
+
+  return this;
+};
+
+},{"wrap-fn":52}],52:[function(require,module,exports){
+/**
+ * Module Dependencies
+ */
+
+var noop = function(){};
+var co = require('co');
+
+/**
+ * Export `wrap-fn`
+ */
+
+module.exports = wrap;
+
+/**
+ * Wrap a function to support
+ * sync, async, and gen functions.
+ *
+ * @param {Function} fn
+ * @param {Function} done
+ * @return {Function}
+ * @api public
+ */
+
+function wrap(fn, done) {
+  done = once(done || noop);
+
+  return function() {
+    // prevents arguments leakage
+    // see https://github.com/petkaantonov/bluebird/wiki/Optimization-killers#3-managing-arguments
+    var i = arguments.length;
+    var args = new Array(i);
+    while (i--) args[i] = arguments[i];
+
+    var ctx = this;
+
+    // done
+    if (!fn) {
+      return done.apply(ctx, [null].concat(args));
+    }
+
+    // async
+    if (fn.length > args.length) {
+      // NOTE: this only handles uncaught synchronous errors
+      try {
+        return fn.apply(ctx, args.concat(done));
+      } catch (e) {
+        return done(e);
+      }
+    }
+
+    // generator
+    if (generator(fn)) {
+      return co(fn).apply(ctx, args.concat(done));
+    }
+
+    // sync
+    return sync(fn, done).apply(ctx, args);
+  }
+}
+
+/**
+ * Wrap a synchronous function execution.
+ *
+ * @param {Function} fn
+ * @param {Function} done
+ * @return {Function}
+ * @api private
+ */
+
+function sync(fn, done) {
+  return function () {
+    var ret;
+
+    try {
+      ret = fn.apply(this, arguments);
+    } catch (err) {
+      return done(err);
+    }
+
+    if (promise(ret)) {
+      ret.then(function (value) { done(null, value); }, done);
+    } else {
+      ret instanceof Error ? done(ret) : done(null, ret);
+    }
+  }
+}
+
+/**
+ * Is `value` a generator?
+ *
+ * @param {Mixed} value
+ * @return {Boolean}
+ * @api private
+ */
+
+function generator(value) {
+  return value
+    && value.constructor
+    && 'GeneratorFunction' == value.constructor.name;
+}
+
+
+/**
+ * Is `value` a promise?
+ *
+ * @param {Mixed} value
+ * @return {Boolean}
+ * @api private
+ */
+
+function promise(value) {
+  return value && 'function' == typeof value.then;
+}
+
+/**
+ * Once
+ */
+
+function once(fn) {
+  return function() {
+    var ret = fn.apply(this, arguments);
+    fn = noop;
+    return ret;
+  };
+}
+
+},{"co":53}],53:[function(require,module,exports){
+
+/**
+ * slice() reference.
+ */
+
+var slice = Array.prototype.slice;
+
+/**
+ * Expose `co`.
+ */
+
+module.exports = co;
+
+/**
+ * Wrap the given generator `fn` and
+ * return a thunk.
+ *
+ * @param {Function} fn
+ * @return {Function}
+ * @api public
+ */
+
+function co(fn) {
+  var isGenFun = isGeneratorFunction(fn);
+
+  return function (done) {
+    var ctx = this;
+
+    // in toThunk() below we invoke co()
+    // with a generator, so optimize for
+    // this case
+    var gen = fn;
+
+    // we only need to parse the arguments
+    // if gen is a generator function.
+    if (isGenFun) {
+      var args = slice.call(arguments), len = args.length;
+      var hasCallback = len && 'function' == typeof args[len - 1];
+      done = hasCallback ? args.pop() : error;
+      gen = fn.apply(this, args);
+    } else {
+      done = done || error;
+    }
+
+    next();
+
+    // #92
+    // wrap the callback in a setImmediate
+    // so that any of its errors aren't caught by `co`
+    function exit(err, res) {
+      setImmediate(function(){
+        done.call(ctx, err, res);
+      });
+    }
+
+    function next(err, res) {
+      var ret;
+
+      // multiple args
+      if (arguments.length > 2) res = slice.call(arguments, 1);
+
+      // error
+      if (err) {
+        try {
+          ret = gen.throw(err);
+        } catch (e) {
+          return exit(e);
+        }
+      }
+
+      // ok
+      if (!err) {
+        try {
+          ret = gen.next(res);
+        } catch (e) {
+          return exit(e);
+        }
+      }
+
+      // done
+      if (ret.done) return exit(null, ret.value);
+
+      // normalize
+      ret.value = toThunk(ret.value, ctx);
+
+      // run
+      if ('function' == typeof ret.value) {
+        var called = false;
+        try {
+          ret.value.call(ctx, function(){
+            if (called) return;
+            called = true;
+            next.apply(ctx, arguments);
+          });
+        } catch (e) {
+          setImmediate(function(){
+            if (called) return;
+            called = true;
+            next(e);
+          });
+        }
+        return;
+      }
+
+      // invalid
+      next(new TypeError('You may only yield a function, promise, generator, array, or object, '
+        + 'but the following was passed: "' + String(ret.value) + '"'));
+    }
+  }
+}
+
+/**
+ * Convert `obj` into a normalized thunk.
+ *
+ * @param {Mixed} obj
+ * @param {Mixed} ctx
+ * @return {Function}
+ * @api private
+ */
+
+function toThunk(obj, ctx) {
+
+  if (isGeneratorFunction(obj)) {
+    return co(obj.call(ctx));
+  }
+
+  if (isGenerator(obj)) {
+    return co(obj);
+  }
+
+  if (isPromise(obj)) {
+    return promiseToThunk(obj);
+  }
+
+  if ('function' == typeof obj) {
+    return obj;
+  }
+
+  if (isObject(obj) || Array.isArray(obj)) {
+    return objectToThunk.call(ctx, obj);
+  }
+
+  return obj;
+}
+
+/**
+ * Convert an object of yieldables to a thunk.
+ *
+ * @param {Object} obj
+ * @return {Function}
+ * @api private
+ */
+
+function objectToThunk(obj){
+  var ctx = this;
+  var isArray = Array.isArray(obj);
+
+  return function(done){
+    var keys = Object.keys(obj);
+    var pending = keys.length;
+    var results = isArray
+      ? new Array(pending) // predefine the array length
+      : new obj.constructor();
+    var finished;
+
+    if (!pending) {
+      setImmediate(function(){
+        done(null, results)
+      });
+      return;
+    }
+
+    // prepopulate object keys to preserve key ordering
+    if (!isArray) {
+      for (var i = 0; i < pending; i++) {
+        results[keys[i]] = undefined;
+      }
+    }
+
+    for (var i = 0; i < keys.length; i++) {
+      run(obj[keys[i]], keys[i]);
+    }
+
+    function run(fn, key) {
+      if (finished) return;
+      try {
+        fn = toThunk(fn, ctx);
+
+        if ('function' != typeof fn) {
+          results[key] = fn;
+          return --pending || done(null, results);
+        }
+
+        fn.call(ctx, function(err, res){
+          if (finished) return;
+
+          if (err) {
+            finished = true;
+            return done(err);
+          }
+
+          results[key] = res;
+          --pending || done(null, results);
+        });
+      } catch (err) {
+        finished = true;
+        done(err);
+      }
+    }
+  }
+}
+
+/**
+ * Convert `promise` to a thunk.
+ *
+ * @param {Object} promise
+ * @return {Function}
+ * @api private
+ */
+
+function promiseToThunk(promise) {
+  return function(fn){
+    promise.then(function(res) {
+      fn(null, res);
+    }, fn);
+  }
+}
+
+/**
+ * Check if `obj` is a promise.
+ *
+ * @param {Object} obj
+ * @return {Boolean}
+ * @api private
+ */
+
+function isPromise(obj) {
+  return obj && 'function' == typeof obj.then;
+}
+
+/**
+ * Check if `obj` is a generator.
+ *
+ * @param {Mixed} obj
+ * @return {Boolean}
+ * @api private
+ */
+
+function isGenerator(obj) {
+  return obj && 'function' == typeof obj.next && 'function' == typeof obj.throw;
+}
+
+/**
+ * Check if `obj` is a generator function.
+ *
+ * @param {Mixed} obj
+ * @return {Boolean}
+ * @api private
+ */
+
+function isGeneratorFunction(obj) {
+  return obj && obj.constructor && 'GeneratorFunction' == obj.constructor.name;
+}
+
+/**
+ * Check for plain object.
+ *
+ * @param {Mixed} val
+ * @return {Boolean}
+ * @api private
+ */
+
+function isObject(val) {
+  return val && Object == val.constructor;
+}
+
+/**
+ * Throw `err` in a new stack.
+ *
+ * This is used when co() is invoked
+ * without supplying a callback, which
+ * should only be for demonstrational
+ * purposes.
+ *
+ * @param {Error} err
+ * @api private
+ */
+
+function error(err) {
+  if (!err) return;
+  setImmediate(function(){
+    throw err;
+  });
+}
+
+},{}],54:[function(require,module,exports){
+module.exports = [ "فى", "في", "كل", "لم", "لن", "له", "من", "هو", "هي", "قوة", "كما", "لها", "منذ", "وقد", "ولا", "نفسه", "لقاء", "مقابل", "هناك", "وقال", "وكان", "نهاية", "وقالت", "وكانت", "للامم", "فيه", "كلم", "لكن", "وفي", "وقف", "ولم", "ومن", "وهو", "وهي", "يوم", "فيها", "منها", "مليار", "لوكالة", "يكون", "يمكن", "مليون", "حيث", "اكد", "الا", "اما", "امس", "السابق", "التى", "التي", "اكثر", "ايار", "ايضا", "ثلاثة", "الذاتي", "الاخيرة", "الثاني", "الثانية", "الذى", "الذي", "الان", "امام", "ايام", "خلال", "حوالى", "الذين", "الاول", "الاولى", "بين", "ذلك", "دون", "حول", "حين", "الف", "الى", "انه", "اول", "ضمن", "انها", "جميع", "الماضي", "الوقت", "المقبل", "اليوم", "ـ", "ف", "و", "و6", "قد", "لا", "ما", "مع", "مساء", "هذا", "واحد", "واضاف", "واضافت", "فان", "قبل", "قال", "كان", "لدى", "نحو", "هذه", "وان", "واكد", "كانت", "واوضح", "مايو", "ب", "ا", "أ", "،", "عشر", "عدد", "عدة", "عشرة", "عدم", "عام", "عاما", "عن", "عند", "عندما", "على", "عليه", "عليها", "زيارة", "سنة", "سنوات", "تم", "ضد", "بعد", "بعض", "اعادة", "اعلنت", "بسبب", "حتى", "اذا", "احد", "اثر", "برس", "باسم", "غدا", "شخصا", "صباح", "اطار", "اربعة", "اخرى", "بان", "اجل", "غير", "بشكل", "حاليا", "بن", "به", "ثم", "اف", "ان", "او", "اي", "بها", "صفر" ];
+},{}],55:[function(require,module,exports){
+module.exports = [ "а", "автентичен", "аз", "ако", "ала", "бе", "без", "беше", "би", "бивш", "бивша", "бившо", "бил", "била", "били", "било", "благодаря", "близо", "бъдат", "бъде", "бяха", "в", "вас", "ваш", "ваша", "вероятно", "вече", "взема", "ви", "вие", "винаги", "внимава", "време", "все", "всеки", "всички", "всичко", "всяка", "във", "въпреки", "върху", "г", "ги", "главен", "главна", "главно", "глас", "го", "година", "години", "годишен", "д", "да", "дали", "два", "двама", "двамата", "две", "двете", "ден", "днес", "дни", "до", "добра", "добре", "добро", "добър", "докато", "докога", "дори", "досега", "доста", "друг", "друга", "други", "е", "евтин", "едва", "един", "една", "еднаква", "еднакви", "еднакъв", "едно", "екип", "ето", "живот", "за", "забавям", "зад", "заедно", "заради", "засега", "заспал", "затова", "защо", "защото", "и", "из", "или", "им", "има", "имат", "иска", "й", "каза", "как", "каква", "какво", "както", "какъв", "като", "кога", "когато", "което", "които", "кой", "който", "колко", "която", "къде", "където", "към", "лесен", "лесно", "ли", "лош", "м", "май", "малко", "ме", "между", "мек", "мен", "месец", "ми", "много", "мнозина", "мога", "могат", "може", "мокър", "моля", "момента", "му", "н", "на", "над", "назад", "най", "направи", "напред", "например", "нас", "не", "него", "нещо", "нея", "ни", "ние", "никой", "нито", "нищо", "но", "нов", "нова", "нови", "новина", "някои", "някой", "няколко", "няма", "обаче", "около", "освен", "особено", "от", "отгоре", "отново", "още", "пак", "по", "повече", "повечето", "под", "поне", "поради", "после", "почти", "прави", "пред", "преди", "през", "при", "пък", "първата", "първи", "първо", "пъти", "равен", "равна", "с", "са", "сам", "само", "се", "сега", "си", "син", "скоро", "след", "следващ", "сме", "смях", "според", "сред", "срещу", "сте", "съм", "със", "също", "т", "тази", "така", "такива", "такъв", "там", "твой", "те", "тези", "ти", "т.н.", "то", "това", "тогава", "този", "той", "толкова", "точно", "три", "трябва", "тук", "тъй", "тя", "тях", "у", "утре", "харесва", "хиляди", "ч", "часа", "че", "често", "чрез", "ще", "щом", "юмрук", "я", "як" ];
+},{}],56:[function(require,module,exports){
+module.exports = [ "ačkoli", "ahoj", "ale", "anebo", "ano", "asi", "aspoň", "během", "bez", "beze", "blízko", "bohužel", "brzo", "bude", "budeme", "budeš", "budete", "budou", "budu", "byl", "byla", "byli", "bylo", "byly", "bys", "čau", "chce", "chceme", "chceš", "chcete", "chci", "chtějí", "chtít", "chut'", "chuti", "co", "čtrnáct", "čtyři", "dál", "dále", "daleko", "děkovat", "děkujeme", "děkuji", "den", "deset", "devatenáct", "devět", "do", "dobrý", "docela", "dva", "dvacet", "dvanáct", "dvě", "hodně", "já", "jak", "jde", "je", "jeden", "jedenáct", "jedna", "jedno", "jednou", "jedou", "jeho", "její", "jejich", "jemu", "jen", "jenom", "ještě", "jestli", "jestliže", "jí", "jich", "jím", "jimi", "jinak", "jsem", "jsi", "jsme", "jsou", "jste", "kam", "kde", "kdo", "kdy", "když", "ke", "kolik", "kromě", "která", "které", "kteří", "který", "kvůli", "má", "mají", "málo", "mám", "máme", "máš", "máte", "mé", "mě", "mezi", "mí", "mít", "mně", "mnou", "moc", "mohl", "mohou", "moje", "moji", "možná", "můj", "musí", "může", "my", "na", "nad", "nade", "nám", "námi", "naproti", "nás", "náš", "naše", "naši", "ne", "ně", "nebo", "nebyl", "nebyla", "nebyli", "nebyly", "něco", "nedělá", "nedělají", "nedělám", "neděláme", "neděláš", "neděláte", "nějak", "nejsi", "někde", "někdo", "nemají", "nemáme", "nemáte", "neměl", "němu", "není", "nestačí", "nevadí", "než", "nic", "nich", "ním", "nimi", "nula", "od", "ode", "on", "ona", "oni", "ono", "ony", "osm", "osmnáct", "pak", "patnáct", "pět", "po", "pořád", "potom", "pozdě", "před", "přes", "přese", "pro", "proč", "prosím", "prostě", "proti", "protože", "rovně", "se", "sedm", "sedmnáct", "šest", "šestnáct", "skoro", "smějí", "smí", "snad", "spolu", "sta", "sté", "sto", "ta", "tady", "tak", "takhle", "taky", "tam", "tamhle", "tamhleto", "tamto", "tě", "tebe", "tebou", "ted'", "tedy", "ten", "ti", "tisíc", "tisíce", "to", "tobě", "tohle", "toto", "třeba", "tři", "třináct", "trošku", "tvá", "tvé", "tvoje", "tvůj", "ty", "určitě", "už", "vám", "vámi", "vás", "váš", "vaše", "vaši", "ve", "večer", "vedle", "vlastně", "všechno", "všichni", "vůbec", "vy", "vždy", "za", "zač", "zatímco", "ze", "že" ];
+},{}],57:[function(require,module,exports){
+module.exports = [ "af", "alle", "andet", "andre", "at", "begge", "da", "de", "den", "denne", "der", "deres", "det", "dette", "dig", "din", "dog", "du", "ej", "eller", "en", "end", "ene", "eneste", "enhver", "et", "fem", "fire", "flere", "fleste", "for", "fordi", "forrige", "fra", "få", "før", "god", "han", "hans", "har", "hendes", "her", "hun", "hvad", "hvem", "hver", "hvilken", "hvis", "hvor", "hvordan", "hvorfor", "hvornår", "i", "ikke", "ind", "ingen", "intet", "jeg", "jeres", "kan", "kom", "kommer", "lav", "lidt", "lille", "man", "mand", "mange", "med", "meget", "men", "mens", "mere", "mig", "ned", "ni", "nogen", "noget", "ny", "nyt", "nær", "næste", "næsten", "og", "op", "otte", "over", "på", "se", "seks", "ses", "som", "stor", "store", "syv", "ti", "til", "to", "tre", "ud", "var" ];
+},{}],58:[function(require,module,exports){
 module.exports = [ "der", "die", "und", "in", "den", "von", "zu", "mit", "ist", "das", "des", "im", "für", "auf", "sich", "dem", "Die", "nicht", "ein", "eine", "als", "auch", "an", "es", "er", "aus", "bei", "werden", "sie", "nach", "Der", "sind", "war", "wurde", "wird", "einer", "Das", "hat", "am", "wie", "um", "Sie", "zum", "oder", "einen", "über", "dass", "einem", "noch", "bis", "nur", "vor", "zur", "durch", "so", "haben", "aber", "ich", "In", "man", "mehr", "wir", "daß", "kann", "sein", "vom", "Es", "unter", "Ich", "hatte", "gegen", "Im", "Er", "wenn", "dieser", "seine", "eines", "können", "diese", "wieder", "wurden", "dann", "was", "schon", "Jahr", "zwei", "seiner", "Jahre", "Jahren", "ihre", "gibt", "zwischen", "Ein", "immer", "waren", "Zeit", "Uhr", "keine", "Wir", "sei", "habe", "sehr", "hier", "alle", "Nach", "ab", "sowie", "da", "beim", "heute", "seit", "diesem", "uns", "soll", "Und", "Deutschland", "Mit", "anderen", "jedoch", "ihr", "damit", "ersten", "drei", "Auch", "doch", "ihm", "seinen", "Stadt", "etwa", "sagte", "ihn", "Eine", "sondern", "bereits", "müssen", "ohne", "Menschen", "will", "Prozent", "ihrer", "worden", "Bei", "selbst", "jetzt", "of", "Als", "seinem", "neue", "muss", "allem", "neuen", "Ende", "nun", "Von", "geht", "ihren", "SPD", "So", "Für", "weil", "wo", "mich", "mir", "Aber", "Am", "Diese", "ganz", "dieses", "etwas", "andere", "Geschichte", "Frau", "liegt", "Wenn", "ins", "gut", "einmal", "konnte", "Euro", "du", "denn", "viele", "Auf", "machen", "Herr", "Leben", "the", "diesen", "erst", "lassen", "Wie", "dort", "beiden", "erste", "The", "Teil", "deutschen", "weiter", "also", "viel", "sollte", "dabei", "Millionen", "Was", "später", "hatten", "während", "Welt", "ISBN", "sagt", "denen", "wollen", "steht", "Da", "kommt", "kein", "vier", "nichts", "de", "allerdings", "Seite", "ob", "dazu", "gab", "s", "letzten", "kam", "USA", "wegen", "dies", "zurück", "großen", "kommen", "alles", "rund", "ja", "sollen", "deren", "dafür", "Doch", "Kinder", "wäre", "Frage", "weitere", "würde", "dessen", "große", "Januar", "zwar", "darauf", "Arbeit",
 "Beispiel", "September", "zusammen", "einige", "Land", "allen", "fast", "Frauen", "März", "Namen", "Unternehmen", "ihrem", "davon", "Mann", "Mai", "Platz", "deutsche", "werde", "Oktober", "muß", "Literatur", "Art", "ihnen", "Deutschen", "fünf", "gilt", "sehen", "könnte", "Dezember", "stehen", "sogar", "seien", "Wer", "Seit", "August", "bin", "Beifall", "Fall", "Juni", "eigenen", "November", "mal", "Film", "finden", "sagen", "Regierung", "April", "München", "oft", "Dies", "lange", "ebenfalls", "bekannt", "Präsident", "wohl", "CDU/CSU", "Zu", "gehört", "Man", "weniger", "gerade", "statt", "aller", "Juli", "möchte", "Weg", "Entwicklung", "zunächst", "ging", "Mark", "Bild", "möglich", "gar", "besonders", "hätte", "macht", "Politik", "geben", "Tag", "Ihnen", "Februar", "Hier", "Gemeinde", "wenig", "gewesen", "Europa", "gehen", "gemacht", "welche", "New", "gegenüber", "heißt", "Familie", "Union", "tun", "Jahrhundert", "einfach", "Frankfurt", "deutlich", "Dabei", "neben", "sollten", "Kirche", "keinen", "Artikel", "Ihre", "Peter", "Thema", "besteht", "vielen", "nie", "bzw.", "Aus", "Zeitung", "wollte", "Kommission", "seines", "Hamburg", "hätten", "Geld", "meine", "Dr", "kaum", "zweiten", "Während", "lässt", "Anfang", "Um", "Ort", "weiß", "findet", "Bereich", "Haus", "anderem", "Mal",
 "deshalb", "alten", "erhalten", "zehn", "Zum", "bisher", "meisten", "darüber", "würden", "hin", "Form", "An", "bleibt", "sieht", "Gesellschaft", "Berliner", "Den", "vergangenen", "bezeichnet", "Nr.", "Ziel", "je", "weit", "Grund", "sechs", "darf", "Rolle", "Deutsche", "wissen", "jeder", "zeigt", "Damit", "Denn", "mehrere", "nächsten", "Vor", "Dann", "schließlich", "kleinen", "Durch", "Michael", "km", "Lage", "Gruppe", "Band", "damals", "Spiel", "Sohn", "Dr.", "stark", "Universität", "Hilfe", "besser", "hinter", "meist", "Seine", "St.", "stellt", "Tage", "unsere", "daher", "Nur", "wirklich", "führt", "Dieser", "beispielsweise", "kurz", "Bericht", "gleich", "weiteren", "Straße", "bleiben", "Wirtschaft", "Siehe", "Zukunft", "eher", "Bedeutung", "Recht", "insbesondere", "Bevölkerung", "schnell", "nehmen", "Verlag", "CDU", "Tod", "Alle", "solche", "neu", "Bundesregierung", "pro", "Frankreich", "Jahres", "konnten", "Ihr", "ließ", "Du", "kleine", "Europäischen", "Vater", "genannt", "lang", "Titel", "Rahmen", "Wort", "eigentlich", "erhielt", "einigen", "Woche", "FC", "Musik", "dagegen", "Sein", "allein", "Einsatz", "genau", "begann", "innerhalb", "unserer", "Partei", "Polizei", "Wasser", "bringen", "deutscher", "natürlich", "eigene",
 "Wochen", "insgesamt", "Außerdem", "Bis", "halten", "politischen", "musste", "Parlament", "Meter", "Hand", "Zahl", "stellen", "gesagt", "führen", "daran", "Erfolg", "befindet", "Zur", "verschiedenen", "Probleme", "Unter", "Abgeordneten", "Milliarden", "nahm", "stand", "geworden", "c", "liegen", "erstmals", "Sprache", "Fragen", "nämlich", "Ja", "Kollegen", "Männer", "Nicht", "Wolfgang", "Problem", "Mutter", "Minuten", "Weitere", "Mitte", "Mitglied", "Jahrhunderts", "Krieg", "Hans", "könnten", "Thomas", "Über", "Personen", "Friedrich", "ca.", "ebenso", "machte", "York", "vielleicht", "Stelle", "derzeit", "Ländern", "Höhe", "verwendet", "gute", "überhaupt", "Länder", "Angaben", "führte", "gegeben", "Tel.", "klar", "Karl", "europäischen", "sicher", "Saison", "Programm", "erreicht", "GRÜNEN", "beide", "Sonntag", "sowohl", "Region", "alte", "Staaten", "Paris", "Beginn", "Buch", "zweite", "ganze", "hinaus", "König", "Morgen", "handelt", "fand", "Schweiz", "jeweils", "Weise", "DM", "fest", "per", "blieb", "Mitglieder", "Richtung", "Heute", "Stunden", "leicht", "Leute", "wobei", "gehören", "bietet", "Wien", "politische", "Folge", "Blick", "aufgrund", "Entscheidung", "Dort", "Neben", "hält", "Gebiet", "gemeinsam", "erklärt", "direkt", "könne", "Daten", "recht", "schwer", "Bayern", "jeden", "Name", "Schule", "GmbH", "dürfen", "laut", "Seiten", "Bürger", "Eltern", "dpa", "Meinung", "Werke", "Jetzt", "letzte", "Spieler", "bald", "London", "häufig", "heutigen", "Einwohner", "acht", "eben", "Internet", "Markt", "dich", "Nein", "Situation", "System", "zuvor", "Möglichkeit", "Freitag", "mein", "Mannheim", "Fenster", "Kosten", "inzwischen", "kamen", "John", "sieben", "bekommen", "erreichen", "unser", "Verfügung", "Köln", "Dazu", "besten", "Zusammenhang", "Reihe", "Kritik", "richtig", "Liste", "Herren", "Augen", "taz", "zeigen", "siehe", "hohen", "spielte", "leben", "völlig", "Neue", "ihres", "spielt", "Sicherheit", "weiterhin", "hoch", "nachdem", "gegründet", "erneut", "sah", "z.", "wer", "Informationen", "anders", "spielen", "Dieses", "gleichen", "Kultur", "größten", "eingesetzt", "Unterstützung", "Beim", "erklärte", "Allerdings", "Firma", "Amt", "Kopf", "trotz", "Erst", "gebracht", "gestellt", "läuft", "schließen", "Bilder", "nimmt", "Mitarbeiter", "BÜNDNIS", "Deshalb", "verschiedene", "zudem", "Werk", "Ergebnis", "Heinrich", "Bau", "ehemaligen", "Preis", "Tochter", "Stuttgart", "Samstag", "Bad", "Verfahren", "Kind", "früher", "Paul", "darin", "paar", "Punkt", "Weblinks", "Nun", "Maßnahmen", "Österreich", "Wilhelm", "Herrn", "z.B.", "Noch", "Staat", "Zusammenarbeit", "knapp", "Nacht", "einzelnen", "trat", "gestern", "Team", "Osten", "scheint", "Mannschaft", "Tagen", "internationalen", "jede", "mindestens", "teilweise", "einzige", "Soldaten", "setzt", "gefunden", "Kunst", "lediglich", "öffentlichen", "bedeutet", "Raum", "gewann", "Kampf", "Martin", "Ist", "Begriff", "Hause", "entwickelt", "Wahl", "Schon", "arbeiten", "größte", "Donnerstag", "Ab", "Viele", "Quellen", "Nachdem", "dadurch", "Italien", "erster", "gekommen", "dir", "Mittwoch", "danach", "stellte", "her", "zahlreiche", "Landes", "Gesetz", "Monaten", "PDS", "Rat", "Franz", "Verein", "sonst", "Frankfurter", "Meine", "Klaus", "Karriere", "müsse", "meiner", "anderer", "zuletzt", "Monate", "Alter", "hohe", "Interesse", "Regie", "Montag", "genommen", "lag", "Sommer", "spricht", "Trainer", "Liebe", "jedem", "/DIE", "Westen", "guten", "Kilometer", "Johann", "gesehen", "darunter", "solchen", "indem", "Mittel", "oben", "Schweizer", "wichtig", "Hälfte", "Regel", "obwohl", "Bürgermeister", "Aufgabe", "Spiele", "folgenden", "Dienstag", "version", "Sache", "sprechen", "Gemeinden", "electronic", "for", "Norden", "außerdem", "Antrag", "gleichzeitig", "ganzen", "Politiker", "gehörte", "großer", "China", "Nähe", "bereit", "setzte", "Druck", "tatsächlich", "Gott", "frei", "Grünen", "zumindest", "Opfer", "genug", "versucht", "bevor" ];
-},{}],7:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 // https://github.com/6/stopwords-json/blob/master/dist/el.json
 module.exports = ["αλλα","αν","αντι","απο","αυτα","αυτεσ","αυτη","αυτο","αυτοι","αυτοσ","αυτουσ","αυτων","για","δε","δεν","εαν","ειμαι","ειμαστε","ειναι","εισαι","ειστε","εκεινα","εκεινεσ","εκεινη","εκεινο","εκεινοι","εκεινοσ","εκεινουσ","εκεινων","ενω","επι","η","θα","ισωσ","κ","και","κατα","κι","μα","με","μετα","μη","μην","να","ο","οι","ομωσ","οπωσ","οσο","οτι","παρα","ποια","ποιεσ","ποιο","ποιοι","ποιοσ","ποιουσ","ποιων","που","προσ","πωσ","σε","στη","στην","στο","στον","τα","την","τησ","το","τον","τοτε","του","των","ωσ"]
-},{}],8:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 module.exports = [ "a's", "able", "about", "above", "according", "accordingly", "across", "actually", "after", "afterwards", "again", "against", "ain't", "all", "allow", "allows", "almost", "alone", "along", "already", "also", "although", "always", "am", "among", "amongst", "an", "and", "another", "any", "anybody", "anyhow", "anyone", "anything", "anyway", "anyways", "anywhere", "apart", "appear", "appreciate", "appropriate", "are", "aren't", "around", "as", "aside", "ask", "asking", "associated", "at", "available", "away", "awfully", "be", "became", "because", "become", "becomes", "becoming", "been", "before", "beforehand", "behind", "being", "believe", "below", "beside", "besides", "best", "better", "between", "beyond", "both", "brief", "but", "by", "c", "c'mon", "c's", "came", "campaign", "can", "can't", "cannot", "cant", "cause", "causes", "certain", "certainly", "changes", "clearly", "co", "com", "come", "comes", "concerning", "consequently", "consider", "considering", "contain", "containing", "contains", "corresponding", "could", "couldn't", "course", "currently", "definitely", "described", "despite", "did", "didn't", "different", "do", "does", "doesn't", "doing", "don't", "done", "down", "downwards", "during", "each", "edu", "eight", "either", "else", "elsewhere", "enough", "endorsed", "entirely", "especially", "et", "etc", "even", "ever", "every", "everybody", "everyone", "everything", "everywhere", "ex", "exactly", "example", "except", "far", "few", "fifth", "first", "financial", "five", "followed", "following", "follows", "for", "former", "formerly", "forth", "four", "from", "further", "furthermore", "get", "gets", "getting", "given", "gives", "go", "goes", "going", "gone", "got", "gotten", "greetings", "had", "hadn't", "happens", "hardly", "has", "hasn't", "have", "haven't", "having", "he", "he's", "hello", "help", "hence", "her", "here", "here's", "hereafter", "hereby", "herein", "hereupon", "hers", "herself", "hi", "him", "himself", "his", "hither", "hopefully", "how", "howbeit", "however", "i'd", "i'll", "i'm", "i've", "if", "ignored", "immediate", "in", "inasmuch", "inc", "indeed", "indicate", "indicated", "indicates", "inner", "insofar", "instead", "into", "inward", "is", "isn't", "it", "it'd", "it'll", "it's", "its", "itself", "just", "keep", "keeps", "kept", "know", "knows", "known", "last", "lately", "later", "latter", "latterly", "least", "less", "lest", "let", "let's", "like", "liked", "likely", "little", "look", "looking", "looks", "ltd", "mainly", "many", "may", "maybe", "me", "mean", "meanwhile", "merely", "might", "more", "moreover", "most", "mostly", "much", "must", "my", "myself", "name", "namely", "nd", "near", "nearly", "necessary", "need", "needs", "neither", "never", "nevertheless", "new", "next", "nine", "no", "nobody", "non", "none", "noone", "nor", "normally", "not", "nothing", "novel", "now", "nowhere", "obviously", "of", "off", "often", "oh", "ok", "okay", "old", "on", "once", "one", "ones", "only", "onto", "or", "other", "others", "otherwise", "ought", "our", "ours", "ourselves", "out", "outside", "over", "overall", "own", "particular", "particularly", "per", "perhaps", "placed", "please", "plus", "possible", "presumably", "probably", "provides", "quite", "quote", "quarterly", "rather", "really", "reasonably", "regarding", "regardless", "regards", "relatively", "respectively", "right", "said", "same", "saw", "say", "saying", "says", "second", "secondly", "see", "seeing", "seem", "seemed", "seeming", "seems", "seen", "self", "selves", "sensible", "sent", "serious", "seriously", "seven", "several", "shall", "she", "should", "shouldn't", "since", "six", "so", "some", "somebody", "somehow", "someone", "something", "sometime", "sometimes", "somewhat", "somewhere", "soon", "sorry", "specified", "specify", "specifying", "still", "sub", "such", "sup", "sure", "t's", "take", "taken", "tell", "tends", "than", "thank", "thanks", "thanx", "that", "that's", "thats", "the", "their", "theirs", "them", "themselves", "then", "thence", "there", "there's", "thereafter", "thereby", "therefore", "therein", "theres", "thereupon", "these", "they", "they'd", "they'll", "they're", "they've", "think", "third", "this", "thorough", "thoroughly", "those", "though", "three", "through", "throughout", "thru", "thus", "to", "together", "too", "took", "toward", "towards", "tried", "tries", "truly", "try", "trying", "twice", "two", "under", "unfortunately", "unless", "unlikely", "until", "unto", "up", "upon", "us", "use", "used", "useful", "uses", "using", "usually", "uucp", "value", "various", "very", "via", "viz", "vs", "want", "wants", "was", "wasn't", "way", "we", "we'd", "we'll", "we're", "we've", "welcome", "well", "went", "were", "weren't", "what", "what's", "whatever", "when", "whence", "whenever", "where", "where's", "whereafter", "whereas", "whereby", "wherein", "whereupon", "wherever", "whether", "which", "while", "whither", "who", "who's", "whoever", "whole", "whom", "whose", "why", "will", "willing", "wish", "with", "within", "without", "won't", "wonder", "would", "would", "wouldn't", "yes", "yet", "you", "you'd", "you'll", "you're", "you've", "your", "yours", "yourself", "yourselves", "zero", "official", "sharply", "criticized"  ];
-},{}],9:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 module.exports = [ "de", "la", "que", "el", "en", "y", "a", "los", "del", "se", "las", "por", "un", "para", "con", "no", "una", "su", "al", "lo", "como", "más", "pero", "sus", "le", "ya", "o", "este", "sí", "porque", "esta", "entre", "cuando", "muy", "sin", "sobre", "también", "me", "hasta", "hay", "donde", "quien", "desde", "todo", "nos", "durante", "todos", "uno", "les", "ni", "contra", "otros", "ese", "eso", "ante", "ellos", "e", "esto", "mí", "antes", "algunos", "qué", "unos", "yo", "otro", "otras", "otra", "él", "tanto", "esa", "estos", "mucho", "quienes", "nada", "muchos", "cual", "poco", "ella", "estar", "estas", "algunas", "algo", "nosotros", "mi", "mis", "tú", "te", "ti", "tu", "tus", "ellas", "nosotras", "vosotros", "vosotras", "os", "mío", "mía", "míos", "mías", "tuyo", "tuya", "tuyos", "tuyas", "suyo", "suya", "suyos", "suyas", "nuestro", "nuestra", "nuestros", "nuestras", "vuestro", "vuestra", "vuestros", "vuestras", "esos", "esas", "estoy", "estás", "está", "estamos", "estáis", "están", "esté", "estés", "estemos", "estéis", "estén", "estaré", "estarás", "estará", "estaremos", "estaréis", "estarán", "estaría", "estarías", "estaríamos", "estaríais", "estarían", "estaba", "estabas", "estábamos", "estabais", "estaban", "estuve", "estuviste", "estuvo", "estuvimos", "estuvisteis", "estuvieron", "estuviera", "estuvieras", "estuviéramos", "estuvierais", "estuvieran", "estuviese", "estuvieses", "estuviésemos", "estuvieseis", "estuviesen", "estando", "estado", "estada", "estados", "estadas", "estad", "he", "has", "ha", "hemos", "habéis", "han", "haya", "hayas", "hayamos", "hayáis", "hayan", "habré", "habrás", "habrá", "habremos", "habréis", "habrán", "habría", "habrías", "habríamos", "habríais", "habrían", "había", "habías", "habíamos", "habíais", "habían", "hube", "hubiste", "hubo", "hubimos", "hubisteis", "hubieron", "hubiera", "hubieras", "hubiéramos", "hubierais", "hubieran", "hubiese", "hubieses", "hubiésemos", "hubieseis", "hubiesen", "habiendo", "habido", "habida", "habidos", "habidas", "soy", "eres", "es", "somos", "sois", "son", "sea", "seas", "seamos", "seáis", "sean", "seré", "serás", "será", "seremos", "seréis", "serán", "sería", "serías", "seríamos", "seríais", "serían", "era", "eras", "éramos", "erais", "eran", "fui", "fuiste", "fue", "fuimos", "fuisteis", "fueron", "fuera", "fueras", "fuéramos", "fuerais", "fueran", "fuese", "fueses", "fuésemos", "fueseis", "fuesen", "siendo", "sido", "tengo", "tienes", "tiene", "tenemos", "tenéis", "tienen", "tenga", "tengas", "tengamos", "tengáis", "tengan", "tendré", "tendrás", "tendrá", "tendremos", "tendréis", "tendrán", "tendría", "tendrías", "tendríamos", "tendríais", "tendrían", "tenía", "tenías", "teníamos", "teníais", "tenían", "tuve", "tuviste", "tuvo", "tuvimos", "tuvisteis", "tuvieron", "tuviera", "tuvieras", "tuviéramos", "tuvierais", "tuvieran", "tuviese", "tuvieses", "tuviésemos", "tuvieseis", "tuviesen", "teniendo", "tenido", "tenida", "tenidos", "tenidas", "tened" ];
-},{}],10:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 module.exports = [ "alla", "ansiosta", "ehkä", "ei", "enemmän", "ennen", "etessa", "f", "haikki", "he", "hitaasti", "hoikein", "hyvin", "hän", "ilman", "ja", "jos", "jälkeen", "kanssa", "kaukana", "kenties", "keskellä", "kesken", "koskaan", "kuinkan", "kukka", "kylliksi", "kyllä", "liian", "lla", "lla", "luona", "lähellä", "läpi", "me", "miksi", "mikä", "milloin", "milloinkan", "minä", "missä", "miten", "nopeasti", "nyt", "oikea", "oikealla", "paljon", "siellä", "sinä", "ssa", "sta", "suoraan", "tai", "takana", "takia", "tarpeeksi", "te", "tässä", "ulkopuolella", "vahemmän", "vasen", "vasenmalla", "vastan", "vielä", "vieressä", "vähän", "yhdessä", "ylös" ];
-},{}],11:[function(require,module,exports){
-module.exports = [ "# Licensed to the Apache Software Foundation (ASF) under one or more", "# contributor license agreements.  See the NOTICE file distributed with", "# this work for additional information regarding copyright ownership.", "# The ASF licenses this file to You under the Apache License, Version 2.0", "# (the \"License\"); you may not use this file except in compliance with", "# the License.  You may obtain a copy of the License at", "#", "#     http://www.apache.org/licenses/LICENSE-2.0", "#", "# Unless required by applicable law or agreed to in writing, software", "# distributed under the License is distributed on an \"AS IS\" BASIS,", "# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.", "# See the License for the specific language governing permissions and", "# limitations under the License.",
-"#-----------------------------------------------------------------------", "# a couple of test stopwords to test that the words are really being", "# configured from this file:", "stopworda", "stopwordb",
-"#Standard english stop words taken from Lucene's StopAnalyzer", "a", "an", "and", "are", "as", "at", "be", "but", "by", "for", "if", "in", "into", "is", "it", "no", "not", "of", "on", "or", "s", "such", "t", "that", "the", "their", "then", "there", "these", "they", "this", "to", "was", "will", "with", "au", "aux", "avec", "ce", "ces", "dans", "de", "des", "du", "elle", "en", "et", "eux", "il", "je", "la", "le", "leur", "lui", "ma", "mais", "me", "même", "mes", "moi", "mon", "ne", "nos", "notre", "nous", "on", "ou", "par", "pas", "pour", "qu", "que", "qui", "sa", "se", "ses", "son", "sur", "ta", "te", "tes", "toi", "ton", "tu", "un", "une", "vos", "votre", "vous", "c", "d", "j", "l", "à", "m", "n", "s", "t", "y", "été", "étée", "étées", "étés", "étant", "suis", "es", "est", "sommes", "êtes", "sont", "serai", "seras", "sera", "serons", "serez", "seront", "serais", "serait", "serions", "seriez", "seraient", "étais", "était", "étions", "étiez", "étaient", "fus", "fut", "fûmes", "fûtes", "furent", "sois", "soit", "soyons", "soyez", "soient", "fusse", "fusses", "fût", "fussions", "fussiez", "fussent", "ayant", "eu", "eue", "eues", "eus", "ai", "as", "avons", "avez", "ont", "aurai", "auras", "aura", "aurons", "aurez", "auront", "aurais", "aurait", "aurions", "auriez", "auraient", "avais", "avait", "avions", "aviez", "avaient", "eut", "eûmes", "eûtes", "eurent", "aie", "aies", "ait", "ayons", "ayez", "aient", "eusse", "eusses", "eût", "eussions", "eussiez", "eussent", "ceci", "celà", "cet", "cette", "ici", "ils", "les", "leurs", "quel", "quels", "quelle", "quelles", "sans", "soi" ];
-},{}],12:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
+module.exports = [
+// "# Licensed to the Apache Software Foundation (ASF) under one or more", "# contributor license agreements.  See the NOTICE file distributed with", "# this work for additional information regarding copyright ownership.", "# The ASF licenses this file to You under the Apache License, Version 2.0", "# (the \"License\"); you may not use this file except in compliance with", "# the License.  You may obtain a copy of the License at", "#", "#     http://www.apache.org/licenses/LICENSE-2.0", "#", "# Unless required by applicable law or agreed to in writing, software", "# distributed under the License is distributed on an \"AS IS\" BASIS,", "# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.", "# See the License for the specific language governing permissions and", "# limitations under the License.",
+// "#-----------------------------------------------------------------------", "# a couple of test stopwords to test that the words are really being", "# configured from this file:", "stopworda", "stopwordb",
+// "#Standard english stop words taken from Lucene's StopAnalyzer", "a", "an", "and", "are", "as", "at", "be", "but", "by", "for", "if", "in", "into", "is", "it", "no", "not", "of", "on", "or", "s", "such", "t", "that", "the", "their", "then", "there", "these", "they", "this", "to", "was", "will", "with",
+"au", "aux", "avec", "ce", "ces", "dans", "de", "des", "du", "elle", "en", "et", "eux", "il", "je", "la", "le", "leur", "lui", "ma", "mais", "me", "même", "mes", "moi", "mon", "ne", "nos", "notre", "nous", "on", "ou", "par", "pas", "pour", "qu", "que", "qui", "sa", "se", "ses", "son", "sur", "ta", "te", "tes", "toi", "ton", "tu", "un", "une", "vos", "votre", "vous", "c", "d", "j", "l", "à", "m", "n", "s", "t", "y", "été", "étée", "étées", "étés", "étant", "suis", "es", "est", "sommes", "êtes", "sont", "serai", "seras", "sera", "serons", "serez", "seront", "serais", "serait", "serions", "seriez", "seraient", "étais", "était", "étions", "étiez", "étaient", "fus", "fut", "fûmes", "fûtes", "furent", "sois", "soit", "soyons", "soyez", "soient", "fusse", "fusses", "fût", "fussions", "fussiez", "fussent", "ayant", "eu", "eue", "eues", "eus", "ai", "as", "avons", "avez", "ont", "aurai", "auras", "aura", "aurons", "aurez", "auront", "aurais", "aurait", "aurions", "auriez", "auraient", "avais", "avait", "avions", "aviez", "avaient", "eut", "eûmes", "eûtes", "eurent", "aie", "aies", "ait", "ayons", "ayez", "aient", "eusse", "eusses", "eût", "eussions", "eussiez", "eussent", "ceci", "celà", "cet", "cette", "ici", "ils", "les", "leurs", "quel", "quels", "quelle", "quelles", "sans", "soi" ];
+},{}],64:[function(require,module,exports){
 module.exports = [ "a", "á", "ahogy", "ahol", "aki", "akik", "akkor", "alatt", "által", "általában", "amely", "amelyek", "amelyekben", "amelyeket", "amelyet", "amelynek", "ami", "amit", "amolyan", "amp", "amíg", "amikor", "át", "abban", "ahhoz", "annak", "arra", "arról", "az", "azok", "azon", "azt", "azzal", "azért", "aztán", "azután", "azonban", "b", "bár", "be", "belül", "benne", "c", "cikk", "cikkek", "cikkeket", "csak", "d", "de", "e", "é", "eddig", "egész", "egy", "egyes", "egyetlen", "egyéb", "egyik", "egyre", "ekkor", "el", "elég", "ellen", "elő", "először", "előtt", "első", "én", "éppen", "ebben", "ehhez", "emilyen", "ennek", "erre", "ez", "ezt", "ezek", "ezen", "ezzel", "ezért", "és", "f", "fel", "felé", "g", "h", "hanem", "hiszen", "hogy", "hogyan", "i", "í", "igen", "így", "illetve", "ill.", "ill", "ilyen", "ilyenkor", "is", "ison", "ismét", "itt", "j", "jó", "jól", "jobban", "k", "kell", "kellett", "keresztül", "keressünk", "ki", "kívül", "között", "közül", "l", "legalább", "lehet", "lehetett", "legyen", "lenne", "lenni", "lesz", "lett", "m", "maga", "magát", "majd", "majd", "már", "más", "másik", "meg", "még", "mellett", "mert", "mely", "melyek", "mi", "mit", "míg", "miért", "milyen", "mikor", "minden", "mindent", "mindenki", "mindig", "mint", "mintha", "mivel", "most", "n", "nagy", "nagyobb", "nagyon", "ne", "néha", "nekem", "neki", "nem", "néhány", "nélkül", "nincs", "o", "ó", "olyan", "ott", "össze", "ö", "ő", "ők", "őket", "p", "pedig", "persze", "q", "r", "rá", "s", "saját", "sem", "semmi", "sok", "sokat", "sokkal", "sz", "számára", "szemben", "szerint", "szinte", "t", "talán", "tehát", "teljes", "tovább", "továbbá", "több", "u", "ú", "úgy", "ugyanis", "új", "újabb", "újra", "után", "utána", "utolsó", "ü", "ű", "v", "vagy", "vagyis", "valaki", "valamely", "valami", "valamint", "való", "vagyok", "van", "vannak", "volt", "voltam", "voltak", "voltunk", "vissza", "vele", "viszont", "volna", "számolnak", "szólnak", "szól", "w", "x", "y", "z", "zs", "a", "ahogy", "ahol", "aki", "akkor", "alatt", "általában", "által", "amely", "amíg", "amikor", "ami", "amolyan", "arra", "át", "az", "azért", "azonban", "azon", "aztán", "azt", "azután", "azzal", "bár", "be", "belül", "benne", "cikk", "csak", "de", "eddig", "egész", "egy", "egyéb", "egyes", "egyetlen", "egyik", "egyre", "ekkor", "el", "elég", "ellen", "elő", "először", "előtt", "első", "emilyen", "én", "éppen", "erre", "és", "e", "ez", "ezen", "ezért", "ezzel", "fel", "felé", "hanem", "hiszen", "hogy", "hogyan", "igen", "így", "ill.", "illetve", "ill", "ilyen", "ilyenkor", "ismét", "ison", "itt", "jó", "jobban", "jól", "kell", "keres", "keresztül", "ki", "kívül", "között", "közül", "legalább", "legyen", "lehet", "lenni", "lett", "maga", "maga", "majd", "már", "más", "másik", "még", "meg", "mellett", "mely", "mert", "miért", "míg", "mikor", "milyen", "minden", "mindenki", "mindig", "mi", "mint", "mintha", "mivel", "most", "nagy", "nagyobb", "nagyon", "ne", "néha", "néhány", "neki", "nélkül", "nem", "nincs", "ők", "olyan", "ő", "össze", "ott", "pedig", "persze", "rá", "saját", "s", "sem", "semmi", "sokkal", "sok", "számára", "számol", "szemben", "szerint", "szinte", "szól", "talán", "tehát", "teljes", "továbbá", "tovább", "úgy", "ugyanis", "új", "újabb", "újra", "utána", "után", "utolsó", "vagy", "vagyis", "valaki", "valamely", "valami", "valamint", "való", "van", "vissza", "viszont", "volt" ];
-},{}],13:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 module.exports = [ "a", "abad", "acara", "aceh", "ada", "adalah", "adanya", "adapun", "agak", "agaknya", "agama", "agar", "agustus", "air", "akan", "akankah", "akhir", "akhiri", "akhirnya", "akibat", "aku", "akulah", "alam", "album", "amat", "amatlah", "amerika", "anak", "and", "anda", "andalah", "anggota", "antar", "antara", "antarabangsa", "antaranya", "apa", "apaan", "apabila", "apakah", "apalagi", "apatah", "api", "april", "artikel", "artinya", "as", "asal", "asalkan", "asas", "asia", "asing", "atas", "atau", "ataukah", "ataupun", "australia", "awal", "awalnya", "awam", "b", "badan", "bagai", "bagaikan", "bagaimana", "bagaimanakah", "bagaimanapun", "bagainamakah", "bagi", "bagian", "bahagian", "bahan", "baharu", "bahasa", "bahawa", "bahkan", "bahwa", "bahwasannya", "bahwasanya", "baik", "baiknya", "bakal", "bakalan", "balik", "bandar", "bangsa", "bank", "banyak", "bapak", "barang", "barangan", "barat", "baru", "baru-baru", "bawah", "beberapa", "begini", "beginian", "beginikah", "beginilah", "begitu", "begitukah", "begitulah", "begitupun", "bekas", "bekerja", "belakang", "belakangan", "belanda", "beli", "beliau", "belum", "belumlah", "benar", "benarkah", "benarlah", "bentuk", "berada", "berakhir", "berakhirlah", "berakhirnya", "berapa", "berapakah", "berapalah", "berapapun", "berarti", "berasal", "berat", "berawal", "berbagai", "berbanding", "berbeda", "berdasarkan", "berdatangan", "berharap", "berhasil", "beri", "berikan", "berikut", "berikutan", "berikutnya", "berita", "berjalan", "berjaya", "berjumlah", "berkaitan", "berkali", "berkali-kali", "berkata", "berkehendak", "berkeinginan", "berkenaan", "berlainan", "berlaku", "berlalu", "berlangsung", "berlebihan", "bermacam", "bermacam-macam", "bermain", "bermaksud", "bermula", "bernama", "bernilai", "bersama", "bersama-sama", "bersiap", "bertanya", "bertemu", "berturut", "bertutur", "berubah", "berujar", "berupa", "besar", "besok", "betul", "betulkah", "bhd", "biasa", "biasanya", "bidang", "bila", "bilakah", "bilion", "bintang", "bisa", "bisakah", "blog", "bn", "bola", "boleh", "bolehkah", "bolehlah", "buat", "bukan", "bukankah", "bukanlah", "bukannya", "buku", "bulan", "bumi", "bung", "bursa", "cadangan", "cara", "caranya", "catch", "china", "click", "code", "copyright", "cukup", "cukupkah", "cukuplah", "cuma", "daerah", "dagangan", "dahulu", "dalam", "dan", "dana", "dapat", "dari", "daripada", "dasar", "data", "datang", "datuk", "dekat", "demi", "demikian", "demikianlah", "dengan", "depan", "derivatives", "desa", "desember", "detik", "dewan", "di", "dia", "diadakan", "diakhiri", "diakhirinya", "dialah", "dianggap", "diantara", "diantaranya", "diberi", "diberikan", "diberikannya", "dibuat", "dibuatnya", "dibuka", "dicatatkan", "didapat", "didatangkan", "didirikan", "diduga", "digunakan", "diibaratkan", "diibaratkannya", "diingat", "diingatkan", "diinginkan", "dijangka", "dijawab", "dijelaskan", "dijelaskannya", "dikarenakan", "dikatakan", "dikatakannya", "dikenal", "dikerjakan", "diketahui", "diketahuinya", "dikira", "dilakukan", "dilalui", "dilihat", "dimaksud", "dimaksudkan", "dimaksudkannya", "dimaksudnya", "dimana", "diminta", "dimintai", "dimisalkan", "dimulai", "dimulailah", "dimulainya", "dimungkinkan", "dini", "diniagakan", "dipastikan", "diperbuat", "diperbuatnya", "dipergunakan", "diperkirakan", "diperlihatkan", "diperlukan", "diperlukannya", "dipersoalkan", "dipertanyakan", "dipunyai", "diri", "dirilis", "dirinya", "dis", "disampaikan", "disebut", "disebutkan", "disebutkannya", "disember", "disini", "disinilah", "distrik", "ditambahkan", "ditandaskan", "ditanya", "ditanyai", "ditanyakan", "ditegaskan", "ditemukan", "ditujukan", "ditunjuk", "ditunjuki", "ditunjukkan", "ditunjukkannya", "ditunjuknya", "ditutup", "dituturkan", "dituturkannya", "diucapkan", "diucapkannya", "diungkapkan", "document.write", "dolar", "dong", "dr", "dua", "dulu", "dunia", "effective", "ekonomi", "eksekutif", "eksport", "empat", "enam", "enggak", "enggaknya", "entah", "entahlah", "era", "eropa", "err", "faedah", "feb", "film", "gat", "gedung", "gelar", "gettracker", "global", "grup", "guna", "gunakan", "gunung", "hadap", "hadapan", "hal", "hampir", "hanya", "hanyalah", "harga", "hari", "harian", "harus", "haruslah", "harusnya", "hasil", "hendak", "hendaklah", "hendaknya", "hidup", "hingga", "https", "hubungan", "hukum", "hutan", "i", "ia", "iaitu", "ialah", "ibarat", "ibaratkan", "ibaratnya", "ibu", "ii", "iklan", "ikut", "ilmu", "indeks", "india", "indonesia", "industri", "informasi", "ingat", "inggris", "ingin", "inginkah", "inginkan", "ini", "inikah", "inilah", "internasional", "islam", "isnin", "isu", "italia", "itu", "itukah", "itulah", "jabatan", "jadi", "jadilah", "jadinya", "jakarta", "jalan", "jalur", "jaman", "jan", "jangan", "jangankan", "janganlah", "januari", "jauh", "jawa", "jawab", "jawaban", "jawabnya", "jawatan", "jawatankuasa", "jelas", "jelaskan", "jelaslah", "jelasnya", "jenis", "jepang", "jepun", "jerman", "jika", "jikalau", "jiwa", "jual", "jualan", "juga", "julai", "jumaat", "jumat", "jumlah", "jumlahnya", "jun", "juni", "justru", "juta", "kabar", "kabupaten", "kadar", "kala", "kalangan", "kalau", "kalaulah", "kalaupun", "kali", "kalian", "kalimantan", "kami", "kamilah", "kamis", "kamu", "kamulah", "kan", "kantor", "kapal", "kapan", "kapankah", "kapanpun", "karena", "karenanya", "karya", "kasus", "kata", "katakan", "katakanlah", "katanya", "kaunter", "kawasan", "ke", "keadaan", "kebetulan", "kebutuhan", "kecamatan", "kecil", "kedua", "kedua-dua", "keduanya", "kedudukan", "kegiatan", "kehidupan", "keinginan", "kejadian", "kekal", "kelamaan", "kelihatan", "kelihatannya", "kelima", "kelompok", "keluar", "keluarga", "kelurahan", "kembali", "kementerian", "kemudahan", "kemudian", "kemungkinan", "kemungkinannya", "kenaikan", "kenapa", "kenyataan", "kepada", "kepadanya", "kepala", "kepentingan", "keputusan", "kerajaan", "kerana", "kereta", "kerja", "kerjasama", "kes", "kesampaian", "keselamatan", "keseluruhan", "keseluruhannya", "kesempatan", "kesihatan", "keterangan", "keterlaluan", "ketiga", "ketika", "ketua", "keuntungan", "kewangan", "khamis", "khusus", "khususnya", "kini", "kinilah", "kira", "kira-kira", "kiranya", "kita", "kitalah", "klci", "klibor", "klik", "km", "kok", "komentar", "kompas", "komposit", "kondisi", "kontrak", "korban", "korea", "kos", "kota", "kuala", "kuasa", "kukuh", "kumpulan", "kurang", "kurangnya", "lagi", "lagian", "lagu", "lah", "lain", "lainnya", "laku", "lalu", "lama", "lamanya", "langkah", "langsung", "lanjut", "lanjutnya", "laporan", "laut", "lebih", "lembaga", "lepas", "lewat", "lima", "lingkungan", "login", "lokasi", "lot", "luar", "luas", "lumpur", "mac", "macam", "mahkamah", "mahu", "majlis", "maka", "makanan", "makanya", "makin", "maklumat", "malah", "malahan", "malam", "malaysia", "mampu", "mampukah", "mana", "manakala", "manalagi", "mantan", "manusia", "masa", "masalah", "masalahnya", "masih", "masihkah", "masing", "masing-masing", "masuk", "masyarakat", "mata", "mau", "maupun", "measure", "media", "mei", "melainkan", "melakukan", "melalui", "melawan", "melihat", "melihatnya", "memandangkan", "memang", "memastikan", "membantu", "membawa", "memberi", "memberikan", "membolehkan", "membuat", "memerlukan", "memihak", "memiliki", "meminta", "memintakan", "memisalkan", "memperbuat", "mempergunakan", "memperkirakan", "memperlihatkan", "mempersiapkan", "mempersoalkan", "mempertanyakan", "mempunyai", "memulai", "memungkinkan", "menaiki", "menambah", "menambahkan", "menandaskan", "menanti", "menantikan", "menanya", "menanyai", "menanyakan", "menarik", "menawarkan", "mencapai", "mencari", "mencatatkan", "mendapat", "mendapatkan", "mendatang", "mendatangi", "mendatangkan", "menegaskan", "menerima", "menerusi", "mengadakan", "mengakhiri", "mengaku", "mengalami", "mengambil", "mengapa", "mengatakan", "mengatakannya", "mengenai", "mengerjakan", "mengetahui", "menggalakkan", "menggunakan", "menghadapi", "menghendaki", "mengibaratkan", "mengibaratkannya", "mengikut", "mengingat", "mengingatkan", "menginginkan", "mengira", "mengucapkan", "mengucapkannya", "mengumumkan", "mengungkapkan", "mengurangkan", "meninggal", "meningkat", "meningkatkan", "menjadi", "menjalani", "menjawab", "menjelang", "menjelaskan", "menokok", "menteri", "menuju", "menunjuk", "menunjuki", "menunjukkan", "menunjuknya", "menurut", "menuturkan", "menyaksikan", "menyampaikan", "menyangkut", "menyatakan", "menyebabkan", "menyebutkan", "menyediakan", "menyeluruh", "menyiapkan", "merasa", "mereka", "merekalah", "merosot", "merupakan", "meski", "meskipun", "mesyuarat", "metrotv", "meyakini", "meyakinkan", "milik", "militer", "minat", "minggu", "minta", "minyak", "mirip", "misal", "misalkan", "misalnya", "mobil", "modal", "mohd", "mudah", "mula", "mulai", "mulailah", "mulanya", "muncul", "mungkin", "mungkinkah", "musik", "musim", "nah", "naik", "nama", "namun", "nanti", "nantinya", "nasional", "negara", "negara-negara", "negeri", "new", "niaga", "nilai", "nomor", "noun", "nov", "november", "numeral", "numeralia", "nya", "nyaris", "nyatanya", "of", "ogos", "okt", "oktober", "olah", "oleh", "olehnya", "operasi", "orang", "organisasi", "pada", "padahal", "padanya", "pagetracker", "pagi", "pak", "paling", "pameran", "panjang", "pantas", "papan", "para", "paras", "parlimen", "partai", "parti", "particle", "pasar", "pasaran", "password", "pasti", "pastilah", "pasukan", "paticle", "pegawai", "pejabat", "pekan", "pekerja", "pelabur", "pelaburan", "pelancongan", "pelanggan", "pelbagai", "peluang", "pemain", "pembangunan", "pemberita", "pembinaan", "pemerintah", "pemerintahan", "pemimpin", "pendapatan", "pendidikan", "penduduk", "penerbangan", "pengarah", "pengeluaran", "pengerusi", "pengguna", "penggunaan", "pengurusan", "peniaga", "peningkatan", "penting", "pentingnya", "per", "perancis", "perang", "peratus", "percuma", "perdagangan", "perdana", "peringkat", "perjanjian", "perkara", "perkhidmatan", "perladangan", "perlu", "perlukah", "perlunya", "permintaan", "pernah", "perniagaan", "persekutuan", "persen", "persidangan", "persoalan", "pertama", "pertandingan", "pertanyaan", "pertanyakan", "pertubuhan", "pertumbuhan", "perubahan", "perusahaan", "pesawat", "peserta", "petang", "pihak", "pihaknya", "pilihan", "pinjaman", "polis", "polisi", "politik", "pos", "posisi", "presiden", "prestasi", "produk", "program", "projek", "pronomia", "pronoun", "proses", "proton", "provinsi", "pt", "pubdate", "pukul", "pula", "pulau", "pun", "punya", "pusat", "rabu", "radio", "raja", "rakan", "rakyat", "ramai", "rantau", "rasa", "rasanya", "rata", "raya", "rendah", "republik", "resmi", "ribu", "ringgit", "root", "ruang", "rumah", "rupa", "rupanya", "saat", "saatnya", "sabah", "sabtu", "sahaja", "saham", "saja", "sajalah", "sakit", "salah", "saling", "sama", "sama-sama", "sambil", "sampai", "sampaikan", "sana", "sangat", "sangatlah", "sarawak", "satu", "sawit", "saya", "sayalah", "sdn", "se", "sebab", "sebabnya", "sebagai", "sebagaimana", "sebagainya", "sebagian", "sebahagian", "sebaik", "sebaiknya", "sebaliknya", "sebanyak", "sebarang", "sebegini", "sebegitu", "sebelah", "sebelum", "sebelumnya", "sebenarnya", "seberapa", "sebesar", "sebetulnya", "sebisanya", "sebuah", "sebut", "sebutlah", "sebutnya", "secara", "secukupnya", "sedang", "sedangkan", "sedemikian", "sedikit", "sedikitnya", "seenaknya", "segala", "segalanya", "segera", "segi", "seharusnya", "sehingga", "seingat", "sejak", "sejarah", "sejauh", "sejenak", "sejumlah", "sekadar", "sekadarnya", "sekali", "sekali-kali", "sekalian", "sekaligus", "sekalipun", "sekarang", "sekaranglah", "sekecil", "seketika", "sekiranya", "sekitar", "sekitarnya", "sekolah", "sektor", "sekurang", "sekurangnya", "sekuriti", "sela", "selagi", "selain", "selaku", "selalu", "selama", "selama-lamanya", "selamanya", "selanjutnya", "selasa", "selatan", "selepas", "seluruh", "seluruhnya", "semacam", "semakin", "semalam", "semampu", "semampunya", "semasa", "semasih", "semata", "semaunya", "sementara", "semisal", "semisalnya", "sempat", "semua", "semuanya", "semula", "sen", "sendiri", "sendirian", "sendirinya", "senin", "seolah", "seolah-olah", "seorang", "sepak", "sepanjang", "sepantasnya", "sepantasnyalah", "seperlunya", "seperti", "sepertinya", "sepihak", "sept", "september", "serangan", "serantau", "seri", "serikat", "sering", "seringnya", "serta", "serupa", "sesaat", "sesama", "sesampai", "sesegera", "sesekali", "seseorang", "sesi", "sesuai", "sesuatu", "sesuatunya", "sesudah", "sesudahnya", "setelah", "setempat", "setengah", "seterusnya", "setiap", "setiausaha", "setiba", "setibanya", "setidak", "setidaknya", "setinggi", "seusai", "sewaktu", "siap", "siapa", "siapakah", "siapapun", "siaran", "sidang", "singapura", "sini", "sinilah", "sistem", "soal", "soalnya", "sokongan", "sri", "stasiun", "suara", "suatu", "sudah", "sudahkah", "sudahlah", "sukan", "suku", "sumber", "sungai", "supaya", "surat", "susut", "syarikat", "syed", "tadi", "tadinya", "tahap", "tahu", "tahun", "tak", "tama", "tambah", "tambahnya", "tampak", "tampaknya", "tampil", "tan", "tanah", "tandas", "tandasnya", "tanggal", "tanpa", "tanya", "tanyakan", "tanyanya", "tapi", "tawaran", "tegas", "tegasnya", "teknologi", "telah", "televisi", "teman", "tempat", "tempatan", "tempo", "tempoh", "tenaga", "tengah", "tentang", "tentara", "tentu", "tentulah", "tentunya", "tepat", "terakhir", "terasa", "terbaik", "terbang", "terbanyak", "terbesar", "terbuka", "terdahulu", "terdapat", "terdiri", "terhadap", "terhadapnya", "teringat", "terjadi", "terjadilah", "terjadinya", "terkait", "terkenal", "terkira", "terlalu", "terlebih", "terletak", "terlihat", "termasuk", "ternyata", "tersampaikan", "tersebut", "tersebutlah", "tertentu", "tertuju", "terus", "terutama", "testimoni", "testimony", "tetap", "tetapi", "the", "tiada", "tiap", "tiba", "tidak", "tidakkah", "tidaklah", "tidaknya", "tiga", "tim", "timbalan", "timur", "tindakan", "tinggal", "tinggi", "tingkat", "toh", "tokoh", "try", "tun", "tunai", "tunjuk", "turun", "turut", "tutur", "tuturnya", "tv", "uang", "ucap", "ucapnya", "udara", "ujar", "ujarnya", "umum", "umumnya", "unescape", "ungkap", "ungkapnya", "unit", "universitas", "untuk", "untung", "upaya", "urus", "usah", "usaha", "usai", "user", "utama", "utara", "var", "versi", "waduh", "wah", "wahai", "wakil", "waktu", "waktunya", "walau", "walaupun", "wang", "wanita", "warga", "warta", "wib", "wilayah", "wong", "word", "ya", "yaitu", "yakin", "yakni", "yang", "zaman" ];
-},{}],14:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 module.exports = [ "ad", "al", "allo", "ai", "agli", "all", "agl", "alla", "alle", "con", "col", "coi", "da", "dal", "dallo", "dai", "dagli", "dall", "dagl", "dalla", "dalle", "di", "del", "dello", "dei", "degli", "dell", "degl", "della", "delle", "in", "nel", "nello", "nei", "negli", "nell", "negl", "nella", "nelle", "su", "sul", "sullo", "sui", "sugli", "sull", "sugl", "sulla", "sulle", "per", "tra", "contro", "io", "tu", "lui", "lei", "noi", "voi", "loro", "mio", "mia", "miei", "mie", "tuo", "tua", "tuoi", "tue", "suo", "sua", "suoi", "sue", "nostro", "nostra", "nostri", "nostre", "vostro", "vostra", "vostri", "vostre", "mi", "ti", "ci", "vi", "lo", "la", "li", "le", "gli", "ne", "il", "un", "uno", "una", "ma", "ed", "se", "perchè", "perché", "perche", "anche", "come", "dov", "dove", "che", "chi", "cui", "non", "più", "piu", "quale", "quanto", "quanti", "quanta", "quante", "quello", "quelli", "quella", "quelle", "questo", "questi", "questa", "queste", "si", "tutto", "tutti", "a", "c", "e", "i", "l", "o", "ho", "hai", "ha", "abbiamo", "avete", "hanno", "abbia", "abbiate", "abbiano", "avrò", "avro", "avrai", "avrà", "avra", "avremo", "avrete", "avranno", "avrei", "avresti", "avrebbe", "avremmo", "avreste", "avrebbero", "avevo", "avevi", "aveva", "avevamo", "avevate", "avevano", "ebbi", "avesti", "ebbe", "avemmo", "aveste", "ebbero", "avessi", "avesse", "avessimo", "avessero", "avendo", "avuto", "avuta", "avuti", "avute", "sono", "sei", "è", "é", "e", "siamo", "siete", "sia", "siate", "siano", "sarà", "sarai", "sarò", "saro", "saremo", "sarete", "saranno", "sarei", "saresti", "sarebbe", "saremmo", "sareste", "sarebbero", "ero", "eri", "era", "eravamo", "eravate", "erano", "fui", "fosti", "fu", "fummo", "foste", "furono", "fossi", "fosse", "fossimo", "fossero", "essendo", "faccio", "fai", "facciamo", "fanno", "faccia", "facciate", "facciano", "farà", "farai", "farò", "faremo", "farete", "faranno", "farei", "faresti", "farebbe", "faremmo", "fareste", "farebbero", "facevo", "facevi", "faceva", "facevamo", "facevate", "facevano", "feci", "facesti", "fece", "facemmo", "faceste", "fecero", "facessi", "facesse", "facessimo", "facessero", "facendo", "sto", "stai", "sta", "stiamo", "stanno", "stia", "stiate", "stiano", "starà", "starai", "starò", "staremo", "starete", "staranno", "starei", "staresti", "starebbe", "staremmo", "stareste", "starebbero", "stavo", "stavi", "stava", "stavamo", "stavate", "stavano", "stetti", "stesti", "stette", "stemmo", "steste", "stettero", "stessi", "stesse", "stessimo", "stessero", "stando" ];
-},{}],15:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 module.exports = [ "을", "의", "에", "이", "를", "으로", "은", "는", "가", "로", "하고", "과", "에서", "도", "와", "이다", "고", "부터", "까지", "께", "에는", "이라고", "만", "라고", "보다", "에도", "다", "토록", "에게", "나", "대로", "에서는", "이나", "이며", "요", "든", "으로써", "같이", "로는", "밖에", "과의", "며", "로부터", "처럼", "아", "라", "여", "으로는", "이고", "에서의", "이라는", "만에", "으로부터", "에서도", "와의", "엔", "만을", "부터는", "만의", "야", "까지의", "과는", "치고", "과를", "으로의", "까지는", "보다는", "만이", "에만", "로의" ];
-},{}],16:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 module.exports = [ "alle", "andre", "arbeid", "av", "begge", "bort", "bra", "bruke", "da", "denne", "der", "deres", "det", "din", "disse", "du", "eller", "en", "ene", "eneste", "enhver", "enn", "er", "et", "folk", "for", "fordi", "forsÛke", "fra", "fÅ", "fÛr", "fÛrst", "gjorde", "gjÛre", "god", "gÅ", "ha", "hadde", "han", "hans", "hennes", "her", "hva", "hvem", "hver", "hvilken", "hvis", "hvor", "hvordan", "hvorfor", "ikke", "inn", "innen", "kan", "kunne", "lage", "lang", "lik", "like", "makt", "mange", "med", "meg", "meget", "men", "mens", "mer", "mest", "min", "mye", "mÅ", "mÅte", "navn", "nei", "ny", "nÅ", "nÅr", "og", "ogsÅ", "om", "opp", "oss", "over", "part", "punkt", "pÅ", "rett", "riktig", "samme", "sant", "si", "siden", "sist", "skulle", "slik", "slutt", "som", "start", "stille", "tid", "til", "tilbake", "tilstand", "under", "ut", "uten", "var", "ved", "verdi", "vi", "vil", "ville", "vite", "vÅr", "vÖre", "vÖrt", "Å" ];
-},{}],17:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 module.exports = [ "at", "av", "de", "den", "der", "det", "du", "en", "er", "et", "for", "fra", "før", "med", "og", "om", "over", "på", "som", "til", "ved", "år", "alle", "bare", "ble", "bort", "bra", "da", "deg", "dem", "denne", "dere", "deres", "det", "dette", "din", "disse", "dit", "ditt", "eller", "ene", "enn", "er", "et", "ett", "etter", "for", "fram", "først", "få", "god", "gå", "ha", "han", "hans", "har", "her", "hit", "hun", "hva", "hvem", "hver", "ikke", "inn", "ja", "jeg", "kan", "kom", "kun", "kunne", "lage", "lang", "lik", "like", "man", "mer", "min", "mot", "mye", "må", "måte", "ned", "nei", "noe", "noen", "ny", "nå", "når", "også", "opp", "oss", "seg", "selv", "si", "siden", "sin", "sine", "sist", "skal", "skulle", "slik", "som", "så", "sånn", "tid", "til", "under", "ut", "uten", "var", "ved", "vi", "vil", "vite", "vår", "å", "dei", "di", "då", "eg" ];
-},{}],18:[function(require,module,exports){
+},{}],70:[function(require,module,exports){
 module.exports = [ "a", "aby", "ach", "acz", "aczkolwiek", "aj", "albo", "ale", "ależ", "ani", "aż", "bardziej", "bardzo", "bo", "bowiem", "by", "byli", "bynajmniej", "być", "był", "była", "było", "były", "będzie", "będą", "cali", "cała", "cały", "ci", "cię", "ciebie", "co", "cokolwiek", "coś", "czasami", "czasem", "czemu", "czy", "czyli", "daleko", "dla", "dlaczego", "dlatego", "do", "dobrze", "dokąd", "dość", "dużo", "dwa", "dwaj", "dwie", "dwoje", "dziś", "dzisiaj", "gdy", "gdyby", "gdyż", "gdzie", "gdziekolwiek", "gdzieś", "i", "ich", "ile", "im", "inna", "inne", "inny", "innych", "iż", "ja", "ją", "jak", "jakaś", "jakby", "jaki", "jakichś", "jakie", "jakiś", "jakiż", "jakkolwiek", "jako", "jakoś", "je", "jeden", "jedna", "jedno", "jednak", "jednakże", "jego", "jej", "jemu", "jest", "jestem", "jeszcze", "jeśli", "jeżeli", "już", "ją", "każdy", "kiedy", "kilka", "kimś", "kto", "ktokolwiek", "ktoś", "która", "które", "którego", "której", "który", "których", "którym", "którzy", "ku", "lat", "lecz", "lub", "ma", "mają", "mało", "mam", "mi", "mimo", "między", "mną", "mnie", "mogą", "moi", "moim", "moja", "moje", "może", "możliwe", "można", "mój", "mu", "musi", "my", "na", "nad", "nam", "nami", "nas", "nasi", "nasz", "nasza", "nasze", "naszego", "naszych", "natomiast", "natychmiast", "nawet", "nią", "nic", "nich", "nie", "niech", "niego", "niej", "niemu", "nigdy", "nim", "nimi", "niż", "no", "o", "obok", "od", "około", "on", "ona", "one", "oni", "ono", "oraz", "oto", "owszem", "pan", "pana", "pani", "po", "pod", "podczas", "pomimo", "ponad", "ponieważ", "powinien", "powinna", "powinni", "powinno", "poza", "prawie", "przecież", "przed", "przede", "przedtem", "przez", "przy", "roku", "również", "sam", "sama", "są", "się", "skąd", "sobie", "sobą", "sposób", "swoje", "ta", "tak", "taka", "taki", "takie", "także", "tam", "te", "tego", "tej", "temu", "ten", "teraz", "też", "to", "tobą", "tobie", "toteż", "trzeba", "tu", "tutaj", "twoi", "twoim", "twoja", "twoje", "twym", "twój", "ty", "tych", "tylko", "tym", "u", "w", "wam", "wami", "was", "wasz", "wasza", "wasze", "we", "według", "wiele", "wielu", "więc", "więcej", "wszyscy", "wszystkich", "wszystkie", "wszystkim", "wszystko", "wtedy", "wy", "właśnie", "z", "za", "zapewne", "zawsze", "ze", "zł", "znowu", "znów", "został", "żaden", "żadna", "żadne", "żadnych", "że", "żeby" ];
-},{}],19:[function(require,module,exports){
+},{}],71:[function(require,module,exports){
 module.exports = [ "a", "à", "abril", "agosto", "ainda", "ano", "anos", "ao", "aos", "apenas", "as", "às", "até", "brasil", "com", "como", "contra", "da", "das", "de", "depois", "deve", "dezembro", "dia", "disse", "diz", "do", "dois", "dos", "e", "é", "ela", "ele", "em", "entre", "era", "está", "estado", "estão", "eu", "foi", "folha", "foram", "governo", "grande", "há", "hoje", "isso", "já", "local", "maio", "maior", "mais", "mas", "mercado", "mesmo", "mil", "milhões", "muito", "mundo", "na", "não", "nas", "no", "nos", "o", "ontem", "os", "ou", "país", "para", "paulo", "pela", "pelo", "pessoas", "pode", "por", "porque", "presidente", "quando", "que", "quem", "r", "rio", "são", "se", "segundo", "sem", "ser", "será", "seu", "seus", "só", "sobre", "sua", "também", "tem", "ter", "todos", "três", "um", "uma", "us", "vaia", "à", "acordo", "afirmou", "agora", "ainda", "além", "alguns", "ano", "anos", "antes", "ao", "aos", "apenas", "as", "às", "assim", "até", "banco", "bem", "brasil", "brasileira", "brasileiro", "brasília", "cada", "carlos", "casa", "caso", "cerca", "cidade", "com", "como", "congresso", "contra", "da", "das", "de", "depois", "desde", "deve", "dia", "dias", "dinheiro", "disse", "diz", "do", "dois", "dos", "duas", "durante", "e", "é", "economia", "ela", "ele", "eles", "em", "empresa", "empresas", "entre", "era", "especial", "essa", "esse", "esta", "está", "estado", "estão", "estava", "este", "eu", "eua", "exemplo", "faz", "fazer", "federal", "fernando", "fevereiro", "fhc", "filme", "final", "foi", "folha", "foram", "forma", "governo", "grande", "grupo", "há", "henrique", "história", "hoje", "inflação", "isso", "já", "janeiro", "josé", "lei", "local", "maior", "mais", "março", "mas", "me", "melhor", "menos", "mercado", "mês", "meses", "mesmo", "mil", "milhões", "ministro", "muito", "mundo", "na", "nacional", "nada", "não", "nas", "nem", "no", "nos", "nova", "novo", "o", "onde", "ontem", "os", "ou", "outra", "outro", "outros", "outubro", "país", "para", "parte", "partir", "passado", "paulo", "pela", "pelo", "pelos", "pessoas", "plano", "pode", "polícia", "política", "por", "porque", "preços", "presidente", "primeira", "primeiro", "programa", "projeto", "público", "qual", "qualquer", "quando", "quatro", "que", "quem", "r", "real", "reportagem", "rio", "são", "se", "segundo", "seja", "sem", "semana", "sempre", "sendo", "ser", "será", "seria", "seu", "seus", "sistema", "só", "sobre", "sp", "sua", "suas", "também", "tem", "têm", "tempo", "ter", "todo", "todos", "trabalho", "três", "tudo", "um", "uma", "us", "vai", "vez", "vida", "vocêa", "à", "acordo", "afirma", "afirmou", "agora", "ainda", "além", "alguns", "ano", "anos", "antes", "ao", "aos", "apenas", "após", "aqui", "área", "as", "às", "assim", "até", "aumento", "banco", "bem", "bilhões", "bom", "brasil", "brasileira", "brasileiro", "brasília", "cada", "câmara", "campanha", "candidato", "carlos", "casa", "caso", "central", "centro", "cerca", "cidade", "cinco", "cinema", "coisa", "com", "como", "congresso", "conta", "contra", "da", "dar", "das", "de", "depois", "deputado", "desde", "deve", "dia", "dias", "dinheiro", "direito", "diretor", "disse", "diz", "do", "dois", "dos", "duas", "durante", "e", "é", "economia", "econômica", "ela", "ele", "eles", "em", "empresa", "empresas", "enquanto", "então", "entre", "equipe", "era", "especial", "essa", "esse", "esta", "está", "estado", "estados", "estão", "estava", "este", "eu", "eua", "exemplo", "falta", "fato", "faz", "fazer", "federal", "fernando", "fez", "fhc", "ficou", "filho", "filme", "fim", "final", "foi", "folha", "fora", "foram", "forma", "governo", "grande", "grupo", "há", "havia", "henrique", "história", "hoje", "inflação", "início", "isso", "já", "janeiro", "jogo", "josé", "junho", "julho", "juros", "justiça", "lado", "lei", "livro", "local", "lugar", "maior", "mais", "mas", "me", "média", "meio", "melhor", "menos", "mercado", "mês", "meses", "mesma", "mesmo", "meu", "mil", "milhões", "minha", "ministério", "ministro", "momento", "muito", "mulher", "mundo", "na", "nacional", "nada", "não", "nas", "nem", "neste", "no", "noite", "nome", "nos", "nós", "nova", "novembro", "novo", "num", "numa", "número", "o", "onde", "ontem", "os", "ou", "outra", "outras", "outro", "outros", "país", "países", "para", "parte", "partido", "partir", "passado", "paulo", "pela", "pelo", "pelos", "período", "pesquisa", "pessoas", "plano", "pode", "podem", "poder", "polícia", "política", "pontos", "por", "porque", "pouco", "prazo", "preço", "preços", "presidente", "primeira", "primeiro", "problema", "problemas", "processo", "produção", "produtos", "programa", "projeto", "próprio", "pt", "público", "qual", "qualquer", "quando", "quanto", "quase", "quatro", "que", "quem", "quer", "r", "real", "recursos", "região", "relação", "reportagem", "rio", "são", "saúde", "se", "segundo", "seja", "sem", "semana", "sempre", "sendo", "ser", "será", "serão", "seria", "setembro", "setor", "seu", "seus", "sido", "silva", "sistema", "só", "sobre", "social", "sociedade", "sp", "sua", "suas", "sucursal", "sul", "também", "tão", "tel", "tem", "têm", "tempo", "ter", "teve", "tinha", "toda", "todas", "todo", "todos", "trabalho", "três", "tudo", "último", "um", "uma", "us", "vai", "valor", "vão", "vem", "vez", "vezes", "vida", "você", "zona" ];
-},{}],20:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
 module.exports = [ "а", "е", "и", "ж", "м", "о", "на", "не", "ни", "об", "но", "он", "мне", "мои", "мож", "она", "они", "оно", "мной", "много", "многочисленное", "многочисленная", "многочисленные", "многочисленный", "мною", "мой", "мог", "могут", "можно", "может", "можхо", "мор", "моя", "моё", "мочь", "над", "нее", "оба", "нам", "нем", "нами", "ними", "мимо", "немного", "одной", "одного", "менее", "однажды", "однако", "меня", "нему", "меньше", "ней", "наверху", "него", "ниже", "мало", "надо", "один", "одиннадцать", "одиннадцатый", "назад", "наиболее", "недавно", "миллионов", "недалеко", "между", "низко", "меля", "нельзя", "нибудь", "непрерывно", "наконец", "никогда", "никуда", "нас", "наш", "нет", "нею", "неё", "них", "мира", "наша", "наше", "наши", "ничего", "начала", "нередко", "несколько", "обычно", "опять", "около", "мы", "ну", "нх", "от", "отовсюду", "особенно", "нужно", "очень", "отсюда", "в", "во", "вон", "вниз", "внизу", "вокруг", "вот", "восемнадцать", "восемнадцатый", "восемь", "восьмой", "вверх", "вам", "вами", "важное", "важная", "важные", "важный", "вдали", "везде", "ведь", "вас", "ваш", "ваша", "ваше", "ваши", "впрочем", "весь", "вдруг", "вы", "все", "второй", "всем", "всеми", "времени", "время", "всему", "всего", "всегда", "всех", "всею", "всю", "вся", "всё", "всюду", "г", "год", "говорил", "говорит", "года", "году", "где", "да", "ее", "за", "из", "ли", "же", "им", "до", "по", "ими", "под", "иногда", "довольно", "именно", "долго", "позже", "более", "должно", "пожалуйста", "значит", "иметь", "больше", "пока", "ему", "имя", "пор", "пора", "потом", "потому", "после", "почему", "почти", "посреди", "ей", "два", "две", "двенадцать", "двенадцатый", "двадцать", "двадцатый", "двух", "его", "дел", "или", "без", "день", "занят", "занята", "занято", "заняты", "действительно", "давно", "девятнадцать", "девятнадцатый", "девять", "девятый", "даже", "алло", "жизнь", "далеко", "близко", "здесь", "дальше", "для", "лет", "зато", "даром", "первый", "перед", "затем", "зачем", "лишь", "десять", "десятый", "ею", "её", "их", "бы", "еще", "при", "был", "про", "процентов", "против", "просто", "бывает", "бывь", "если", "люди", "была", "были", "было", "будем", "будет", "будете", "будешь", "прекрасно", "буду", "будь", "будто", "будут", "ещё", "пятнадцать", "пятнадцатый", "друго", "другое", "другой", "другие", "другая", "других", "есть", "пять", "быть", "лучше", "пятый", "к", "ком", "конечно", "кому", "кого", "когда", "которой", "которого", "которая", "которые", "который", "которых", "кем", "каждое", "каждая", "каждые", "каждый", "кажется", "как", "какой", "какая", "кто", "кроме", "куда", "кругом", "с", "т", "у", "я", "та", "те", "уж", "со", "то", "том", "снова", "тому", "совсем", "того", "тогда", "тоже", "собой", "тобой", "собою", "тобою", "сначала", "только", "уметь", "тот", "тою", "хорошо", "хотеть", "хочешь", "хоть", "хотя", "свое", "свои", "твой", "своей", "своего", "своих", "свою", "твоя", "твоё", "раз", "уже", "сам", "там", "тем", "чем", "сама", "сами", "теми", "само", "рано", "самом", "самому", "самой", "самого", "семнадцать", "семнадцатый", "самим", "самими", "самих", "саму", "семь", "чему", "раньше", "сейчас", "чего", "сегодня", "себе", "тебе", "сеаой", "человек", "разве", "теперь", "себя", "тебя", "седьмой", "спасибо", "слишком", "так", "такое", "такой", "такие", "также", "такая", "сих", "тех", "чаще", "четвертый", "через", "часто", "шестой", "шестнадцать", "шестнадцатый", "шесть", "четыре", "четырнадцать", "четырнадцатый", "сколько", "сказал", "сказала", "сказать", "ту", "ты", "три", "эта", "эти", "что", "это", "чтоб", "этом", "этому", "этой", "этого", "чтобы", "этот", "стал", "туда", "этим", "этими", "рядом", "тринадцать", "тринадцатый", "этих", "третий", "тут", "эту", "суть", "чуть", "тысяч" ];
-},{}],21:[function(require,module,exports){
+},{}],73:[function(require,module,exports){
 module.exports = [ "#-----------------------------------------------------------------------", "# translated", "#-----------------------------------------------------------------------",
 "kunna", "om", "ovan", "enligt", "i enlighet med detta", "över", "faktiskt", "efter", "efteråt", "igen", "mot", "är inte", "alla", "tillåta", "tillåter", "nästan", "ensam", "längs", "redan", "också", "även om", "alltid", "am", "bland", "bland", "en", "och", "en annan", "någon", "någon", "hur som helst", "någon", "något", "ändå", "ändå", "var som helst", "isär", "visas", "uppskatta", "lämpligt", "är", "inte", "runt", "som", "åt sidan", "be", "frågar", "associerad", "vid", "tillgängliga", "bort", "väldigt", "vara", "blev", "eftersom", "bli", "blir", "blir", "varit", "innan", "förhand", "bakom", "vara", "tro", "nedan", "bredvid", "förutom", "bäst", "bättre", "mellan", "bortom", "både", "kort", "men", "genom", "c", "c'mon", "c: s", "kom", "kampanj", "kan", "kan inte", "kan inte", "cant", "orsaka", "orsaker", "viss", "säkerligen", "förändringar", "klart", "co", "com", "komma", "kommer", "om", "följaktligen", "överväga", "överväger", "innehålla", "innehållande", "innehåller", "motsvarande", "kunde", "kunde inte", "kurs", "närvarande", "definitivt", "beskrivits", "trots", "gjorde", "inte", "olika", "göra", "gör", "inte", "gör", "inte", "gjort", "ned", "nedåt", "under", "varje", "edu", "åtta", "antingen", "annars", "någon annanstans", "tillräckligt", "godkändes", "helt", "speciellt", "et", "etc", "även", "någonsin", "varje", "alla", "alla", "allt", "överallt", "ex", "exakt", "exempel", "utom", "långt", "få", "femte", "först", "finansiella", "fem", "följt", "efter", "följer", "för", "fd", "tidigare", "framåt", "fyra", "från", "ytterligare", "dessutom", "få", "blir", "få", "given", "ger", "gå", "går", "gå", "borta", "fick", "fått", "hälsningar", "hade", "hade inte", "händer", "knappast", "har", "har inte", "ha", "har inte", "med", "han", "han är", "hallå", "hjälpa", "hence", "henne", "här", "här finns", "härefter", "härmed", "häri", "härpå", "hennes", "själv", "hej", "honom", "själv", "hans", "hit", "förhoppningsvis", "hur", "howbeit", "dock", "jag skulle", "jag ska", "jag är", "jag har", "om", "ignoreras", "omedelbar", "i", "eftersom", "inc", "indeed", "indikera", "indikerade", "indikerar", "inre", "mån", "istället", "in", "inåt", "är", "är inte", "den", "det skulle", "det ska", "det är", "dess", "själv", "bara", "hålla", "håller", "hålls", "vet", "vet", "känd", "sista", "nyligen", "senare", "senare", "latterly", "minst", "mindre", "lest", "låt", "låt oss", "liknande", "gillade", "sannolikt", "lite", "ser", "ser", "ser", "ltd", "huvudsakligen", "många", "kan", "kanske", "mig", "betyda", "under tiden", "endast", "kanske", "mer", "dessutom", "mest", "mestadels", "mycket", "måste", "min", "själv", "namn", "nämligen", "nd", "nära", "nästan", "nödvändigt", "behöver", "behov", "varken", "aldrig", "ändå", "ny", "nästa", "nio", "ingen", "ingen", "icke", "ingen", "ingen", "eller", "normalt", "inte", "ingenting", "roman", "nu", "ingenstans", "uppenbarligen", "av", "off", "ofta", "oh", "ok", "okay", "gammal", "på", "en gång", "ett", "ettor", "endast", "på", "eller", "andra", "andra", "annars", "borde", "vår", "vårt", "oss", "ut", "utanför", "över", "övergripande", "egen", "särskilt", "särskilt", "per", "kanske", "placeras", "vänligen", "plus", "möjligt", "förmodligen", "förmodligen", "ger", "ganska", "citera", "kvartalsvis", "snarare", "verkligen", "rimligen", "om", "oavsett", "gäller", "relativt", "respektive", "höger", "sa", "samma", "såg", "säga", "säger", "säger", "andra", "det andra", "se", "ser", "verkar", "verkade", "informationsproblem", "verkar", "sett", "själv", "själva", "förnuftig", "skickas", "allvarlig", "allvarligt", "sju", "flera", "skall", "hon", "bör", "bör inte", "eftersom", "sex", "så", "några", "någon", "på något sätt", "någon", "något", "sometime", "ibland", "något", "någonstans", "snart", "sorry", "specificerade", "ange", "ange", "fortfarande", "sub", "sådan", "sup", "säker", "t s", "ta", "tas", "berätta", "tenderar", "än", "tacka", "tack", "thanx", "att", "det är", "brinner", "den", "deras", "deras", "dem", "själva", "sedan", "därifrån", "där", "det finns", "därefter", "därigenom", "därför", "däri", "theres", "därpå", "dessa", "de", "de hade", "de kommer", "de är", "de har", "tror", "tredje", "detta", "grundlig", "grundligt", "de", "though", "tre", "genom", "hela", "thru", "sålunda", "till", "tillsammans", "alltför", "tog", "mot", "mot", "försökte", "försöker", "verkligt", "försök", "försöker", "två gånger", "två", "enligt", "tyvärr", "såvida inte", "osannolikt", "tills", "åt", "upp", "på", "oss", "använda", "används", "användbar", "använder", "användning", "vanligtvis", "uucp", "värde", "olika", "mycket", "via", "viz", "vs", "vill", "vill", "var", "var inte", "sätt", "vi", "vi skulle", "vi kommer", "vi är", "vi har", "välkommen", "väl", "gick", "var", "var inte", "vad", "vad är", "oavsett", "när", "varifrån", "närhelst", "där", "var är", "varefter", "medan", "varigenom", "vari", "varpå", "varhelst", "huruvida", "som", "medan", "dit", "som", "vem är", "vem", "hela", "vem", "vars", "varför", "kommer", "villig", "önskar", "med", "inom", "utan", "kommer inte", "undrar", "skulle", "skulle inte", "ja", "ännu", "ni", "du skulle", "kommer du", "du är", "du har", "din", "själv", "er", "noll", "tjänsteman", "skarpt", "kritiserade" ];
-},{}],22:[function(require,module,exports){
+},{}],74:[function(require,module,exports){
 module.exports = [ "เก็บ", "เกิด", "เกิน", "เกินๆ", "เกี่ยวเนื่อง", "เกี่ยวกัน", "เกี่ยวกับ", "เกี่ยวข้อง", "เกี่ยวๆ", "เกือบ", "เกือบจะ", "เกือบๆ", "เขา", "เข้า", "เข้าใจ", "เขียน", "เคย", "เคยๆ", "เฉกเช่น", "เฉพาะ", "เฉย", "เฉยๆ", "เช่น", "เช่นเคย", "เช่นเดียวกัน", "เช่นเดียวกับ", "เช่นเมื่อ", "เช่นใด", "เช่นไร", "เช่นก่อน", "เช่นกัน", "เช่นดัง", "เช่นดังเก่า", "เช่นดังก่อน", "เช่นดังที่", "เช่นดังว่า", "เช่นที่", "เช่นที่เคย", "เช่นที่ว่า", "เช่นนั้น", "เช่นนั้นเอง", "เช่นนี้", "เชื่อ", "เชื่อถือ", "เชื่อมั่น", "เชื่อว่า", "เดิม", "เดิมที", "เดิมๆ", "เดียว", "เดี๋ยว", "เดี๋ยวก่อน", "เดียวกัน", "เดียวกับ", "เดี๋ยวนั้น", "เดี๋ยวนี้", "เต็มไปด้วย", "เต็มไปหมด", "เต็มๆ", "เถอะ", "เถิด", "เท่า", "เท่าใด", "เท่าไร", "เท่าไหร่", "เท่ากัน", "เท่ากับ", "เท่าที่", "เท่านั้น", "เท่านี้", "เธอ", "เน้น", "เนี่ย", "เนี่ยเอง", "เป็น", "เป็นเพื่อ", "เป็นแต่", "เป็นด้วย", "เป็นดัง", "เป็นต้น", "เป็นอัน", "เป็นอันมาก", "เป็นอาทิ", "เปลี่ยน", "เปลี่ยนแปลง", "เผื่อ", "เผื่อจะ", "เผื่อที่", "เผื่อว่า", "เพราะ", "เพราะฉะนั้น", "เพราะว่า", "เพิ่ง", "เพิ่งจะ", "เพิ่ม", "เพิ่มเติม", "เพี", "เพียง", "เพียงเพื่อ", "เพียงแค่", "เพียงแต่", "เพียงใด", "เพียงไหน", "เพียงพอ", "เพื่อ", "เพื่อให้", "เพื่อที่", "เพื่อว่า", "เมื่อ", "เมื่อเช้า", "เมื่อเย็น", "เมื่อใด", "เมื่อไร", "เมื่อไหร่", "เมื่อก่อน", "เมื่อครั้ง", "เมื่อครั้งก่อน", "เมื่อคราว", "เมื่อคราวก่อน", "เมื่อคราวที่", "เมื่อคืน", "เมื่อนั้น", "เมื่อนี้", "เมื่อวันวาน", "เมื่อวาน", "เยอะ", "เยอะแยะ", "เร็ว", "เร็วๆ", "เรา", "เราๆ", "เริ่ม", "เรียก", "เรียบ", "เรื่อย", "เรื่อยๆ", "เล็ก", "เล็กน้อย", "เล็กๆ", "เลย", "เล่าว่า", "เสร็จ", "เสร็จแล้ว", "เสียแล้ว", "เสียจน", "เสียด้วย", "เสียนี่", "เหตุ", "เหตุไร", "เหตุนั้น", "เหตุนี้", "เหตุมด", "เห็นแก่", "เห็นควร", "เห็นจะ", "เห็นว่า", "เหล่า", "เหล่านั้น", "เหล่านี้", "เหลือ", "เหลือเกิน", "เอง", "เอ็ง", "เอา", "แก", "แก่", "แก้ไข", "แค่", "แค่เพียง", "แค่ไหน", "แค่จะ", "แค่นั้น", "แค่นี้", "แค่ว่า", "แด่", "แต่", "แต่เดิม", "แต่เพียง", "แต่เมื่อ", "แต่ไร", "แต่ไหน", "แต่ก็", "แต่ก่อน", "แต่จะ", "แต่ต้อง", "แต่ถ้า", "แต่ทว่า", "แต่ที่", "แต่นั้น", "แต่ละ", "แต่ว่า", "แต่อย่างใด", "แท้", "แท้จริง", "แบบ", "แม้", "แม้แต่", "แม้กระทั่ง", "แม้นว่า", "แม้ว่า", "แยะ", "แล้ว", "แล้วเสร็จ", "แล้วแต่", "แล้วกัน", "แสดง", "แสดงว่า", "แห่ง", "แห่งโน้น", "แห่งใด", "แห่งไหน", "แห่งนั้น", "แห่งนี้", "แหละ", "โดย", "โดยเฉพาะ", "โดยเฉพาะอย่าง", "โดยเมื่อ", "โดยเร็ว", "โดยแท้", "โดยแท้จริง", "โดยง่าย", "โดยดี", "โดยดุษฎี", "โดยตลอด", "โดยทั่ว", "โดยทั่วไป", "โดยทั่วกัน", "โดยทั่วถึง", "โดยที่", "โดยนัย", "โดยปกติ", "โดยมัก", "โดยมักจะ", "โดยมาก", "โดยรวม", "โดยรวมๆ", "โดยละม่อม", "โดยลําดับ", "โดยส่วนใหญ่", "โดยส่วนมาก", "โดยส่วนรวม", "โต", "โตๆ", "ใกล้", "ใกล้ๆ", "ใคร", "ใคร่", "ใคร่จะ", "ใช่", "ใช้", "ใช่ไหม", "ใด", "ใดๆ", "ใต้", "ใน", "ในเมื่อ", "ในช่วง", "ในที่", "ในระหว่าง", "ให้", "ให้แก่", "ใหญ่", "ใหญ่โต", "ไกล", "ไกลๆ", "ไง", "ไฉน", "ได้", "ได้แก่", "ได้แต่", "ได้ที่", "ได้มา", "ได้รับ", "ไป", "ไม่", "ไม่เป็นไร", "ไม่ใช่", "ไม่ค่อย", "ไม่ค่อยเป็น", "ไม่ค่อยจะ", "ไม่ว่า", "ไร", "ไหน", "ไหนๆ", "ก็", "ก็แค่", "ก็แล้วแต่", "ก็ได้", "ก็คือ", "ก็จะ", "ก็ดี", "ก็ต่อเมื่อ", "ก็ตาม", "ก็ตามแต่", "ก็ตามที", "กระทั่ง", "กระทํา", "กระนั้น", "กระผม", "กลับ", "กล่าว", "กล่าวคือ", "กลุ่ม", "กลุ่มก้อน", "กลุ่มๆ", "กว่า", "กว้าง", "กว้างขวาง", "กว้างๆ", "ก่อน", "ก่อนหน้า", "ก่อนหน้านี้", "ก่อนๆ", "กัน", "กันเถอะ", "กันเอง", "กันและกัน", "กันไหม", "กันดีไหม", "กันดีกว่า", "กันนะ", "กับ", "การ", "กําลัง", "กําลังจะ", "กําหนด", "กู", "ขณะ", "ขณะเดียวกัน", "ขณะใด", "ขณะใดๆ", "ขณะที่", "ขณะนั้น", "ขณะนี้", "ขณะหนึ่ง", "ขวาง", "ขวางๆ", "ขอ", "ของ", "ขั้น", "ข้า", "ข้าง", "ข้างเคียง", "ข้างต้น", "ข้างบน", "ข้างล่าง", "ข้างๆ", "ขาด", "ข้าพเจ้า", "ข้าฯ", "ขึ้น", "คง", "คงจะ", "คงอยู่", "ครบ", "ครบครัน", "ครบถ้วน", "ครั้ง", "ครั้งใด", "ครั้งไหน", "ครั้งกระนั้น", "ครั้งก่อน", "ครั้งครา", "ครั้งคราว", "ครั้งที่", "ครั้งนั้น", "ครั้งนี้", "ครั้งละ", "ครั้งหนึ่ง", "ครั้งหลัง", "ครั้งหลังสุด", "ครั้งๆ", "ครัน", "ครับ", "ครา", "คราใด", "คราไหน", "คราที่", "ครานั้น", "ครานี้", "คราว", "คราวโน้น", "คราวใด", "คราวไหน", "คราวก่อน", "คราวที่", "คราวนั้น", "คราวนี้", "คราวละ", "คราวหน้า", "คราวหนึ่ง", "คราวหลัง", "คราวๆ", "คราหนึ่ง", "คล้าย", "คล้ายกัน", "คล้ายกันกับ", "คล้ายกับ", "คล้ายกับว่า", "คล้ายว่า", "ควร", "ความ", "ค่อน", "ค่อนข้าง", "ค่อนข้างจะ", "ค่อนมาทาง", "ค่อย", "ค่อยไปทาง", "ค่อยๆ", "คะ", "ค่ะ", "คํา", "คิด", "คิดว่า", "คือ", "คุณ", "คุณๆ", "ง่าย", "ง่ายๆ", "จง", "จด", "จนเมื่อ", "จนแม้", "จนแม้น", "จนกระทั่ง", "จนกว่า", "จนขณะนี้", "จนตลอด", "จนถึง", "จนทั่ว", "จนบัดนี้", "จรด", "จรดกับ", "จริง", "จริงจัง", "จริงๆ", "จริงๆ", "จวน", "จวนเจียน", "จวนจะ", "จวบ", "จวบกับ", "จวบจน", "จะ", "จ้ะ", "จ๊ะ", "จะได้", "จัง", "จังๆ", "จังๆ", "จัด", "จัดแจง", "จัดให้", "จัดการ", "จัดงาน", "จัดตั้ง", "จัดทํา", "จัดหา", "จับ", "จ้า", "จ้า", "จํา", "จําเป็น", "จาก", "จากนั้น", "จากนี้", "จากนี้ไป", "จําพวก", "จึง", "จึงเป็น", "จึงจะ", "จู่ๆ", "ฉะนั้น", "ฉะนี้", "ฉัน", "ช่วง", "ช่วงแรก", "ช่วงก่อน", "ช่วงต่อไป", "ช่วงถัดไป", "ช่วงท้าย", "ช่วงที่", "ช่วงนั้น", "ช่วงนี้", "ช่วงระหว่าง", "ช่วงหน้า", "ช่วงหลัง", "ช่วงๆ", "ช่วย", "ช้า", "ช้านาน", "ชาว", "ช้าๆ", "ซะ", "ซะก่อน", "ซะจน", "ซะจนกระทั่ง", "ซะจนถึง", "ซึ่ง", "ซึ่งได้แก่", "ซึ่งก็", "ซึ่งก็คือ", "ซึ่งกัน", "ซึ่งกันและกัน", "ซึ่งๆ", "ณ", "ด้วย", "ด้วยเช่นกัน", "ด้วยเพราะ", "ด้วยเหตุเพราะ", "ด้วยเหตุที่", "ด้วยเหตุนั้น", "ด้วยเหตุนี้", "ด้วยเหตุว่า", "ด้วยเหมือนกัน", "ด้วยกัน", "ด้วยที่", "ด้วยประการฉะนี้", "ด้วยว่า", "ดัง", "ดั่ง", "ดังเก่า", "ดั่งเก่า", "ดังเคย", "ดั่งเคย", "ดังเช่น", "ดั่งเช่น", "ดังเช่นที่", "ดั่งเช่นที่", "ดังเดิม", "ดั่งเดิม", "ดังเหมือน", "ดั่งเหมือน", "ดังแต่ก่อน", "ดั่งแต่ก่อน", "ดังแม้", "ดั่งแม้", "ดังกล่าว", "ดังกับ", "ดั่งกับ", "ดังกับว่า", "ดั่งกับว่า", "ดังจะ", "ดั่งจะ", "ดังต่อไปนี้", "ดังที่", "ดั่งที่", "ดังที่เคย", "ดังที่กล่าว", "ดังที่จะเป็น", "ดังนั้น", "ดังนี้", "ดังนี้เช่น", "ดังนี้เพราะ", "ดังว่า", "ดั่งว่า", "ดําเนิน", "ดําเนินไป", "ดําเนินการ", "ดําเนินงาน", "ด้าน", "ด้านๆ", "ดิฉัน", "ดี", "ดีๆ", "ดู", "ดูเหมือน", "ดูเหมือนว่า", "ดูแล", "ดูแล้ว", "ดูจะ", "ดูว่า", "ดูๆ", "ตน", "ตนเอง", "ตนฯ", "ตรง", "ตรงๆ", "ตลอด", "ตลอดเวลา", "ตลอดไป", "ตลอดกาล", "ตลอดกาลนาน", "ตลอดจน", "ตลอดถึง", "ตลอดทั้ง", "ตลอดทั่ว", "ตลอดทั่วถึง", "ตลอดทั่วทั้ง", "ตลอดปี", "ตลอดมา", "ตลอดระยะเวลา", "ตลอดวัน", "ตลอดศก", "ต่อ", "ต่อเมื่อ", "ต่อให้", "ต่อไป", "ต่อไปนี้", "ต่อกัน", "ต่อกับ", "ต้อง", "ต้องการ", "ต่อจาก", "ตอน", "ตอนแรก", "ตอนใด", "ตอนไหน", "ตอนก่อน", "ตอนต่อ", "ตอนต่อไป", "ตอนต่อมา", "ตอนถัดไป", "ตอนถัดมา", "ตอนที่", "ตอนที่แล้ว", "ตอนนั้น", "ตอนนี้", "ตอนสุดท้าย", "ตอนหน้า", "ตอนหลัง", "ตอนๆ", "ต่อมา", "ต่อว่า", "ต่อๆ", "ตะหาก", "ตั้ง", "ตั้งแต่", "ตั้งแต่แรก", "ตั้งแต่นั้น", "ตั้งแต่นี้", "ตั้งต้น", "ตั้งที่", "ตั้งอยู่", "ตัว", "ตัวเอง", "ตัวโน้น", "ตัวใด", "ตัวไหน", "ตัวที่", "ตัวนั้น", "ตัวนี้", "ตัวละ", "ตัวอย่างเช่น", "ตัวๆ", "ต่าง", "ต่างก็", "ต่างหาก", "ต่างๆ", "ตาม", "ตามแต่", "ตามด้วย", "ตามที่", "ตามๆ", "ถ้า", "ถ้าจะ", "ถ้าหาก", "ถึง", "ถึงเมื่อ", "ถึงเมื่อใด", "ถึงเมื่อไร", "ถึงแก่", "ถึงแม้", "ถึงแม้จะ", "ถึงแม้ว่า", "ถึงจะ", "ถึงบัดนั้น", "ถึงบัดนี้", "ถึงอย่างไร", "ถือ", "ถือว่า", "ถูก", "ถูกต้อง", "ถูกๆ", "ทรง", "ทว่า", "ทั้ง", "ทั้งเป็น", "ทั้งคน", "ทั้งตัว", "ทั้งที่", "ทั้งนั้น", "ทั้งนั้นเพราะ", "ทั้งนั้นด้วย", "ทั้งนี้", "ทั้งปวง", "ทั้งมวล", "ทั้งสิ้น", "ทั้งหมด", "ทั้งหลาย", "ทั้งๆ", "ทั้งๆ", "ทัน", "ทันใดนั้น", "ทันที", "ทันทีทันใด", "ทั่ว", "ทําให้", "ทําไม", "ทําไร", "ทําๆ", "ที", "ที่", "ที่", "ทีเดียว", "ทีเถอะ", "ที่แท้", "ที่แท้จริง", "ที่แล้ว", "ที่แห่งนั้น", "ทีใด", "ที่ใด", "ที่ได้", "ทีไร", "ที่ไหน", "ที่จริง", "ที่ซึ่ง", "ที่นั้น", "ที่นี้", "ทีละ", "ที่ละ", "ที่ว่า", "ที่สุด", "ทีๆ", "ที่ๆ", "ทุก", "ทุกเมื่อ", "ทุกแห่ง", "ทุกคน", "ทุกครั้ง", "ทุกครา", "ทุกคราว", "ทุกชิ้น", "ทุกตัว", "ทุกทาง", "ทุกที", "ทุกที่", "ทุกวัน", "ทุกวันนี้", "ทุกสิ่ง", "ทุกหน", "ทุกอย่าง", "ทุกอัน", "ทุกๆ", "นอก", "นอกเหนือ", "นอกจาก", "นอกจากที่", "นอกจากนั้น", "นอกจากนี้", "นอกจากว่า", "นอกนั้น", "น้อย", "น้อยกว่า", "น้อยๆ", "นะ", "น่ะ", "นัก", "นั่น", "นั้นไว", "นับแต่นี้", "นับจากนั้น", "นับจากนี้", "น่า", "นํา", "นาง", "นางสาว", "น่าจะ", "นาน", "นานๆ", "นําพา", "นํามา", "นาย", "นิด", "นิดหน่อย", "นิดๆ", "นี่", "นี้", "นี่เอง", "นี้เอง", "นี่แน่ะ", "นี้แหล่", "นี่แหละ", "นี่ไง", "นี่นา", "นู่น", "นู้น", "บน", "บอก", "บอกแล้ว", "บอกว่า", "บ่อย", "บ่อยกว่า", "บ่อยครั้ง", "บ่อยๆ", "บัดเดี๋ยวนี้", "บัดดล", "บัดนั้น", "บัดนี้", "บาง", "บ้าง", "บางแห่ง", "บางกว่า", "บางขณะ", "บางครั้ง", "บางครา", "บางคราว", "บางที", "บางที่", "บางๆ", "ปฏิบัติ", "ประกอบ", "ประการ", "ประการใด", "ประการฉะนี้", "ประการหนึ่ง", "ประมาณ", "ประสบ", "ปรับ", "ปรากฏ", "ปรากฏว่า", "ปัจจุบัน", "ปิด", "ผ่าน", "ผ่านๆ", "ผิด", "ผิดๆ", "ผู้", "ผู้ใด", "ฝ่าย", "ฝ่ายใด", "พบ", "พบว่า", "พยายาม", "พร้อม", "พร้อมเพียง", "พร้อมกัน", "พร้อมกับ", "พร้อมด้วย", "พร้อมทั้ง", "พร้อมที่", "พวก", "พวกเขา", "พวกเธอ", "พวกแก", "พวกโน้น", "พวกกัน", "พวกกู", "พวกคุณ", "พวกฉัน", "พวกท่าน", "พวกที่", "พวกนั้น", "พวกนี้", "พวกนู้น", "พวกมัน", "พวกมึง", "พอ", "พอเพียง", "พอเหมาะ", "พอแล้ว", "พอกัน", "พอควร", "พอจะ", "พอดี", "พอตัว", "พอที", "พอที่", "พอสม", "พอสมควร", "พอๆ", "พา", "พึง", "พึ่ง", "พื้นๆ", "พูด", "ภาค", "ภาย", "ภายใต้", "ภายนอก", "ภายหลัง", "มอง", "มองว่า", "มัก", "มักจะ", "มัน", "มั๊ย", "มา", "มาก", "มากกว่า", "มากมาย", "มิ", "มิใช่", "มิได้", "มิฉะนั้น", "มี", "มีแต่", "มึง", "มุ่ง", "มุ่งเน้น", "มุ่งหมาย", "ยก", "ยกให้", "ยงเพราะ", "ยอม", "ย่อม", "ยอมรับ", "ย่อย", "ยัง", "ยังแต่", "ยังโง้น", "ยังไง", "ยังคง", "ยังงั้น", "ยังงี้", "ยังจะ", "ยาก", "ยาว", "ยาวนาน", "ยิ่ง", "ยิ่งเมื่อ", "ยิ่งแล้ว", "ยิ่งใหญ่", "ยิ่งกว่า", "ยิ่งขึ้น", "ยิ่งขึ้นไป", "ยิ่งจน", "ยิ่งจะ", "ยิ่งนัก", "รวด", "รวดเร็ว", "รวม", "ร่วม", "รวมกัน", "ร่วมกัน", "รวมด้วย", "ร่วมด้วย", "รวมถึง", "รวมทั้ง", "ระยะ", "ระหว่าง", "รับ", "รึ", "รือ", "รือว่า", "ล้วน", "ล้วนแต่", "ล้วนจน", "ละ", "ล่าสุด", "วันใด", "วันไหน", "วันนั้น", "วันนี้", "สบาย", "สมัย", "สมัยโน้น", "สมัยก่อน", "สมัยนั้น", "สมัยนี้", "ส่วน", "ส่วนเกิน", "ส่วนใด", "ส่วนใหญ่", "ส่วนด้อย", "ส่วนดี", "ส่วนที่", "ส่วนน้อย", "ส่วนนั้น", "ส่วนมาก", "สั้น", "สั้นๆ", "สําคัญ", "สามารถ", "สิ่ง", "สิ่งใด", "สิ่งไหน", "สิ่งนั้น", "สิ่งนี้", "สิ้น", "สุด", "หน", "หนอ", "หนอย", "หน่อย", "หมด", "หมดกัน", "หมดสิ้น", "หรือเปล่า", "หรือไง", "หรือไม่", "หรือไร", "หรือยัง", "หลังจาก", "หาใช่", "หาก", "หากแม้", "หากแม้น", "หากแม้นว่า", "หากว่า", "หาความ", "หารือ", "อดีต", "อนึ่ง", "อยาก", "อย่าง", "อย่างเช่น", "อย่างเดียว", "อย่างโน้น", "อย่างใด", "อย่างไร", "อย่างไรเสีย", "อย่างไรก็", "อย่างไรก็ได้", "อย่างไหน", "อย่างดี", "อย่างที่", "อย่างน้อย", "อย่างนั้น", "อย่างนี้", "อย่างมาก", "อย่างยิ่ง", "อย่างละ", "อย่างหนึ่ง", "อย่างๆ", "อัน", "อันเนื่องมาจาก", "อันใด", "อันได้แก่", "อันไหน", "อันจะ", "อันที่", "อันที่จริง", "อันที่จะ", "อันละ", "อันๆ", "อาจ", "อาจเป็น", "อาจเป็นด้วย", "อาจจะ", "อีก", "อื่น", "อื่นๆ", "ฯ", "ฯพณฯ", "ฯล" ];
-},{}],23:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 module.exports = [ "a", "acaba", "altı", "ama", "ancak", "artık", "asla", "aslında", "az", "b", "bana", "bazen", "bazı", "bazıları", "bazısı", "belki", "ben", "beni", "benim", "beş", "bile", "bir", "birçoğu", "birçok", "birçokları", "biri", "birisi", "birkaç", "birkaçı", "birşey", "birşeyi", "biz", "bize", "bizi", "bizim", "böyle", "böylece", "bu", "buna", "bunda", "bundan", "bunu", "bunun", "burada", "bütün", "c", "ç", "çoğu", "çoğuna", "çoğunu", "çok", "çünkü", "d", "da", "daha", "de", "değil", "demek", "diğer", "diğeri", "diğerleri", "diye", "dokuz", "dolayı", "dört", "e", "elbette", "en", "f", "fakat", "falan", "felan", "filan", "g", "gene", "gibi", "ğ", "h", "hâlâ", "hangi", "hangisi", "hani", "hatta", "hem", "henüz", "hep", "hepsi", "hepsine", "hepsini", "her", "her biri", "herkes", "herkese", "herkesi", "hiç", "hiç kimse", "hiçbiri", "hiçbirine", "hiçbirini", "ı", "i", "için", "içinde", "iki", "ile", "ise", "işte", "j", "k", "kaç", "kadar", "kendi", "kendine", "kendini", "ki", "kim", "kime", "kimi", "kimin", "kimisi", "l", "m", "madem", "mı", "mı", "mi", "mu", "mu", "mü", "mü", "n", "nasıl", "ne", "ne kadar", "ne zaman", "neden", "nedir", "nerde", "nerede", "nereden", "nereye", "nesi", "neyse", "niçin", "niye", "o", "on", "ona", "ondan", "onlar", "onlara", "onlardan", "onların", "onların", "onu", "onun", "orada", "oysa", "oysaki", "ö", "öbürü", "ön", "önce", "ötürü", "öyle", "p", "r", "rağmen", "s", "sana", "sekiz", "sen", "senden", "seni", "senin", "siz", "sizden", "size", "sizi", "sizin", "son", "sonra", "ş", "şayet", "şey", "şeyden", "şeye", "şeyi", "şeyler", "şimdi", "şöyle", "şu", "şuna", "şunda", "şundan", "şunlar", "şunu", "şunun", "t", "tabi", "tamam", "tüm", "tümü", "u", "ü", "üç", "üzere", "v", "var", "ve", "veya", "veyahut", "y", "ya", "ya da", "yani", "yedi", "yerine", "yine", "yoksa", "z", "zaten", "zira" ];
-},{}],24:[function(require,module,exports){
+},{}],76:[function(require,module,exports){
 module.exports = [ "的", "一", "不", "在", "人", "有", "是", "为", "以", "于", "上", "他", "而", "后", "之", "来", "及", "了", "因", "下", "可", "到", "由", "这", "与", "也", "此", "但", "并", "个", "其", "已", "无", "小", "我", "们", "起", "最", "再", "今", "去", "好", "只", "又", "或", "很", "亦", "某", "把", "那", "你", "乃", "它", "吧", "被", "比", "别", "趁", "当", "从", "到", "得", "打", "凡", "儿", "尔", "该", "各", "给", "跟", "和", "何", "还", "即", "几", "既", "看", "据", "距", "靠", "啦", "了", "另", "么", "每", "们", "嘛", "拿", "哪", "那", "您", "凭", "且", "却", "让", "仍", "啥", "如", "若", "使", "谁", "虽", "随", "同", "所", "她", "哇", "嗡", "往", "哪", "些", "向", "沿", "哟", "用", "于", "咱", "则", "怎", "曾", "至", "致", "着", "诸", "自" ];
-},{}],25:[function(require,module,exports){
+},{}],77:[function(require,module,exports){
 // Generated by CoffeeScript 2.0.0-beta7
 void function () {
   var _, cleanArticleTags, cleanBadTags, cleanCodeBlocks, cleanEmTags, cleaner, cleanErrantLinebreaks, cleanParaSpans, cleanUnderlines, divToPara, getReplacementNodes, removeBodyClasses, removeDropCaps, removeNodesRegex, removeScriptsStyles, replaceWithPara;
@@ -470,7 +8936,7 @@ void function () {
   };
 }.call(this);
 
-},{"lodash":101}],26:[function(require,module,exports){
+},{"lodash":153}],78:[function(require,module,exports){
 // Generated by CoffeeScript 2.0.0-beta7
 void function () {
   var _, addSiblings, biggestTitleChunk, cleanText, cleanTitle, formatter, getObjectTag, getScore, getSiblingsContent, getSiblingsScore, getVideoAttrs, isBoostable, isHighlinkDensity, isNodescoreThresholdMet, isTableAndNoParaExist, postCleanup, rawTitle, stopwords, updateNodeCount, updateScore;
@@ -615,11 +9081,14 @@ void function () {
       return tag.attr('href');
     },
     lang: function (doc) {
-      var cache$, l, tag, value;
+      var cache$, l, tag, value, content;
       l = null != (cache$ = doc('html')) ? cache$.attr('lang') : void 0;
       if (!l) {
-        tag = doc('meta[name=lang]') || doc('meta[http-equiv=content-language]');
-        l = null != tag ? tag.attr('content') : void 0;
+        content = doc('meta[name=lang]').attr('content')
+              || doc('meta[http-equiv=content-language]').attr('content');
+              // || doc('meta[name=language]').attr('content')
+              // || doc('meta[name=Language]').attr('content');  // What about content like "Greek"?
+        l = null != content ? content : void 0;
       }
       if (l) {
         value = l.slice(0, +1 + 1 || 9e9);
@@ -980,7 +9449,7 @@ void function () {
   };
 }.call(this);
 
-},{"./formatter":27,"./stopwords":28,"lodash":101}],27:[function(require,module,exports){
+},{"./formatter":79,"./stopwords":80,"lodash":153}],79:[function(require,module,exports){
 // Generated by CoffeeScript 2.0.0-beta7
 void function () {
   var _, addNewlineToBr, cleanParagraphText, convertToText, formatter, linksToText, removeFewwordsParagraphs, removeNegativescoresNodes, replaceWithText, stopwords, ulToText, XRegExp;
@@ -1105,7 +9574,7 @@ void function () {
   };
 }.call(this);
 
-},{"./stopwords":28,"lodash":101,"xregexp":102}],28:[function(require,module,exports){
+},{"./stopwords":80,"lodash":153,"xregexp":154}],80:[function(require,module,exports){
 // Generated by CoffeeScript 2.0.0-beta7
 void function () {
   var _, cache, candiateWords, fs, getFilePath, path, removePunctuation, stopwords;
@@ -1143,11 +9612,10 @@ void function () {
   };
 
   module.exports = stopwords = function (content, language) {
-    if ( !language ) { language = "en" }
 
     var count, filePath, overlappingStopwords, stopWords, strippedInput, words;
-    if (null == language)
-      language = 'en';
+
+    if ( !language ) { language = "en" }
 
     // Get the stopwords for the right language if we have it
     stopWords = null;
@@ -1191,7 +9659,7 @@ void function () {
   };
 }.call(this);
 
-},{"../data/stopwords/stopwords-ar.js":2,"../data/stopwords/stopwords-bg.js":3,"../data/stopwords/stopwords-cs.js":4,"../data/stopwords/stopwords-da.js":5,"../data/stopwords/stopwords-de.js":6,"../data/stopwords/stopwords-el.js":7,"../data/stopwords/stopwords-en.js":8,"../data/stopwords/stopwords-es.js":9,"../data/stopwords/stopwords-fi.js":10,"../data/stopwords/stopwords-fr.js":11,"../data/stopwords/stopwords-hu.js":12,"../data/stopwords/stopwords-id.js":13,"../data/stopwords/stopwords-it.js":14,"../data/stopwords/stopwords-ko.js":15,"../data/stopwords/stopwords-nb.js":16,"../data/stopwords/stopwords-no.js":17,"../data/stopwords/stopwords-pl.js":18,"../data/stopwords/stopwords-pt.js":19,"../data/stopwords/stopwords-ru.js":20,"../data/stopwords/stopwords-sv.js":21,"../data/stopwords/stopwords-th.js":22,"../data/stopwords/stopwords-tr.js":23,"../data/stopwords/stopwords-zh.js":24,"lodash":101,"path":111}],29:[function(require,module,exports){
+},{"../data/stopwords/stopwords-ar.js":54,"../data/stopwords/stopwords-bg.js":55,"../data/stopwords/stopwords-cs.js":56,"../data/stopwords/stopwords-da.js":57,"../data/stopwords/stopwords-de.js":58,"../data/stopwords/stopwords-el.js":59,"../data/stopwords/stopwords-en.js":60,"../data/stopwords/stopwords-es.js":61,"../data/stopwords/stopwords-fi.js":62,"../data/stopwords/stopwords-fr.js":63,"../data/stopwords/stopwords-hu.js":64,"../data/stopwords/stopwords-id.js":65,"../data/stopwords/stopwords-it.js":66,"../data/stopwords/stopwords-ko.js":67,"../data/stopwords/stopwords-nb.js":68,"../data/stopwords/stopwords-no.js":69,"../data/stopwords/stopwords-pl.js":70,"../data/stopwords/stopwords-pt.js":71,"../data/stopwords/stopwords-ru.js":72,"../data/stopwords/stopwords-sv.js":73,"../data/stopwords/stopwords-th.js":74,"../data/stopwords/stopwords-tr.js":75,"../data/stopwords/stopwords-zh.js":76,"lodash":153,"path":164}],81:[function(require,module,exports){
 // Generated by CoffeeScript 2.0.0-beta7
 // *** A custom version of unfluff that will work on the front end (by knod) *** \\
 void function () {
@@ -1334,7 +9802,7 @@ void function () {
   };
 }.call(this);
 
-},{"./cleaner":25,"./extractor":26,"cheerio":30}],30:[function(require,module,exports){
+},{"./cleaner":77,"./extractor":78,"cheerio":82}],82:[function(require,module,exports){
 /**
  * Export cheerio (with )
  */
@@ -1347,7 +9815,7 @@ exports = module.exports = require('./lib/cheerio');
 
 exports.version = require('./package').version;
 
-},{"./lib/cheerio":35,"./package":100}],31:[function(require,module,exports){
+},{"./lib/cheerio":87,"./package":152}],83:[function(require,module,exports){
 var _ = require('lodash'),
   utils = require('../utils'),
   isTag = utils.isTag,
@@ -1762,7 +10230,7 @@ var is = exports.is = function (selector) {
 };
 
 
-},{"../utils":38,"lodash":101}],32:[function(require,module,exports){
+},{"../utils":90,"lodash":153}],84:[function(require,module,exports){
 var _ = require('lodash'),
     domEach = require('../utils').domEach;
 var toString = Object.prototype.toString;
@@ -1882,7 +10350,7 @@ function parse(styles) {
     }, {});
 }
 
-},{"../utils":38,"lodash":101}],33:[function(require,module,exports){
+},{"../utils":90,"lodash":153}],85:[function(require,module,exports){
 var _ = require('lodash'),
     parse = require('../parse'),
     $ = require('../static'),
@@ -2188,7 +10656,7 @@ var clone = exports.clone = function() {
   return this._make($.html(this));
 };
 
-},{"../parse":36,"../static":37,"../utils":38,"lodash":101}],34:[function(require,module,exports){
+},{"../parse":88,"../static":89,"../utils":90,"lodash":153}],86:[function(require,module,exports){
 var _ = require('lodash'),
     select = require('CSSselect'),
     utils = require('../utils'),
@@ -2551,7 +11019,7 @@ var add = exports.add = function(other, context) {
   return selection;
 };
 
-},{"../utils":38,"CSSselect":39,"htmlparser2":73,"lodash":101}],35:[function(require,module,exports){
+},{"../utils":90,"CSSselect":91,"htmlparser2":125,"lodash":153}],87:[function(require,module,exports){
 /*
   Module dependencies
 */
@@ -2714,7 +11182,7 @@ var isNode = function(obj) {
   return obj.name || obj.type === 'text' || obj.type === 'comment';
 };
 
-},{"./api/attributes":31,"./api/css":32,"./api/manipulation":33,"./api/traversing":34,"./parse":36,"./static":37,"lodash":101,"path":111}],36:[function(require,module,exports){
+},{"./api/attributes":83,"./api/css":84,"./api/manipulation":85,"./api/traversing":86,"./parse":88,"./static":89,"lodash":153,"path":164}],88:[function(require,module,exports){
 (function (Buffer){
 /*
   Module Dependencies
@@ -2811,7 +11279,7 @@ var update = exports.update = function(arr, parent) {
 // module.exports = $.extend(exports);
 
 }).call(this,{"isBuffer":require("../../../../../../../../../../../usr/local/lib/node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js")})
-},{"../../../../../../../../../../../usr/local/lib/node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js":110,"./utils":38,"htmlparser2":73}],37:[function(require,module,exports){
+},{"../../../../../../../../../../../usr/local/lib/node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js":163,"./utils":90,"htmlparser2":125}],89:[function(require,module,exports){
 /**
  * Module dependencies
  */
@@ -2969,7 +11437,7 @@ var contains = exports.contains = function(container, contained) {
   return false;
 };
 
-},{"./cheerio":35,"./parse":36,"CSSselect":39,"dom-serializer":56,"lodash":101}],38:[function(require,module,exports){
+},{"./cheerio":87,"./parse":88,"CSSselect":91,"dom-serializer":108,"lodash":153}],90:[function(require,module,exports){
 /**
  * HTML Tags
  */
@@ -3022,7 +11490,7 @@ exports.domEach = function(cheerio, fn) {
   return cheerio;
 };
 
-},{}],39:[function(require,module,exports){
+},{}],91:[function(require,module,exports){
 "use strict";
 
 module.exports = CSSselect;
@@ -3078,7 +11546,7 @@ CSSselect.is = is;
 CSSselect.parse = compile;
 CSSselect.iterate = selectAll;
 
-},{"./lib/basefunctions.js":41,"./lib/compile.js":42,"./lib/pseudos.js":45,"domutils":48}],40:[function(require,module,exports){
+},{"./lib/basefunctions.js":93,"./lib/compile.js":94,"./lib/pseudos.js":97,"domutils":100}],92:[function(require,module,exports){
 var DomUtils  = require("domutils"),
     hasAttrib = DomUtils.hasAttrib,
     getAttributeValue = DomUtils.getAttributeValue,
@@ -3258,7 +11726,7 @@ module.exports = {
 	rules: attributeRules
 };
 
-},{"./basefunctions.js":41,"domutils":48}],41:[function(require,module,exports){
+},{"./basefunctions.js":93,"domutils":100}],93:[function(require,module,exports){
 module.exports = {
 	trueFunc: function trueFunc(){
 		return true;
@@ -3267,7 +11735,7 @@ module.exports = {
 		return false;
 	}
 };
-},{}],42:[function(require,module,exports){
+},{}],94:[function(require,module,exports){
 /*
 	compiles a selector to an executable function
 */
@@ -3353,7 +11821,7 @@ filters.has = function(next, selector){
 	};
 };
 
-},{"./basefunctions.js":41,"./general.js":43,"./pseudos.js":45,"./sort.js":46,"CSSwhat":47,"domutils":48}],43:[function(require,module,exports){
+},{"./basefunctions.js":93,"./general.js":95,"./pseudos.js":97,"./sort.js":98,"CSSwhat":99,"domutils":100}],95:[function(require,module,exports){
 var DomUtils    = require("domutils"),
     isTag       = DomUtils.isTag,
     getParent   = DomUtils.getParent,
@@ -3434,7 +11902,7 @@ module.exports = {
 		return next;
 	}
 };
-},{"./attributes.js":40,"./pseudos.js":45,"domutils":48}],44:[function(require,module,exports){
+},{"./attributes.js":92,"./pseudos.js":97,"domutils":100}],96:[function(require,module,exports){
 var BaseFuncs = require("./basefunctions.js"),
     trueFunc  = BaseFuncs.trueFunc,
     falseFunc = BaseFuncs.falseFunc;
@@ -3519,7 +11987,7 @@ function compile(parsed){
 		return pos <= b && pos % a === bMod;
 	};
 }
-},{"./basefunctions.js":41}],45:[function(require,module,exports){
+},{"./basefunctions.js":93}],97:[function(require,module,exports){
 /*
 	pseudo selectors
 	
@@ -3859,7 +12327,7 @@ module.exports = {
 	pseudos: pseudos
 };
 
-},{"./attributes.js":40,"./basefunctions.js":41,"./nth-check.js":44,"domutils":48}],46:[function(require,module,exports){
+},{"./attributes.js":92,"./basefunctions.js":93,"./nth-check.js":96,"domutils":100}],98:[function(require,module,exports){
 module.exports = sortByProcedure;
 
 /*
@@ -3919,7 +12387,7 @@ function sortByProcedure(arr){
 	}
 	return arr;
 }
-},{}],47:[function(require,module,exports){
+},{}],99:[function(require,module,exports){
 "use strict";
 
 module.exports = parse;
@@ -4102,7 +12570,7 @@ function parse(selector, options){
 	subselects.push(tokens);
 	return subselects;
 }
-},{}],48:[function(require,module,exports){
+},{}],100:[function(require,module,exports){
 var DomUtils = module.exports;
 
 [
@@ -4118,7 +12586,7 @@ var DomUtils = module.exports;
 	});
 });
 
-},{"./lib/helpers":49,"./lib/legacy":50,"./lib/manipulation":51,"./lib/querying":52,"./lib/stringify":53,"./lib/traversal":54}],49:[function(require,module,exports){
+},{"./lib/helpers":101,"./lib/legacy":102,"./lib/manipulation":103,"./lib/querying":104,"./lib/stringify":105,"./lib/traversal":106}],101:[function(require,module,exports){
 // removeSubsets
 // Given an array of nodes, remove any member that is contained by another.
 exports.removeSubsets = function(nodes) {
@@ -4151,7 +12619,7 @@ exports.removeSubsets = function(nodes) {
 	return nodes;
 };
 
-},{}],50:[function(require,module,exports){
+},{}],102:[function(require,module,exports){
 var ElementType = require("domelementtype");
 var isTag = exports.isTag = ElementType.isTag;
 
@@ -4240,7 +12708,7 @@ exports.getElementsByTagType = function(type, element, recurse, limit){
 	return this.filter(Checks.tag_type(type), element, recurse, limit);
 };
 
-},{"domelementtype":55}],51:[function(require,module,exports){
+},{"domelementtype":107}],103:[function(require,module,exports){
 exports.removeElement = function(elem){
 	if(elem.prev) elem.prev.next = elem.next;
 	if(elem.next) elem.next.prev = elem.prev;
@@ -4319,7 +12787,7 @@ exports.prepend = function(elem, prev){
 
 
 
-},{}],52:[function(require,module,exports){
+},{}],104:[function(require,module,exports){
 var isTag = require("domelementtype").isTag;
 
 module.exports = {
@@ -4415,7 +12883,7 @@ function findAll(test, elems){
 	return result;
 }
 
-},{"domelementtype":55}],53:[function(require,module,exports){
+},{"domelementtype":107}],105:[function(require,module,exports){
 var ElementType = require("domelementtype"),
     isTag = ElementType.isTag;
 
@@ -4509,7 +12977,7 @@ function getText(elem){
 	if(elem.type === ElementType.Text) return elem.data;
 	return "";
 }
-},{"domelementtype":55}],54:[function(require,module,exports){
+},{"domelementtype":107}],106:[function(require,module,exports){
 var getChildren = exports.getChildren = function(elem){
 	return elem.children;
 };
@@ -4535,7 +13003,7 @@ exports.getName = function(elem){
 	return elem.name;
 };
 
-},{}],55:[function(require,module,exports){
+},{}],107:[function(require,module,exports){
 //Types of elements found in the DOM
 module.exports = {
 	Text: "text", //Text
@@ -4552,7 +13020,7 @@ module.exports = {
 	}
 };
 
-},{}],56:[function(require,module,exports){
+},{}],108:[function(require,module,exports){
 /*
   Module dependencies
 */
@@ -4736,7 +13204,7 @@ function renderComment(elem) {
   return '<!--' + elem.data + '-->';
 }
 
-},{"domelementtype":57,"entities":58}],57:[function(require,module,exports){
+},{"domelementtype":109,"entities":110}],109:[function(require,module,exports){
 //Types of elements found in the DOM
 module.exports = {
 	Text: "text", //Text
@@ -4751,7 +13219,7 @@ module.exports = {
 		return elem.type === "tag" || elem.type === "script" || elem.type === "style";
 	}
 };
-},{}],58:[function(require,module,exports){
+},{}],110:[function(require,module,exports){
 var encode = require("./lib/encode.js"),
     decode = require("./lib/decode.js");
 
@@ -4786,7 +13254,7 @@ exports.decodeHTMLStrict = decode.HTMLStrict;
 
 exports.escape = encode.escape;
 
-},{"./lib/decode.js":59,"./lib/encode.js":61}],59:[function(require,module,exports){
+},{"./lib/decode.js":111,"./lib/encode.js":113}],111:[function(require,module,exports){
 var entityMap = require("../maps/entities.json"),
     legacyMap = require("../maps/legacy.json"),
     xmlMap    = require("../maps/xml.json"),
@@ -4859,7 +13327,7 @@ module.exports = {
 	HTML: decodeHTML,
 	HTMLStrict: decodeHTMLStrict
 };
-},{"../maps/entities.json":63,"../maps/legacy.json":64,"../maps/xml.json":65,"./decode_codepoint.js":60}],60:[function(require,module,exports){
+},{"../maps/entities.json":115,"../maps/legacy.json":116,"../maps/xml.json":117,"./decode_codepoint.js":112}],112:[function(require,module,exports){
 var decodeMap = require("../maps/decode.json");
 
 module.exports = decodeCodePoint;
@@ -4887,7 +13355,7 @@ function decodeCodePoint(codePoint){
 	return output;
 }
 
-},{"../maps/decode.json":62}],61:[function(require,module,exports){
+},{"../maps/decode.json":114}],113:[function(require,module,exports){
 var inverseXML = getInverseObj(require("../maps/xml.json")),
     xmlReplacer = getInverseReplacer(inverseXML);
 
@@ -4962,16 +13430,16 @@ function escapeXML(data){
 
 exports.escape = escapeXML;
 
-},{"../maps/entities.json":63,"../maps/xml.json":65}],62:[function(require,module,exports){
+},{"../maps/entities.json":115,"../maps/xml.json":117}],114:[function(require,module,exports){
 module.exports={"0":65533,"128":8364,"130":8218,"131":402,"132":8222,"133":8230,"134":8224,"135":8225,"136":710,"137":8240,"138":352,"139":8249,"140":338,"142":381,"145":8216,"146":8217,"147":8220,"148":8221,"149":8226,"150":8211,"151":8212,"152":732,"153":8482,"154":353,"155":8250,"156":339,"158":382,"159":376}
-},{}],63:[function(require,module,exports){
+},{}],115:[function(require,module,exports){
 module.exports={"Aacute":"\u00C1","aacute":"\u00E1","Abreve":"\u0102","abreve":"\u0103","ac":"\u223E","acd":"\u223F","acE":"\u223E\u0333","Acirc":"\u00C2","acirc":"\u00E2","acute":"\u00B4","Acy":"\u0410","acy":"\u0430","AElig":"\u00C6","aelig":"\u00E6","af":"\u2061","Afr":"\uD835\uDD04","afr":"\uD835\uDD1E","Agrave":"\u00C0","agrave":"\u00E0","alefsym":"\u2135","aleph":"\u2135","Alpha":"\u0391","alpha":"\u03B1","Amacr":"\u0100","amacr":"\u0101","amalg":"\u2A3F","amp":"&","AMP":"&","andand":"\u2A55","And":"\u2A53","and":"\u2227","andd":"\u2A5C","andslope":"\u2A58","andv":"\u2A5A","ang":"\u2220","ange":"\u29A4","angle":"\u2220","angmsdaa":"\u29A8","angmsdab":"\u29A9","angmsdac":"\u29AA","angmsdad":"\u29AB","angmsdae":"\u29AC","angmsdaf":"\u29AD","angmsdag":"\u29AE","angmsdah":"\u29AF","angmsd":"\u2221","angrt":"\u221F","angrtvb":"\u22BE","angrtvbd":"\u299D","angsph":"\u2222","angst":"\u00C5","angzarr":"\u237C","Aogon":"\u0104","aogon":"\u0105","Aopf":"\uD835\uDD38","aopf":"\uD835\uDD52","apacir":"\u2A6F","ap":"\u2248","apE":"\u2A70","ape":"\u224A","apid":"\u224B","apos":"'","ApplyFunction":"\u2061","approx":"\u2248","approxeq":"\u224A","Aring":"\u00C5","aring":"\u00E5","Ascr":"\uD835\uDC9C","ascr":"\uD835\uDCB6","Assign":"\u2254","ast":"*","asymp":"\u2248","asympeq":"\u224D","Atilde":"\u00C3","atilde":"\u00E3","Auml":"\u00C4","auml":"\u00E4","awconint":"\u2233","awint":"\u2A11","backcong":"\u224C","backepsilon":"\u03F6","backprime":"\u2035","backsim":"\u223D","backsimeq":"\u22CD","Backslash":"\u2216","Barv":"\u2AE7","barvee":"\u22BD","barwed":"\u2305","Barwed":"\u2306","barwedge":"\u2305","bbrk":"\u23B5","bbrktbrk":"\u23B6","bcong":"\u224C","Bcy":"\u0411","bcy":"\u0431","bdquo":"\u201E","becaus":"\u2235","because":"\u2235","Because":"\u2235","bemptyv":"\u29B0","bepsi":"\u03F6","bernou":"\u212C","Bernoullis":"\u212C","Beta":"\u0392","beta":"\u03B2","beth":"\u2136","between":"\u226C","Bfr":"\uD835\uDD05","bfr":"\uD835\uDD1F","bigcap":"\u22C2","bigcirc":"\u25EF","bigcup":"\u22C3","bigodot":"\u2A00","bigoplus":"\u2A01","bigotimes":"\u2A02","bigsqcup":"\u2A06","bigstar":"\u2605","bigtriangledown":"\u25BD","bigtriangleup":"\u25B3","biguplus":"\u2A04","bigvee":"\u22C1","bigwedge":"\u22C0","bkarow":"\u290D","blacklozenge":"\u29EB","blacksquare":"\u25AA","blacktriangle":"\u25B4","blacktriangledown":"\u25BE","blacktriangleleft":"\u25C2","blacktriangleright":"\u25B8","blank":"\u2423","blk12":"\u2592","blk14":"\u2591","blk34":"\u2593","block":"\u2588","bne":"=\u20E5","bnequiv":"\u2261\u20E5","bNot":"\u2AED","bnot":"\u2310","Bopf":"\uD835\uDD39","bopf":"\uD835\uDD53","bot":"\u22A5","bottom":"\u22A5","bowtie":"\u22C8","boxbox":"\u29C9","boxdl":"\u2510","boxdL":"\u2555","boxDl":"\u2556","boxDL":"\u2557","boxdr":"\u250C","boxdR":"\u2552","boxDr":"\u2553","boxDR":"\u2554","boxh":"\u2500","boxH":"\u2550","boxhd":"\u252C","boxHd":"\u2564","boxhD":"\u2565","boxHD":"\u2566","boxhu":"\u2534","boxHu":"\u2567","boxhU":"\u2568","boxHU":"\u2569","boxminus":"\u229F","boxplus":"\u229E","boxtimes":"\u22A0","boxul":"\u2518","boxuL":"\u255B","boxUl":"\u255C","boxUL":"\u255D","boxur":"\u2514","boxuR":"\u2558","boxUr":"\u2559","boxUR":"\u255A","boxv":"\u2502","boxV":"\u2551","boxvh":"\u253C","boxvH":"\u256A","boxVh":"\u256B","boxVH":"\u256C","boxvl":"\u2524","boxvL":"\u2561","boxVl":"\u2562","boxVL":"\u2563","boxvr":"\u251C","boxvR":"\u255E","boxVr":"\u255F","boxVR":"\u2560","bprime":"\u2035","breve":"\u02D8","Breve":"\u02D8","brvbar":"\u00A6","bscr":"\uD835\uDCB7","Bscr":"\u212C","bsemi":"\u204F","bsim":"\u223D","bsime":"\u22CD","bsolb":"\u29C5","bsol":"\\","bsolhsub":"\u27C8","bull":"\u2022","bullet":"\u2022","bump":"\u224E","bumpE":"\u2AAE","bumpe":"\u224F","Bumpeq":"\u224E","bumpeq":"\u224F","Cacute":"\u0106","cacute":"\u0107","capand":"\u2A44","capbrcup":"\u2A49","capcap":"\u2A4B","cap":"\u2229","Cap":"\u22D2","capcup":"\u2A47","capdot":"\u2A40","CapitalDifferentialD":"\u2145","caps":"\u2229\uFE00","caret":"\u2041","caron":"\u02C7","Cayleys":"\u212D","ccaps":"\u2A4D","Ccaron":"\u010C","ccaron":"\u010D","Ccedil":"\u00C7","ccedil":"\u00E7","Ccirc":"\u0108","ccirc":"\u0109","Cconint":"\u2230","ccups":"\u2A4C","ccupssm":"\u2A50","Cdot":"\u010A","cdot":"\u010B","cedil":"\u00B8","Cedilla":"\u00B8","cemptyv":"\u29B2","cent":"\u00A2","centerdot":"\u00B7","CenterDot":"\u00B7","cfr":"\uD835\uDD20","Cfr":"\u212D","CHcy":"\u0427","chcy":"\u0447","check":"\u2713","checkmark":"\u2713","Chi":"\u03A7","chi":"\u03C7","circ":"\u02C6","circeq":"\u2257","circlearrowleft":"\u21BA","circlearrowright":"\u21BB","circledast":"\u229B","circledcirc":"\u229A","circleddash":"\u229D","CircleDot":"\u2299","circledR":"\u00AE","circledS":"\u24C8","CircleMinus":"\u2296","CirclePlus":"\u2295","CircleTimes":"\u2297","cir":"\u25CB","cirE":"\u29C3","cire":"\u2257","cirfnint":"\u2A10","cirmid":"\u2AEF","cirscir":"\u29C2","ClockwiseContourIntegral":"\u2232","CloseCurlyDoubleQuote":"\u201D","CloseCurlyQuote":"\u2019","clubs":"\u2663","clubsuit":"\u2663","colon":":","Colon":"\u2237","Colone":"\u2A74","colone":"\u2254","coloneq":"\u2254","comma":",","commat":"@","comp":"\u2201","compfn":"\u2218","complement":"\u2201","complexes":"\u2102","cong":"\u2245","congdot":"\u2A6D","Congruent":"\u2261","conint":"\u222E","Conint":"\u222F","ContourIntegral":"\u222E","copf":"\uD835\uDD54","Copf":"\u2102","coprod":"\u2210","Coproduct":"\u2210","copy":"\u00A9","COPY":"\u00A9","copysr":"\u2117","CounterClockwiseContourIntegral":"\u2233","crarr":"\u21B5","cross":"\u2717","Cross":"\u2A2F","Cscr":"\uD835\uDC9E","cscr":"\uD835\uDCB8","csub":"\u2ACF","csube":"\u2AD1","csup":"\u2AD0","csupe":"\u2AD2","ctdot":"\u22EF","cudarrl":"\u2938","cudarrr":"\u2935","cuepr":"\u22DE","cuesc":"\u22DF","cularr":"\u21B6","cularrp":"\u293D","cupbrcap":"\u2A48","cupcap":"\u2A46","CupCap":"\u224D","cup":"\u222A","Cup":"\u22D3","cupcup":"\u2A4A","cupdot":"\u228D","cupor":"\u2A45","cups":"\u222A\uFE00","curarr":"\u21B7","curarrm":"\u293C","curlyeqprec":"\u22DE","curlyeqsucc":"\u22DF","curlyvee":"\u22CE","curlywedge":"\u22CF","curren":"\u00A4","curvearrowleft":"\u21B6","curvearrowright":"\u21B7","cuvee":"\u22CE","cuwed":"\u22CF","cwconint":"\u2232","cwint":"\u2231","cylcty":"\u232D","dagger":"\u2020","Dagger":"\u2021","daleth":"\u2138","darr":"\u2193","Darr":"\u21A1","dArr":"\u21D3","dash":"\u2010","Dashv":"\u2AE4","dashv":"\u22A3","dbkarow":"\u290F","dblac":"\u02DD","Dcaron":"\u010E","dcaron":"\u010F","Dcy":"\u0414","dcy":"\u0434","ddagger":"\u2021","ddarr":"\u21CA","DD":"\u2145","dd":"\u2146","DDotrahd":"\u2911","ddotseq":"\u2A77","deg":"\u00B0","Del":"\u2207","Delta":"\u0394","delta":"\u03B4","demptyv":"\u29B1","dfisht":"\u297F","Dfr":"\uD835\uDD07","dfr":"\uD835\uDD21","dHar":"\u2965","dharl":"\u21C3","dharr":"\u21C2","DiacriticalAcute":"\u00B4","DiacriticalDot":"\u02D9","DiacriticalDoubleAcute":"\u02DD","DiacriticalGrave":"`","DiacriticalTilde":"\u02DC","diam":"\u22C4","diamond":"\u22C4","Diamond":"\u22C4","diamondsuit":"\u2666","diams":"\u2666","die":"\u00A8","DifferentialD":"\u2146","digamma":"\u03DD","disin":"\u22F2","div":"\u00F7","divide":"\u00F7","divideontimes":"\u22C7","divonx":"\u22C7","DJcy":"\u0402","djcy":"\u0452","dlcorn":"\u231E","dlcrop":"\u230D","dollar":"$","Dopf":"\uD835\uDD3B","dopf":"\uD835\uDD55","Dot":"\u00A8","dot":"\u02D9","DotDot":"\u20DC","doteq":"\u2250","doteqdot":"\u2251","DotEqual":"\u2250","dotminus":"\u2238","dotplus":"\u2214","dotsquare":"\u22A1","doublebarwedge":"\u2306","DoubleContourIntegral":"\u222F","DoubleDot":"\u00A8","DoubleDownArrow":"\u21D3","DoubleLeftArrow":"\u21D0","DoubleLeftRightArrow":"\u21D4","DoubleLeftTee":"\u2AE4","DoubleLongLeftArrow":"\u27F8","DoubleLongLeftRightArrow":"\u27FA","DoubleLongRightArrow":"\u27F9","DoubleRightArrow":"\u21D2","DoubleRightTee":"\u22A8","DoubleUpArrow":"\u21D1","DoubleUpDownArrow":"\u21D5","DoubleVerticalBar":"\u2225","DownArrowBar":"\u2913","downarrow":"\u2193","DownArrow":"\u2193","Downarrow":"\u21D3","DownArrowUpArrow":"\u21F5","DownBreve":"\u0311","downdownarrows":"\u21CA","downharpoonleft":"\u21C3","downharpoonright":"\u21C2","DownLeftRightVector":"\u2950","DownLeftTeeVector":"\u295E","DownLeftVectorBar":"\u2956","DownLeftVector":"\u21BD","DownRightTeeVector":"\u295F","DownRightVectorBar":"\u2957","DownRightVector":"\u21C1","DownTeeArrow":"\u21A7","DownTee":"\u22A4","drbkarow":"\u2910","drcorn":"\u231F","drcrop":"\u230C","Dscr":"\uD835\uDC9F","dscr":"\uD835\uDCB9","DScy":"\u0405","dscy":"\u0455","dsol":"\u29F6","Dstrok":"\u0110","dstrok":"\u0111","dtdot":"\u22F1","dtri":"\u25BF","dtrif":"\u25BE","duarr":"\u21F5","duhar":"\u296F","dwangle":"\u29A6","DZcy":"\u040F","dzcy":"\u045F","dzigrarr":"\u27FF","Eacute":"\u00C9","eacute":"\u00E9","easter":"\u2A6E","Ecaron":"\u011A","ecaron":"\u011B","Ecirc":"\u00CA","ecirc":"\u00EA","ecir":"\u2256","ecolon":"\u2255","Ecy":"\u042D","ecy":"\u044D","eDDot":"\u2A77","Edot":"\u0116","edot":"\u0117","eDot":"\u2251","ee":"\u2147","efDot":"\u2252","Efr":"\uD835\uDD08","efr":"\uD835\uDD22","eg":"\u2A9A","Egrave":"\u00C8","egrave":"\u00E8","egs":"\u2A96","egsdot":"\u2A98","el":"\u2A99","Element":"\u2208","elinters":"\u23E7","ell":"\u2113","els":"\u2A95","elsdot":"\u2A97","Emacr":"\u0112","emacr":"\u0113","empty":"\u2205","emptyset":"\u2205","EmptySmallSquare":"\u25FB","emptyv":"\u2205","EmptyVerySmallSquare":"\u25AB","emsp13":"\u2004","emsp14":"\u2005","emsp":"\u2003","ENG":"\u014A","eng":"\u014B","ensp":"\u2002","Eogon":"\u0118","eogon":"\u0119","Eopf":"\uD835\uDD3C","eopf":"\uD835\uDD56","epar":"\u22D5","eparsl":"\u29E3","eplus":"\u2A71","epsi":"\u03B5","Epsilon":"\u0395","epsilon":"\u03B5","epsiv":"\u03F5","eqcirc":"\u2256","eqcolon":"\u2255","eqsim":"\u2242","eqslantgtr":"\u2A96","eqslantless":"\u2A95","Equal":"\u2A75","equals":"=","EqualTilde":"\u2242","equest":"\u225F","Equilibrium":"\u21CC","equiv":"\u2261","equivDD":"\u2A78","eqvparsl":"\u29E5","erarr":"\u2971","erDot":"\u2253","escr":"\u212F","Escr":"\u2130","esdot":"\u2250","Esim":"\u2A73","esim":"\u2242","Eta":"\u0397","eta":"\u03B7","ETH":"\u00D0","eth":"\u00F0","Euml":"\u00CB","euml":"\u00EB","euro":"\u20AC","excl":"!","exist":"\u2203","Exists":"\u2203","expectation":"\u2130","exponentiale":"\u2147","ExponentialE":"\u2147","fallingdotseq":"\u2252","Fcy":"\u0424","fcy":"\u0444","female":"\u2640","ffilig":"\uFB03","fflig":"\uFB00","ffllig":"\uFB04","Ffr":"\uD835\uDD09","ffr":"\uD835\uDD23","filig":"\uFB01","FilledSmallSquare":"\u25FC","FilledVerySmallSquare":"\u25AA","fjlig":"fj","flat":"\u266D","fllig":"\uFB02","fltns":"\u25B1","fnof":"\u0192","Fopf":"\uD835\uDD3D","fopf":"\uD835\uDD57","forall":"\u2200","ForAll":"\u2200","fork":"\u22D4","forkv":"\u2AD9","Fouriertrf":"\u2131","fpartint":"\u2A0D","frac12":"\u00BD","frac13":"\u2153","frac14":"\u00BC","frac15":"\u2155","frac16":"\u2159","frac18":"\u215B","frac23":"\u2154","frac25":"\u2156","frac34":"\u00BE","frac35":"\u2157","frac38":"\u215C","frac45":"\u2158","frac56":"\u215A","frac58":"\u215D","frac78":"\u215E","frasl":"\u2044","frown":"\u2322","fscr":"\uD835\uDCBB","Fscr":"\u2131","gacute":"\u01F5","Gamma":"\u0393","gamma":"\u03B3","Gammad":"\u03DC","gammad":"\u03DD","gap":"\u2A86","Gbreve":"\u011E","gbreve":"\u011F","Gcedil":"\u0122","Gcirc":"\u011C","gcirc":"\u011D","Gcy":"\u0413","gcy":"\u0433","Gdot":"\u0120","gdot":"\u0121","ge":"\u2265","gE":"\u2267","gEl":"\u2A8C","gel":"\u22DB","geq":"\u2265","geqq":"\u2267","geqslant":"\u2A7E","gescc":"\u2AA9","ges":"\u2A7E","gesdot":"\u2A80","gesdoto":"\u2A82","gesdotol":"\u2A84","gesl":"\u22DB\uFE00","gesles":"\u2A94","Gfr":"\uD835\uDD0A","gfr":"\uD835\uDD24","gg":"\u226B","Gg":"\u22D9","ggg":"\u22D9","gimel":"\u2137","GJcy":"\u0403","gjcy":"\u0453","gla":"\u2AA5","gl":"\u2277","glE":"\u2A92","glj":"\u2AA4","gnap":"\u2A8A","gnapprox":"\u2A8A","gne":"\u2A88","gnE":"\u2269","gneq":"\u2A88","gneqq":"\u2269","gnsim":"\u22E7","Gopf":"\uD835\uDD3E","gopf":"\uD835\uDD58","grave":"`","GreaterEqual":"\u2265","GreaterEqualLess":"\u22DB","GreaterFullEqual":"\u2267","GreaterGreater":"\u2AA2","GreaterLess":"\u2277","GreaterSlantEqual":"\u2A7E","GreaterTilde":"\u2273","Gscr":"\uD835\uDCA2","gscr":"\u210A","gsim":"\u2273","gsime":"\u2A8E","gsiml":"\u2A90","gtcc":"\u2AA7","gtcir":"\u2A7A","gt":">","GT":">","Gt":"\u226B","gtdot":"\u22D7","gtlPar":"\u2995","gtquest":"\u2A7C","gtrapprox":"\u2A86","gtrarr":"\u2978","gtrdot":"\u22D7","gtreqless":"\u22DB","gtreqqless":"\u2A8C","gtrless":"\u2277","gtrsim":"\u2273","gvertneqq":"\u2269\uFE00","gvnE":"\u2269\uFE00","Hacek":"\u02C7","hairsp":"\u200A","half":"\u00BD","hamilt":"\u210B","HARDcy":"\u042A","hardcy":"\u044A","harrcir":"\u2948","harr":"\u2194","hArr":"\u21D4","harrw":"\u21AD","Hat":"^","hbar":"\u210F","Hcirc":"\u0124","hcirc":"\u0125","hearts":"\u2665","heartsuit":"\u2665","hellip":"\u2026","hercon":"\u22B9","hfr":"\uD835\uDD25","Hfr":"\u210C","HilbertSpace":"\u210B","hksearow":"\u2925","hkswarow":"\u2926","hoarr":"\u21FF","homtht":"\u223B","hookleftarrow":"\u21A9","hookrightarrow":"\u21AA","hopf":"\uD835\uDD59","Hopf":"\u210D","horbar":"\u2015","HorizontalLine":"\u2500","hscr":"\uD835\uDCBD","Hscr":"\u210B","hslash":"\u210F","Hstrok":"\u0126","hstrok":"\u0127","HumpDownHump":"\u224E","HumpEqual":"\u224F","hybull":"\u2043","hyphen":"\u2010","Iacute":"\u00CD","iacute":"\u00ED","ic":"\u2063","Icirc":"\u00CE","icirc":"\u00EE","Icy":"\u0418","icy":"\u0438","Idot":"\u0130","IEcy":"\u0415","iecy":"\u0435","iexcl":"\u00A1","iff":"\u21D4","ifr":"\uD835\uDD26","Ifr":"\u2111","Igrave":"\u00CC","igrave":"\u00EC","ii":"\u2148","iiiint":"\u2A0C","iiint":"\u222D","iinfin":"\u29DC","iiota":"\u2129","IJlig":"\u0132","ijlig":"\u0133","Imacr":"\u012A","imacr":"\u012B","image":"\u2111","ImaginaryI":"\u2148","imagline":"\u2110","imagpart":"\u2111","imath":"\u0131","Im":"\u2111","imof":"\u22B7","imped":"\u01B5","Implies":"\u21D2","incare":"\u2105","in":"\u2208","infin":"\u221E","infintie":"\u29DD","inodot":"\u0131","intcal":"\u22BA","int":"\u222B","Int":"\u222C","integers":"\u2124","Integral":"\u222B","intercal":"\u22BA","Intersection":"\u22C2","intlarhk":"\u2A17","intprod":"\u2A3C","InvisibleComma":"\u2063","InvisibleTimes":"\u2062","IOcy":"\u0401","iocy":"\u0451","Iogon":"\u012E","iogon":"\u012F","Iopf":"\uD835\uDD40","iopf":"\uD835\uDD5A","Iota":"\u0399","iota":"\u03B9","iprod":"\u2A3C","iquest":"\u00BF","iscr":"\uD835\uDCBE","Iscr":"\u2110","isin":"\u2208","isindot":"\u22F5","isinE":"\u22F9","isins":"\u22F4","isinsv":"\u22F3","isinv":"\u2208","it":"\u2062","Itilde":"\u0128","itilde":"\u0129","Iukcy":"\u0406","iukcy":"\u0456","Iuml":"\u00CF","iuml":"\u00EF","Jcirc":"\u0134","jcirc":"\u0135","Jcy":"\u0419","jcy":"\u0439","Jfr":"\uD835\uDD0D","jfr":"\uD835\uDD27","jmath":"\u0237","Jopf":"\uD835\uDD41","jopf":"\uD835\uDD5B","Jscr":"\uD835\uDCA5","jscr":"\uD835\uDCBF","Jsercy":"\u0408","jsercy":"\u0458","Jukcy":"\u0404","jukcy":"\u0454","Kappa":"\u039A","kappa":"\u03BA","kappav":"\u03F0","Kcedil":"\u0136","kcedil":"\u0137","Kcy":"\u041A","kcy":"\u043A","Kfr":"\uD835\uDD0E","kfr":"\uD835\uDD28","kgreen":"\u0138","KHcy":"\u0425","khcy":"\u0445","KJcy":"\u040C","kjcy":"\u045C","Kopf":"\uD835\uDD42","kopf":"\uD835\uDD5C","Kscr":"\uD835\uDCA6","kscr":"\uD835\uDCC0","lAarr":"\u21DA","Lacute":"\u0139","lacute":"\u013A","laemptyv":"\u29B4","lagran":"\u2112","Lambda":"\u039B","lambda":"\u03BB","lang":"\u27E8","Lang":"\u27EA","langd":"\u2991","langle":"\u27E8","lap":"\u2A85","Laplacetrf":"\u2112","laquo":"\u00AB","larrb":"\u21E4","larrbfs":"\u291F","larr":"\u2190","Larr":"\u219E","lArr":"\u21D0","larrfs":"\u291D","larrhk":"\u21A9","larrlp":"\u21AB","larrpl":"\u2939","larrsim":"\u2973","larrtl":"\u21A2","latail":"\u2919","lAtail":"\u291B","lat":"\u2AAB","late":"\u2AAD","lates":"\u2AAD\uFE00","lbarr":"\u290C","lBarr":"\u290E","lbbrk":"\u2772","lbrace":"{","lbrack":"[","lbrke":"\u298B","lbrksld":"\u298F","lbrkslu":"\u298D","Lcaron":"\u013D","lcaron":"\u013E","Lcedil":"\u013B","lcedil":"\u013C","lceil":"\u2308","lcub":"{","Lcy":"\u041B","lcy":"\u043B","ldca":"\u2936","ldquo":"\u201C","ldquor":"\u201E","ldrdhar":"\u2967","ldrushar":"\u294B","ldsh":"\u21B2","le":"\u2264","lE":"\u2266","LeftAngleBracket":"\u27E8","LeftArrowBar":"\u21E4","leftarrow":"\u2190","LeftArrow":"\u2190","Leftarrow":"\u21D0","LeftArrowRightArrow":"\u21C6","leftarrowtail":"\u21A2","LeftCeiling":"\u2308","LeftDoubleBracket":"\u27E6","LeftDownTeeVector":"\u2961","LeftDownVectorBar":"\u2959","LeftDownVector":"\u21C3","LeftFloor":"\u230A","leftharpoondown":"\u21BD","leftharpoonup":"\u21BC","leftleftarrows":"\u21C7","leftrightarrow":"\u2194","LeftRightArrow":"\u2194","Leftrightarrow":"\u21D4","leftrightarrows":"\u21C6","leftrightharpoons":"\u21CB","leftrightsquigarrow":"\u21AD","LeftRightVector":"\u294E","LeftTeeArrow":"\u21A4","LeftTee":"\u22A3","LeftTeeVector":"\u295A","leftthreetimes":"\u22CB","LeftTriangleBar":"\u29CF","LeftTriangle":"\u22B2","LeftTriangleEqual":"\u22B4","LeftUpDownVector":"\u2951","LeftUpTeeVector":"\u2960","LeftUpVectorBar":"\u2958","LeftUpVector":"\u21BF","LeftVectorBar":"\u2952","LeftVector":"\u21BC","lEg":"\u2A8B","leg":"\u22DA","leq":"\u2264","leqq":"\u2266","leqslant":"\u2A7D","lescc":"\u2AA8","les":"\u2A7D","lesdot":"\u2A7F","lesdoto":"\u2A81","lesdotor":"\u2A83","lesg":"\u22DA\uFE00","lesges":"\u2A93","lessapprox":"\u2A85","lessdot":"\u22D6","lesseqgtr":"\u22DA","lesseqqgtr":"\u2A8B","LessEqualGreater":"\u22DA","LessFullEqual":"\u2266","LessGreater":"\u2276","lessgtr":"\u2276","LessLess":"\u2AA1","lesssim":"\u2272","LessSlantEqual":"\u2A7D","LessTilde":"\u2272","lfisht":"\u297C","lfloor":"\u230A","Lfr":"\uD835\uDD0F","lfr":"\uD835\uDD29","lg":"\u2276","lgE":"\u2A91","lHar":"\u2962","lhard":"\u21BD","lharu":"\u21BC","lharul":"\u296A","lhblk":"\u2584","LJcy":"\u0409","ljcy":"\u0459","llarr":"\u21C7","ll":"\u226A","Ll":"\u22D8","llcorner":"\u231E","Lleftarrow":"\u21DA","llhard":"\u296B","lltri":"\u25FA","Lmidot":"\u013F","lmidot":"\u0140","lmoustache":"\u23B0","lmoust":"\u23B0","lnap":"\u2A89","lnapprox":"\u2A89","lne":"\u2A87","lnE":"\u2268","lneq":"\u2A87","lneqq":"\u2268","lnsim":"\u22E6","loang":"\u27EC","loarr":"\u21FD","lobrk":"\u27E6","longleftarrow":"\u27F5","LongLeftArrow":"\u27F5","Longleftarrow":"\u27F8","longleftrightarrow":"\u27F7","LongLeftRightArrow":"\u27F7","Longleftrightarrow":"\u27FA","longmapsto":"\u27FC","longrightarrow":"\u27F6","LongRightArrow":"\u27F6","Longrightarrow":"\u27F9","looparrowleft":"\u21AB","looparrowright":"\u21AC","lopar":"\u2985","Lopf":"\uD835\uDD43","lopf":"\uD835\uDD5D","loplus":"\u2A2D","lotimes":"\u2A34","lowast":"\u2217","lowbar":"_","LowerLeftArrow":"\u2199","LowerRightArrow":"\u2198","loz":"\u25CA","lozenge":"\u25CA","lozf":"\u29EB","lpar":"(","lparlt":"\u2993","lrarr":"\u21C6","lrcorner":"\u231F","lrhar":"\u21CB","lrhard":"\u296D","lrm":"\u200E","lrtri":"\u22BF","lsaquo":"\u2039","lscr":"\uD835\uDCC1","Lscr":"\u2112","lsh":"\u21B0","Lsh":"\u21B0","lsim":"\u2272","lsime":"\u2A8D","lsimg":"\u2A8F","lsqb":"[","lsquo":"\u2018","lsquor":"\u201A","Lstrok":"\u0141","lstrok":"\u0142","ltcc":"\u2AA6","ltcir":"\u2A79","lt":"<","LT":"<","Lt":"\u226A","ltdot":"\u22D6","lthree":"\u22CB","ltimes":"\u22C9","ltlarr":"\u2976","ltquest":"\u2A7B","ltri":"\u25C3","ltrie":"\u22B4","ltrif":"\u25C2","ltrPar":"\u2996","lurdshar":"\u294A","luruhar":"\u2966","lvertneqq":"\u2268\uFE00","lvnE":"\u2268\uFE00","macr":"\u00AF","male":"\u2642","malt":"\u2720","maltese":"\u2720","Map":"\u2905","map":"\u21A6","mapsto":"\u21A6","mapstodown":"\u21A7","mapstoleft":"\u21A4","mapstoup":"\u21A5","marker":"\u25AE","mcomma":"\u2A29","Mcy":"\u041C","mcy":"\u043C","mdash":"\u2014","mDDot":"\u223A","measuredangle":"\u2221","MediumSpace":"\u205F","Mellintrf":"\u2133","Mfr":"\uD835\uDD10","mfr":"\uD835\uDD2A","mho":"\u2127","micro":"\u00B5","midast":"*","midcir":"\u2AF0","mid":"\u2223","middot":"\u00B7","minusb":"\u229F","minus":"\u2212","minusd":"\u2238","minusdu":"\u2A2A","MinusPlus":"\u2213","mlcp":"\u2ADB","mldr":"\u2026","mnplus":"\u2213","models":"\u22A7","Mopf":"\uD835\uDD44","mopf":"\uD835\uDD5E","mp":"\u2213","mscr":"\uD835\uDCC2","Mscr":"\u2133","mstpos":"\u223E","Mu":"\u039C","mu":"\u03BC","multimap":"\u22B8","mumap":"\u22B8","nabla":"\u2207","Nacute":"\u0143","nacute":"\u0144","nang":"\u2220\u20D2","nap":"\u2249","napE":"\u2A70\u0338","napid":"\u224B\u0338","napos":"\u0149","napprox":"\u2249","natural":"\u266E","naturals":"\u2115","natur":"\u266E","nbsp":"\u00A0","nbump":"\u224E\u0338","nbumpe":"\u224F\u0338","ncap":"\u2A43","Ncaron":"\u0147","ncaron":"\u0148","Ncedil":"\u0145","ncedil":"\u0146","ncong":"\u2247","ncongdot":"\u2A6D\u0338","ncup":"\u2A42","Ncy":"\u041D","ncy":"\u043D","ndash":"\u2013","nearhk":"\u2924","nearr":"\u2197","neArr":"\u21D7","nearrow":"\u2197","ne":"\u2260","nedot":"\u2250\u0338","NegativeMediumSpace":"\u200B","NegativeThickSpace":"\u200B","NegativeThinSpace":"\u200B","NegativeVeryThinSpace":"\u200B","nequiv":"\u2262","nesear":"\u2928","nesim":"\u2242\u0338","NestedGreaterGreater":"\u226B","NestedLessLess":"\u226A","NewLine":"\n","nexist":"\u2204","nexists":"\u2204","Nfr":"\uD835\uDD11","nfr":"\uD835\uDD2B","ngE":"\u2267\u0338","nge":"\u2271","ngeq":"\u2271","ngeqq":"\u2267\u0338","ngeqslant":"\u2A7E\u0338","nges":"\u2A7E\u0338","nGg":"\u22D9\u0338","ngsim":"\u2275","nGt":"\u226B\u20D2","ngt":"\u226F","ngtr":"\u226F","nGtv":"\u226B\u0338","nharr":"\u21AE","nhArr":"\u21CE","nhpar":"\u2AF2","ni":"\u220B","nis":"\u22FC","nisd":"\u22FA","niv":"\u220B","NJcy":"\u040A","njcy":"\u045A","nlarr":"\u219A","nlArr":"\u21CD","nldr":"\u2025","nlE":"\u2266\u0338","nle":"\u2270","nleftarrow":"\u219A","nLeftarrow":"\u21CD","nleftrightarrow":"\u21AE","nLeftrightarrow":"\u21CE","nleq":"\u2270","nleqq":"\u2266\u0338","nleqslant":"\u2A7D\u0338","nles":"\u2A7D\u0338","nless":"\u226E","nLl":"\u22D8\u0338","nlsim":"\u2274","nLt":"\u226A\u20D2","nlt":"\u226E","nltri":"\u22EA","nltrie":"\u22EC","nLtv":"\u226A\u0338","nmid":"\u2224","NoBreak":"\u2060","NonBreakingSpace":"\u00A0","nopf":"\uD835\uDD5F","Nopf":"\u2115","Not":"\u2AEC","not":"\u00AC","NotCongruent":"\u2262","NotCupCap":"\u226D","NotDoubleVerticalBar":"\u2226","NotElement":"\u2209","NotEqual":"\u2260","NotEqualTilde":"\u2242\u0338","NotExists":"\u2204","NotGreater":"\u226F","NotGreaterEqual":"\u2271","NotGreaterFullEqual":"\u2267\u0338","NotGreaterGreater":"\u226B\u0338","NotGreaterLess":"\u2279","NotGreaterSlantEqual":"\u2A7E\u0338","NotGreaterTilde":"\u2275","NotHumpDownHump":"\u224E\u0338","NotHumpEqual":"\u224F\u0338","notin":"\u2209","notindot":"\u22F5\u0338","notinE":"\u22F9\u0338","notinva":"\u2209","notinvb":"\u22F7","notinvc":"\u22F6","NotLeftTriangleBar":"\u29CF\u0338","NotLeftTriangle":"\u22EA","NotLeftTriangleEqual":"\u22EC","NotLess":"\u226E","NotLessEqual":"\u2270","NotLessGreater":"\u2278","NotLessLess":"\u226A\u0338","NotLessSlantEqual":"\u2A7D\u0338","NotLessTilde":"\u2274","NotNestedGreaterGreater":"\u2AA2\u0338","NotNestedLessLess":"\u2AA1\u0338","notni":"\u220C","notniva":"\u220C","notnivb":"\u22FE","notnivc":"\u22FD","NotPrecedes":"\u2280","NotPrecedesEqual":"\u2AAF\u0338","NotPrecedesSlantEqual":"\u22E0","NotReverseElement":"\u220C","NotRightTriangleBar":"\u29D0\u0338","NotRightTriangle":"\u22EB","NotRightTriangleEqual":"\u22ED","NotSquareSubset":"\u228F\u0338","NotSquareSubsetEqual":"\u22E2","NotSquareSuperset":"\u2290\u0338","NotSquareSupersetEqual":"\u22E3","NotSubset":"\u2282\u20D2","NotSubsetEqual":"\u2288","NotSucceeds":"\u2281","NotSucceedsEqual":"\u2AB0\u0338","NotSucceedsSlantEqual":"\u22E1","NotSucceedsTilde":"\u227F\u0338","NotSuperset":"\u2283\u20D2","NotSupersetEqual":"\u2289","NotTilde":"\u2241","NotTildeEqual":"\u2244","NotTildeFullEqual":"\u2247","NotTildeTilde":"\u2249","NotVerticalBar":"\u2224","nparallel":"\u2226","npar":"\u2226","nparsl":"\u2AFD\u20E5","npart":"\u2202\u0338","npolint":"\u2A14","npr":"\u2280","nprcue":"\u22E0","nprec":"\u2280","npreceq":"\u2AAF\u0338","npre":"\u2AAF\u0338","nrarrc":"\u2933\u0338","nrarr":"\u219B","nrArr":"\u21CF","nrarrw":"\u219D\u0338","nrightarrow":"\u219B","nRightarrow":"\u21CF","nrtri":"\u22EB","nrtrie":"\u22ED","nsc":"\u2281","nsccue":"\u22E1","nsce":"\u2AB0\u0338","Nscr":"\uD835\uDCA9","nscr":"\uD835\uDCC3","nshortmid":"\u2224","nshortparallel":"\u2226","nsim":"\u2241","nsime":"\u2244","nsimeq":"\u2244","nsmid":"\u2224","nspar":"\u2226","nsqsube":"\u22E2","nsqsupe":"\u22E3","nsub":"\u2284","nsubE":"\u2AC5\u0338","nsube":"\u2288","nsubset":"\u2282\u20D2","nsubseteq":"\u2288","nsubseteqq":"\u2AC5\u0338","nsucc":"\u2281","nsucceq":"\u2AB0\u0338","nsup":"\u2285","nsupE":"\u2AC6\u0338","nsupe":"\u2289","nsupset":"\u2283\u20D2","nsupseteq":"\u2289","nsupseteqq":"\u2AC6\u0338","ntgl":"\u2279","Ntilde":"\u00D1","ntilde":"\u00F1","ntlg":"\u2278","ntriangleleft":"\u22EA","ntrianglelefteq":"\u22EC","ntriangleright":"\u22EB","ntrianglerighteq":"\u22ED","Nu":"\u039D","nu":"\u03BD","num":"#","numero":"\u2116","numsp":"\u2007","nvap":"\u224D\u20D2","nvdash":"\u22AC","nvDash":"\u22AD","nVdash":"\u22AE","nVDash":"\u22AF","nvge":"\u2265\u20D2","nvgt":">\u20D2","nvHarr":"\u2904","nvinfin":"\u29DE","nvlArr":"\u2902","nvle":"\u2264\u20D2","nvlt":"<\u20D2","nvltrie":"\u22B4\u20D2","nvrArr":"\u2903","nvrtrie":"\u22B5\u20D2","nvsim":"\u223C\u20D2","nwarhk":"\u2923","nwarr":"\u2196","nwArr":"\u21D6","nwarrow":"\u2196","nwnear":"\u2927","Oacute":"\u00D3","oacute":"\u00F3","oast":"\u229B","Ocirc":"\u00D4","ocirc":"\u00F4","ocir":"\u229A","Ocy":"\u041E","ocy":"\u043E","odash":"\u229D","Odblac":"\u0150","odblac":"\u0151","odiv":"\u2A38","odot":"\u2299","odsold":"\u29BC","OElig":"\u0152","oelig":"\u0153","ofcir":"\u29BF","Ofr":"\uD835\uDD12","ofr":"\uD835\uDD2C","ogon":"\u02DB","Ograve":"\u00D2","ograve":"\u00F2","ogt":"\u29C1","ohbar":"\u29B5","ohm":"\u03A9","oint":"\u222E","olarr":"\u21BA","olcir":"\u29BE","olcross":"\u29BB","oline":"\u203E","olt":"\u29C0","Omacr":"\u014C","omacr":"\u014D","Omega":"\u03A9","omega":"\u03C9","Omicron":"\u039F","omicron":"\u03BF","omid":"\u29B6","ominus":"\u2296","Oopf":"\uD835\uDD46","oopf":"\uD835\uDD60","opar":"\u29B7","OpenCurlyDoubleQuote":"\u201C","OpenCurlyQuote":"\u2018","operp":"\u29B9","oplus":"\u2295","orarr":"\u21BB","Or":"\u2A54","or":"\u2228","ord":"\u2A5D","order":"\u2134","orderof":"\u2134","ordf":"\u00AA","ordm":"\u00BA","origof":"\u22B6","oror":"\u2A56","orslope":"\u2A57","orv":"\u2A5B","oS":"\u24C8","Oscr":"\uD835\uDCAA","oscr":"\u2134","Oslash":"\u00D8","oslash":"\u00F8","osol":"\u2298","Otilde":"\u00D5","otilde":"\u00F5","otimesas":"\u2A36","Otimes":"\u2A37","otimes":"\u2297","Ouml":"\u00D6","ouml":"\u00F6","ovbar":"\u233D","OverBar":"\u203E","OverBrace":"\u23DE","OverBracket":"\u23B4","OverParenthesis":"\u23DC","para":"\u00B6","parallel":"\u2225","par":"\u2225","parsim":"\u2AF3","parsl":"\u2AFD","part":"\u2202","PartialD":"\u2202","Pcy":"\u041F","pcy":"\u043F","percnt":"%","period":".","permil":"\u2030","perp":"\u22A5","pertenk":"\u2031","Pfr":"\uD835\uDD13","pfr":"\uD835\uDD2D","Phi":"\u03A6","phi":"\u03C6","phiv":"\u03D5","phmmat":"\u2133","phone":"\u260E","Pi":"\u03A0","pi":"\u03C0","pitchfork":"\u22D4","piv":"\u03D6","planck":"\u210F","planckh":"\u210E","plankv":"\u210F","plusacir":"\u2A23","plusb":"\u229E","pluscir":"\u2A22","plus":"+","plusdo":"\u2214","plusdu":"\u2A25","pluse":"\u2A72","PlusMinus":"\u00B1","plusmn":"\u00B1","plussim":"\u2A26","plustwo":"\u2A27","pm":"\u00B1","Poincareplane":"\u210C","pointint":"\u2A15","popf":"\uD835\uDD61","Popf":"\u2119","pound":"\u00A3","prap":"\u2AB7","Pr":"\u2ABB","pr":"\u227A","prcue":"\u227C","precapprox":"\u2AB7","prec":"\u227A","preccurlyeq":"\u227C","Precedes":"\u227A","PrecedesEqual":"\u2AAF","PrecedesSlantEqual":"\u227C","PrecedesTilde":"\u227E","preceq":"\u2AAF","precnapprox":"\u2AB9","precneqq":"\u2AB5","precnsim":"\u22E8","pre":"\u2AAF","prE":"\u2AB3","precsim":"\u227E","prime":"\u2032","Prime":"\u2033","primes":"\u2119","prnap":"\u2AB9","prnE":"\u2AB5","prnsim":"\u22E8","prod":"\u220F","Product":"\u220F","profalar":"\u232E","profline":"\u2312","profsurf":"\u2313","prop":"\u221D","Proportional":"\u221D","Proportion":"\u2237","propto":"\u221D","prsim":"\u227E","prurel":"\u22B0","Pscr":"\uD835\uDCAB","pscr":"\uD835\uDCC5","Psi":"\u03A8","psi":"\u03C8","puncsp":"\u2008","Qfr":"\uD835\uDD14","qfr":"\uD835\uDD2E","qint":"\u2A0C","qopf":"\uD835\uDD62","Qopf":"\u211A","qprime":"\u2057","Qscr":"\uD835\uDCAC","qscr":"\uD835\uDCC6","quaternions":"\u210D","quatint":"\u2A16","quest":"?","questeq":"\u225F","quot":"\"","QUOT":"\"","rAarr":"\u21DB","race":"\u223D\u0331","Racute":"\u0154","racute":"\u0155","radic":"\u221A","raemptyv":"\u29B3","rang":"\u27E9","Rang":"\u27EB","rangd":"\u2992","range":"\u29A5","rangle":"\u27E9","raquo":"\u00BB","rarrap":"\u2975","rarrb":"\u21E5","rarrbfs":"\u2920","rarrc":"\u2933","rarr":"\u2192","Rarr":"\u21A0","rArr":"\u21D2","rarrfs":"\u291E","rarrhk":"\u21AA","rarrlp":"\u21AC","rarrpl":"\u2945","rarrsim":"\u2974","Rarrtl":"\u2916","rarrtl":"\u21A3","rarrw":"\u219D","ratail":"\u291A","rAtail":"\u291C","ratio":"\u2236","rationals":"\u211A","rbarr":"\u290D","rBarr":"\u290F","RBarr":"\u2910","rbbrk":"\u2773","rbrace":"}","rbrack":"]","rbrke":"\u298C","rbrksld":"\u298E","rbrkslu":"\u2990","Rcaron":"\u0158","rcaron":"\u0159","Rcedil":"\u0156","rcedil":"\u0157","rceil":"\u2309","rcub":"}","Rcy":"\u0420","rcy":"\u0440","rdca":"\u2937","rdldhar":"\u2969","rdquo":"\u201D","rdquor":"\u201D","rdsh":"\u21B3","real":"\u211C","realine":"\u211B","realpart":"\u211C","reals":"\u211D","Re":"\u211C","rect":"\u25AD","reg":"\u00AE","REG":"\u00AE","ReverseElement":"\u220B","ReverseEquilibrium":"\u21CB","ReverseUpEquilibrium":"\u296F","rfisht":"\u297D","rfloor":"\u230B","rfr":"\uD835\uDD2F","Rfr":"\u211C","rHar":"\u2964","rhard":"\u21C1","rharu":"\u21C0","rharul":"\u296C","Rho":"\u03A1","rho":"\u03C1","rhov":"\u03F1","RightAngleBracket":"\u27E9","RightArrowBar":"\u21E5","rightarrow":"\u2192","RightArrow":"\u2192","Rightarrow":"\u21D2","RightArrowLeftArrow":"\u21C4","rightarrowtail":"\u21A3","RightCeiling":"\u2309","RightDoubleBracket":"\u27E7","RightDownTeeVector":"\u295D","RightDownVectorBar":"\u2955","RightDownVector":"\u21C2","RightFloor":"\u230B","rightharpoondown":"\u21C1","rightharpoonup":"\u21C0","rightleftarrows":"\u21C4","rightleftharpoons":"\u21CC","rightrightarrows":"\u21C9","rightsquigarrow":"\u219D","RightTeeArrow":"\u21A6","RightTee":"\u22A2","RightTeeVector":"\u295B","rightthreetimes":"\u22CC","RightTriangleBar":"\u29D0","RightTriangle":"\u22B3","RightTriangleEqual":"\u22B5","RightUpDownVector":"\u294F","RightUpTeeVector":"\u295C","RightUpVectorBar":"\u2954","RightUpVector":"\u21BE","RightVectorBar":"\u2953","RightVector":"\u21C0","ring":"\u02DA","risingdotseq":"\u2253","rlarr":"\u21C4","rlhar":"\u21CC","rlm":"\u200F","rmoustache":"\u23B1","rmoust":"\u23B1","rnmid":"\u2AEE","roang":"\u27ED","roarr":"\u21FE","robrk":"\u27E7","ropar":"\u2986","ropf":"\uD835\uDD63","Ropf":"\u211D","roplus":"\u2A2E","rotimes":"\u2A35","RoundImplies":"\u2970","rpar":")","rpargt":"\u2994","rppolint":"\u2A12","rrarr":"\u21C9","Rrightarrow":"\u21DB","rsaquo":"\u203A","rscr":"\uD835\uDCC7","Rscr":"\u211B","rsh":"\u21B1","Rsh":"\u21B1","rsqb":"]","rsquo":"\u2019","rsquor":"\u2019","rthree":"\u22CC","rtimes":"\u22CA","rtri":"\u25B9","rtrie":"\u22B5","rtrif":"\u25B8","rtriltri":"\u29CE","RuleDelayed":"\u29F4","ruluhar":"\u2968","rx":"\u211E","Sacute":"\u015A","sacute":"\u015B","sbquo":"\u201A","scap":"\u2AB8","Scaron":"\u0160","scaron":"\u0161","Sc":"\u2ABC","sc":"\u227B","sccue":"\u227D","sce":"\u2AB0","scE":"\u2AB4","Scedil":"\u015E","scedil":"\u015F","Scirc":"\u015C","scirc":"\u015D","scnap":"\u2ABA","scnE":"\u2AB6","scnsim":"\u22E9","scpolint":"\u2A13","scsim":"\u227F","Scy":"\u0421","scy":"\u0441","sdotb":"\u22A1","sdot":"\u22C5","sdote":"\u2A66","searhk":"\u2925","searr":"\u2198","seArr":"\u21D8","searrow":"\u2198","sect":"\u00A7","semi":";","seswar":"\u2929","setminus":"\u2216","setmn":"\u2216","sext":"\u2736","Sfr":"\uD835\uDD16","sfr":"\uD835\uDD30","sfrown":"\u2322","sharp":"\u266F","SHCHcy":"\u0429","shchcy":"\u0449","SHcy":"\u0428","shcy":"\u0448","ShortDownArrow":"\u2193","ShortLeftArrow":"\u2190","shortmid":"\u2223","shortparallel":"\u2225","ShortRightArrow":"\u2192","ShortUpArrow":"\u2191","shy":"\u00AD","Sigma":"\u03A3","sigma":"\u03C3","sigmaf":"\u03C2","sigmav":"\u03C2","sim":"\u223C","simdot":"\u2A6A","sime":"\u2243","simeq":"\u2243","simg":"\u2A9E","simgE":"\u2AA0","siml":"\u2A9D","simlE":"\u2A9F","simne":"\u2246","simplus":"\u2A24","simrarr":"\u2972","slarr":"\u2190","SmallCircle":"\u2218","smallsetminus":"\u2216","smashp":"\u2A33","smeparsl":"\u29E4","smid":"\u2223","smile":"\u2323","smt":"\u2AAA","smte":"\u2AAC","smtes":"\u2AAC\uFE00","SOFTcy":"\u042C","softcy":"\u044C","solbar":"\u233F","solb":"\u29C4","sol":"/","Sopf":"\uD835\uDD4A","sopf":"\uD835\uDD64","spades":"\u2660","spadesuit":"\u2660","spar":"\u2225","sqcap":"\u2293","sqcaps":"\u2293\uFE00","sqcup":"\u2294","sqcups":"\u2294\uFE00","Sqrt":"\u221A","sqsub":"\u228F","sqsube":"\u2291","sqsubset":"\u228F","sqsubseteq":"\u2291","sqsup":"\u2290","sqsupe":"\u2292","sqsupset":"\u2290","sqsupseteq":"\u2292","square":"\u25A1","Square":"\u25A1","SquareIntersection":"\u2293","SquareSubset":"\u228F","SquareSubsetEqual":"\u2291","SquareSuperset":"\u2290","SquareSupersetEqual":"\u2292","SquareUnion":"\u2294","squarf":"\u25AA","squ":"\u25A1","squf":"\u25AA","srarr":"\u2192","Sscr":"\uD835\uDCAE","sscr":"\uD835\uDCC8","ssetmn":"\u2216","ssmile":"\u2323","sstarf":"\u22C6","Star":"\u22C6","star":"\u2606","starf":"\u2605","straightepsilon":"\u03F5","straightphi":"\u03D5","strns":"\u00AF","sub":"\u2282","Sub":"\u22D0","subdot":"\u2ABD","subE":"\u2AC5","sube":"\u2286","subedot":"\u2AC3","submult":"\u2AC1","subnE":"\u2ACB","subne":"\u228A","subplus":"\u2ABF","subrarr":"\u2979","subset":"\u2282","Subset":"\u22D0","subseteq":"\u2286","subseteqq":"\u2AC5","SubsetEqual":"\u2286","subsetneq":"\u228A","subsetneqq":"\u2ACB","subsim":"\u2AC7","subsub":"\u2AD5","subsup":"\u2AD3","succapprox":"\u2AB8","succ":"\u227B","succcurlyeq":"\u227D","Succeeds":"\u227B","SucceedsEqual":"\u2AB0","SucceedsSlantEqual":"\u227D","SucceedsTilde":"\u227F","succeq":"\u2AB0","succnapprox":"\u2ABA","succneqq":"\u2AB6","succnsim":"\u22E9","succsim":"\u227F","SuchThat":"\u220B","sum":"\u2211","Sum":"\u2211","sung":"\u266A","sup1":"\u00B9","sup2":"\u00B2","sup3":"\u00B3","sup":"\u2283","Sup":"\u22D1","supdot":"\u2ABE","supdsub":"\u2AD8","supE":"\u2AC6","supe":"\u2287","supedot":"\u2AC4","Superset":"\u2283","SupersetEqual":"\u2287","suphsol":"\u27C9","suphsub":"\u2AD7","suplarr":"\u297B","supmult":"\u2AC2","supnE":"\u2ACC","supne":"\u228B","supplus":"\u2AC0","supset":"\u2283","Supset":"\u22D1","supseteq":"\u2287","supseteqq":"\u2AC6","supsetneq":"\u228B","supsetneqq":"\u2ACC","supsim":"\u2AC8","supsub":"\u2AD4","supsup":"\u2AD6","swarhk":"\u2926","swarr":"\u2199","swArr":"\u21D9","swarrow":"\u2199","swnwar":"\u292A","szlig":"\u00DF","Tab":"\t","target":"\u2316","Tau":"\u03A4","tau":"\u03C4","tbrk":"\u23B4","Tcaron":"\u0164","tcaron":"\u0165","Tcedil":"\u0162","tcedil":"\u0163","Tcy":"\u0422","tcy":"\u0442","tdot":"\u20DB","telrec":"\u2315","Tfr":"\uD835\uDD17","tfr":"\uD835\uDD31","there4":"\u2234","therefore":"\u2234","Therefore":"\u2234","Theta":"\u0398","theta":"\u03B8","thetasym":"\u03D1","thetav":"\u03D1","thickapprox":"\u2248","thicksim":"\u223C","ThickSpace":"\u205F\u200A","ThinSpace":"\u2009","thinsp":"\u2009","thkap":"\u2248","thksim":"\u223C","THORN":"\u00DE","thorn":"\u00FE","tilde":"\u02DC","Tilde":"\u223C","TildeEqual":"\u2243","TildeFullEqual":"\u2245","TildeTilde":"\u2248","timesbar":"\u2A31","timesb":"\u22A0","times":"\u00D7","timesd":"\u2A30","tint":"\u222D","toea":"\u2928","topbot":"\u2336","topcir":"\u2AF1","top":"\u22A4","Topf":"\uD835\uDD4B","topf":"\uD835\uDD65","topfork":"\u2ADA","tosa":"\u2929","tprime":"\u2034","trade":"\u2122","TRADE":"\u2122","triangle":"\u25B5","triangledown":"\u25BF","triangleleft":"\u25C3","trianglelefteq":"\u22B4","triangleq":"\u225C","triangleright":"\u25B9","trianglerighteq":"\u22B5","tridot":"\u25EC","trie":"\u225C","triminus":"\u2A3A","TripleDot":"\u20DB","triplus":"\u2A39","trisb":"\u29CD","tritime":"\u2A3B","trpezium":"\u23E2","Tscr":"\uD835\uDCAF","tscr":"\uD835\uDCC9","TScy":"\u0426","tscy":"\u0446","TSHcy":"\u040B","tshcy":"\u045B","Tstrok":"\u0166","tstrok":"\u0167","twixt":"\u226C","twoheadleftarrow":"\u219E","twoheadrightarrow":"\u21A0","Uacute":"\u00DA","uacute":"\u00FA","uarr":"\u2191","Uarr":"\u219F","uArr":"\u21D1","Uarrocir":"\u2949","Ubrcy":"\u040E","ubrcy":"\u045E","Ubreve":"\u016C","ubreve":"\u016D","Ucirc":"\u00DB","ucirc":"\u00FB","Ucy":"\u0423","ucy":"\u0443","udarr":"\u21C5","Udblac":"\u0170","udblac":"\u0171","udhar":"\u296E","ufisht":"\u297E","Ufr":"\uD835\uDD18","ufr":"\uD835\uDD32","Ugrave":"\u00D9","ugrave":"\u00F9","uHar":"\u2963","uharl":"\u21BF","uharr":"\u21BE","uhblk":"\u2580","ulcorn":"\u231C","ulcorner":"\u231C","ulcrop":"\u230F","ultri":"\u25F8","Umacr":"\u016A","umacr":"\u016B","uml":"\u00A8","UnderBar":"_","UnderBrace":"\u23DF","UnderBracket":"\u23B5","UnderParenthesis":"\u23DD","Union":"\u22C3","UnionPlus":"\u228E","Uogon":"\u0172","uogon":"\u0173","Uopf":"\uD835\uDD4C","uopf":"\uD835\uDD66","UpArrowBar":"\u2912","uparrow":"\u2191","UpArrow":"\u2191","Uparrow":"\u21D1","UpArrowDownArrow":"\u21C5","updownarrow":"\u2195","UpDownArrow":"\u2195","Updownarrow":"\u21D5","UpEquilibrium":"\u296E","upharpoonleft":"\u21BF","upharpoonright":"\u21BE","uplus":"\u228E","UpperLeftArrow":"\u2196","UpperRightArrow":"\u2197","upsi":"\u03C5","Upsi":"\u03D2","upsih":"\u03D2","Upsilon":"\u03A5","upsilon":"\u03C5","UpTeeArrow":"\u21A5","UpTee":"\u22A5","upuparrows":"\u21C8","urcorn":"\u231D","urcorner":"\u231D","urcrop":"\u230E","Uring":"\u016E","uring":"\u016F","urtri":"\u25F9","Uscr":"\uD835\uDCB0","uscr":"\uD835\uDCCA","utdot":"\u22F0","Utilde":"\u0168","utilde":"\u0169","utri":"\u25B5","utrif":"\u25B4","uuarr":"\u21C8","Uuml":"\u00DC","uuml":"\u00FC","uwangle":"\u29A7","vangrt":"\u299C","varepsilon":"\u03F5","varkappa":"\u03F0","varnothing":"\u2205","varphi":"\u03D5","varpi":"\u03D6","varpropto":"\u221D","varr":"\u2195","vArr":"\u21D5","varrho":"\u03F1","varsigma":"\u03C2","varsubsetneq":"\u228A\uFE00","varsubsetneqq":"\u2ACB\uFE00","varsupsetneq":"\u228B\uFE00","varsupsetneqq":"\u2ACC\uFE00","vartheta":"\u03D1","vartriangleleft":"\u22B2","vartriangleright":"\u22B3","vBar":"\u2AE8","Vbar":"\u2AEB","vBarv":"\u2AE9","Vcy":"\u0412","vcy":"\u0432","vdash":"\u22A2","vDash":"\u22A8","Vdash":"\u22A9","VDash":"\u22AB","Vdashl":"\u2AE6","veebar":"\u22BB","vee":"\u2228","Vee":"\u22C1","veeeq":"\u225A","vellip":"\u22EE","verbar":"|","Verbar":"\u2016","vert":"|","Vert":"\u2016","VerticalBar":"\u2223","VerticalLine":"|","VerticalSeparator":"\u2758","VerticalTilde":"\u2240","VeryThinSpace":"\u200A","Vfr":"\uD835\uDD19","vfr":"\uD835\uDD33","vltri":"\u22B2","vnsub":"\u2282\u20D2","vnsup":"\u2283\u20D2","Vopf":"\uD835\uDD4D","vopf":"\uD835\uDD67","vprop":"\u221D","vrtri":"\u22B3","Vscr":"\uD835\uDCB1","vscr":"\uD835\uDCCB","vsubnE":"\u2ACB\uFE00","vsubne":"\u228A\uFE00","vsupnE":"\u2ACC\uFE00","vsupne":"\u228B\uFE00","Vvdash":"\u22AA","vzigzag":"\u299A","Wcirc":"\u0174","wcirc":"\u0175","wedbar":"\u2A5F","wedge":"\u2227","Wedge":"\u22C0","wedgeq":"\u2259","weierp":"\u2118","Wfr":"\uD835\uDD1A","wfr":"\uD835\uDD34","Wopf":"\uD835\uDD4E","wopf":"\uD835\uDD68","wp":"\u2118","wr":"\u2240","wreath":"\u2240","Wscr":"\uD835\uDCB2","wscr":"\uD835\uDCCC","xcap":"\u22C2","xcirc":"\u25EF","xcup":"\u22C3","xdtri":"\u25BD","Xfr":"\uD835\uDD1B","xfr":"\uD835\uDD35","xharr":"\u27F7","xhArr":"\u27FA","Xi":"\u039E","xi":"\u03BE","xlarr":"\u27F5","xlArr":"\u27F8","xmap":"\u27FC","xnis":"\u22FB","xodot":"\u2A00","Xopf":"\uD835\uDD4F","xopf":"\uD835\uDD69","xoplus":"\u2A01","xotime":"\u2A02","xrarr":"\u27F6","xrArr":"\u27F9","Xscr":"\uD835\uDCB3","xscr":"\uD835\uDCCD","xsqcup":"\u2A06","xuplus":"\u2A04","xutri":"\u25B3","xvee":"\u22C1","xwedge":"\u22C0","Yacute":"\u00DD","yacute":"\u00FD","YAcy":"\u042F","yacy":"\u044F","Ycirc":"\u0176","ycirc":"\u0177","Ycy":"\u042B","ycy":"\u044B","yen":"\u00A5","Yfr":"\uD835\uDD1C","yfr":"\uD835\uDD36","YIcy":"\u0407","yicy":"\u0457","Yopf":"\uD835\uDD50","yopf":"\uD835\uDD6A","Yscr":"\uD835\uDCB4","yscr":"\uD835\uDCCE","YUcy":"\u042E","yucy":"\u044E","yuml":"\u00FF","Yuml":"\u0178","Zacute":"\u0179","zacute":"\u017A","Zcaron":"\u017D","zcaron":"\u017E","Zcy":"\u0417","zcy":"\u0437","Zdot":"\u017B","zdot":"\u017C","zeetrf":"\u2128","ZeroWidthSpace":"\u200B","Zeta":"\u0396","zeta":"\u03B6","zfr":"\uD835\uDD37","Zfr":"\u2128","ZHcy":"\u0416","zhcy":"\u0436","zigrarr":"\u21DD","zopf":"\uD835\uDD6B","Zopf":"\u2124","Zscr":"\uD835\uDCB5","zscr":"\uD835\uDCCF","zwj":"\u200D","zwnj":"\u200C"}
-},{}],64:[function(require,module,exports){
+},{}],116:[function(require,module,exports){
 module.exports={"Aacute":"\u00C1","aacute":"\u00E1","Acirc":"\u00C2","acirc":"\u00E2","acute":"\u00B4","AElig":"\u00C6","aelig":"\u00E6","Agrave":"\u00C0","agrave":"\u00E0","amp":"&","AMP":"&","Aring":"\u00C5","aring":"\u00E5","Atilde":"\u00C3","atilde":"\u00E3","Auml":"\u00C4","auml":"\u00E4","brvbar":"\u00A6","Ccedil":"\u00C7","ccedil":"\u00E7","cedil":"\u00B8","cent":"\u00A2","copy":"\u00A9","COPY":"\u00A9","curren":"\u00A4","deg":"\u00B0","divide":"\u00F7","Eacute":"\u00C9","eacute":"\u00E9","Ecirc":"\u00CA","ecirc":"\u00EA","Egrave":"\u00C8","egrave":"\u00E8","ETH":"\u00D0","eth":"\u00F0","Euml":"\u00CB","euml":"\u00EB","frac12":"\u00BD","frac14":"\u00BC","frac34":"\u00BE","gt":">","GT":">","Iacute":"\u00CD","iacute":"\u00ED","Icirc":"\u00CE","icirc":"\u00EE","iexcl":"\u00A1","Igrave":"\u00CC","igrave":"\u00EC","iquest":"\u00BF","Iuml":"\u00CF","iuml":"\u00EF","laquo":"\u00AB","lt":"<","LT":"<","macr":"\u00AF","micro":"\u00B5","middot":"\u00B7","nbsp":"\u00A0","not":"\u00AC","Ntilde":"\u00D1","ntilde":"\u00F1","Oacute":"\u00D3","oacute":"\u00F3","Ocirc":"\u00D4","ocirc":"\u00F4","Ograve":"\u00D2","ograve":"\u00F2","ordf":"\u00AA","ordm":"\u00BA","Oslash":"\u00D8","oslash":"\u00F8","Otilde":"\u00D5","otilde":"\u00F5","Ouml":"\u00D6","ouml":"\u00F6","para":"\u00B6","plusmn":"\u00B1","pound":"\u00A3","quot":"\"","QUOT":"\"","raquo":"\u00BB","reg":"\u00AE","REG":"\u00AE","sect":"\u00A7","shy":"\u00AD","sup1":"\u00B9","sup2":"\u00B2","sup3":"\u00B3","szlig":"\u00DF","THORN":"\u00DE","thorn":"\u00FE","times":"\u00D7","Uacute":"\u00DA","uacute":"\u00FA","Ucirc":"\u00DB","ucirc":"\u00FB","Ugrave":"\u00D9","ugrave":"\u00F9","uml":"\u00A8","Uuml":"\u00DC","uuml":"\u00FC","Yacute":"\u00DD","yacute":"\u00FD","yen":"\u00A5","yuml":"\u00FF"}
-},{}],65:[function(require,module,exports){
+},{}],117:[function(require,module,exports){
 module.exports={"amp":"&","apos":"'","gt":">","lt":"<","quot":"\""}
 
-},{}],66:[function(require,module,exports){
+},{}],118:[function(require,module,exports){
 module.exports = CollectingHandler;
 
 function CollectingHandler(cbs){
@@ -5028,7 +13496,7 @@ CollectingHandler.prototype.restart = function(){
 	}
 };
 
-},{"./":73}],67:[function(require,module,exports){
+},{"./":125}],119:[function(require,module,exports){
 var index = require("./index.js"),
     DomHandler = index.DomHandler,
 	DomUtils = index.DomUtils;
@@ -5125,7 +13593,7 @@ FeedHandler.prototype.onend = function() {
 
 module.exports = FeedHandler;
 
-},{"./index.js":73,"util":133}],68:[function(require,module,exports){
+},{"./index.js":125,"util":186}],120:[function(require,module,exports){
 var Tokenizer = require("./Tokenizer.js");
 
 /*
@@ -5464,7 +13932,7 @@ Parser.prototype.done = Parser.prototype.end;
 
 module.exports = Parser;
 
-},{"./Tokenizer.js":71,"events":108,"util":133}],69:[function(require,module,exports){
+},{"./Tokenizer.js":123,"events":161,"util":186}],121:[function(require,module,exports){
 module.exports = ProxyHandler;
 
 function ProxyHandler(cbs){
@@ -5492,7 +13960,7 @@ Object.keys(EVENTS).forEach(function(name){
 		throw Error("wrong number of arguments");
 	}
 });
-},{"./":73}],70:[function(require,module,exports){
+},{"./":125}],122:[function(require,module,exports){
 module.exports = Stream;
 
 var Parser = require("./WritableStream.js");
@@ -5528,7 +13996,7 @@ Object.keys(EVENTS).forEach(function(name){
 		throw Error("wrong number of arguments!");
 	}
 });
-},{"../":73,"./WritableStream.js":72,"util":133}],71:[function(require,module,exports){
+},{"../":125,"./WritableStream.js":124,"util":186}],123:[function(require,module,exports){
 module.exports = Tokenizer;
 
 var decodeCodePoint = require("entities/lib/decode_codepoint.js"),
@@ -6427,7 +14895,7 @@ Tokenizer.prototype._emitPartial = function(value){
 	}
 };
 
-},{"entities/lib/decode_codepoint.js":85,"entities/maps/entities.json":87,"entities/maps/legacy.json":88,"entities/maps/xml.json":89}],72:[function(require,module,exports){
+},{"entities/lib/decode_codepoint.js":137,"entities/maps/entities.json":139,"entities/maps/legacy.json":140,"entities/maps/xml.json":141}],124:[function(require,module,exports){
 module.exports = Stream;
 
 var Parser = require("./Parser.js"),
@@ -6449,7 +14917,7 @@ WritableStream.prototype._write = function(chunk, encoding, cb){
 	this._parser.write(chunk);
 	cb();
 };
-},{"./Parser.js":68,"readable-stream":99,"stream":129,"util":133}],73:[function(require,module,exports){
+},{"./Parser.js":120,"readable-stream":151,"stream":182,"util":186}],125:[function(require,module,exports){
 var Parser = require("./Parser.js"),
     DomHandler = require("domhandler");
 
@@ -6519,9 +14987,9 @@ module.exports = {
 	}
 };
 
-},{"./CollectingHandler.js":66,"./FeedHandler.js":67,"./Parser.js":68,"./ProxyHandler.js":69,"./Stream.js":70,"./Tokenizer.js":71,"./WritableStream.js":72,"domelementtype":74,"domhandler":75,"domutils":78}],74:[function(require,module,exports){
-arguments[4][55][0].apply(exports,arguments)
-},{"dup":55}],75:[function(require,module,exports){
+},{"./CollectingHandler.js":118,"./FeedHandler.js":119,"./Parser.js":120,"./ProxyHandler.js":121,"./Stream.js":122,"./Tokenizer.js":123,"./WritableStream.js":124,"domelementtype":126,"domhandler":127,"domutils":130}],126:[function(require,module,exports){
+arguments[4][107][0].apply(exports,arguments)
+},{"dup":107}],127:[function(require,module,exports){
 var ElementType = require("domelementtype");
 
 var re_whitespace = /\s+/g;
@@ -6694,7 +15162,7 @@ DomHandler.prototype.onprocessinginstruction = function(name, data){
 
 module.exports = DomHandler;
 
-},{"./lib/element":76,"./lib/node":77,"domelementtype":74}],76:[function(require,module,exports){
+},{"./lib/element":128,"./lib/node":129,"domelementtype":126}],128:[function(require,module,exports){
 // DOM-Level-1-compliant structure
 var NodePrototype = require('./node');
 var ElementPrototype = module.exports = Object.create(NodePrototype);
@@ -6716,7 +15184,7 @@ Object.keys(domLvl1).forEach(function(key) {
 	});
 });
 
-},{"./node":77}],77:[function(require,module,exports){
+},{"./node":129}],129:[function(require,module,exports){
 // This object will be used as the prototype for Nodes when creating a
 // DOM-Level-1-compliant structure.
 var NodePrototype = module.exports = {
@@ -6762,9 +15230,9 @@ Object.keys(domLvl1).forEach(function(key) {
 	});
 });
 
-},{}],78:[function(require,module,exports){
-arguments[4][48][0].apply(exports,arguments)
-},{"./lib/helpers":79,"./lib/legacy":80,"./lib/manipulation":81,"./lib/querying":82,"./lib/stringify":83,"./lib/traversal":84,"dup":48}],79:[function(require,module,exports){
+},{}],130:[function(require,module,exports){
+arguments[4][100][0].apply(exports,arguments)
+},{"./lib/helpers":131,"./lib/legacy":132,"./lib/manipulation":133,"./lib/querying":134,"./lib/stringify":135,"./lib/traversal":136,"dup":100}],131:[function(require,module,exports){
 // removeSubsets
 // Given an array of nodes, remove any member that is contained by another.
 exports.removeSubsets = function(nodes) {
@@ -6907,13 +15375,13 @@ exports.uniqueSort = function(nodes) {
 	return nodes;
 };
 
-},{}],80:[function(require,module,exports){
-arguments[4][50][0].apply(exports,arguments)
-},{"domelementtype":74,"dup":50}],81:[function(require,module,exports){
-arguments[4][51][0].apply(exports,arguments)
-},{"dup":51}],82:[function(require,module,exports){
-arguments[4][52][0].apply(exports,arguments)
-},{"domelementtype":74,"dup":52}],83:[function(require,module,exports){
+},{}],132:[function(require,module,exports){
+arguments[4][102][0].apply(exports,arguments)
+},{"domelementtype":126,"dup":102}],133:[function(require,module,exports){
+arguments[4][103][0].apply(exports,arguments)
+},{"dup":103}],134:[function(require,module,exports){
+arguments[4][104][0].apply(exports,arguments)
+},{"domelementtype":126,"dup":104}],135:[function(require,module,exports){
 var ElementType = require("domelementtype"),
     getOuterHTML = require("dom-serializer"),
     isTag = ElementType.isTag;
@@ -6937,7 +15405,7 @@ function getText(elem){
 	return "";
 }
 
-},{"dom-serializer":56,"domelementtype":74}],84:[function(require,module,exports){
+},{"dom-serializer":108,"domelementtype":126}],136:[function(require,module,exports){
 var getChildren = exports.getChildren = function(elem){
 	return elem.children;
 };
@@ -6963,17 +15431,17 @@ exports.getName = function(elem){
 	return elem.name;
 };
 
-},{}],85:[function(require,module,exports){
-arguments[4][60][0].apply(exports,arguments)
-},{"../maps/decode.json":86,"dup":60}],86:[function(require,module,exports){
-arguments[4][62][0].apply(exports,arguments)
-},{"dup":62}],87:[function(require,module,exports){
-arguments[4][63][0].apply(exports,arguments)
-},{"dup":63}],88:[function(require,module,exports){
-arguments[4][64][0].apply(exports,arguments)
-},{"dup":64}],89:[function(require,module,exports){
-arguments[4][65][0].apply(exports,arguments)
-},{"dup":65}],90:[function(require,module,exports){
+},{}],137:[function(require,module,exports){
+arguments[4][112][0].apply(exports,arguments)
+},{"../maps/decode.json":138,"dup":112}],138:[function(require,module,exports){
+arguments[4][114][0].apply(exports,arguments)
+},{"dup":114}],139:[function(require,module,exports){
+arguments[4][115][0].apply(exports,arguments)
+},{"dup":115}],140:[function(require,module,exports){
+arguments[4][116][0].apply(exports,arguments)
+},{"dup":116}],141:[function(require,module,exports){
+arguments[4][117][0].apply(exports,arguments)
+},{"dup":117}],142:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -7066,7 +15534,7 @@ function forEach (xs, f) {
 }
 
 }).call(this,require('_process'))
-},{"./_stream_readable":92,"./_stream_writable":94,"_process":112,"core-util-is":95,"inherits":96}],91:[function(require,module,exports){
+},{"./_stream_readable":144,"./_stream_writable":146,"_process":165,"core-util-is":147,"inherits":148}],143:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -7114,7 +15582,7 @@ PassThrough.prototype._transform = function(chunk, encoding, cb) {
   cb(null, chunk);
 };
 
-},{"./_stream_transform":93,"core-util-is":95,"inherits":96}],92:[function(require,module,exports){
+},{"./_stream_transform":145,"core-util-is":147,"inherits":148}],144:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -8069,7 +16537,7 @@ function indexOf (xs, x) {
 }
 
 }).call(this,require('_process'))
-},{"./_stream_duplex":90,"_process":112,"buffer":104,"core-util-is":95,"events":108,"inherits":96,"isarray":97,"stream":129,"string_decoder/":98,"util":103}],93:[function(require,module,exports){
+},{"./_stream_duplex":142,"_process":165,"buffer":157,"core-util-is":147,"events":161,"inherits":148,"isarray":149,"stream":182,"string_decoder/":150,"util":156}],145:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -8280,7 +16748,7 @@ function done(stream, er) {
   return stream.push(null);
 }
 
-},{"./_stream_duplex":90,"core-util-is":95,"inherits":96}],94:[function(require,module,exports){
+},{"./_stream_duplex":142,"core-util-is":147,"inherits":148}],146:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -8761,7 +17229,7 @@ function endWritable(stream, state, cb) {
 }
 
 }).call(this,require('_process'))
-},{"./_stream_duplex":90,"_process":112,"buffer":104,"core-util-is":95,"inherits":96,"stream":129}],95:[function(require,module,exports){
+},{"./_stream_duplex":142,"_process":165,"buffer":157,"core-util-is":147,"inherits":148,"stream":182}],147:[function(require,module,exports){
 (function (Buffer){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -8872,37 +17340,14 @@ function objectToString(o) {
 }
 
 }).call(this,{"isBuffer":require("../../../../../../../../../../../../../../../../../usr/local/lib/node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js")})
-},{"../../../../../../../../../../../../../../../../../usr/local/lib/node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js":110}],96:[function(require,module,exports){
-if (typeof Object.create === 'function') {
-  // implementation from standard node.js 'util' module
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    ctor.prototype = Object.create(superCtor.prototype, {
-      constructor: {
-        value: ctor,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
-  };
-} else {
-  // old school shim for old browsers
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    var TempCtor = function () {}
-    TempCtor.prototype = superCtor.prototype
-    ctor.prototype = new TempCtor()
-    ctor.prototype.constructor = ctor
-  }
-}
-
-},{}],97:[function(require,module,exports){
+},{"../../../../../../../../../../../../../../../../../usr/local/lib/node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js":163}],148:[function(require,module,exports){
+arguments[4][48][0].apply(exports,arguments)
+},{"dup":48}],149:[function(require,module,exports){
 module.exports = Array.isArray || function (arr) {
   return Object.prototype.toString.call(arr) == '[object Array]';
 };
 
-},{}],98:[function(require,module,exports){
+},{}],150:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -9125,7 +17570,7 @@ function base64DetectIncompleteChar(buffer) {
   this.charLength = this.charReceived ? 3 : 0;
 }
 
-},{"buffer":104}],99:[function(require,module,exports){
+},{"buffer":157}],151:[function(require,module,exports){
 (function (process){
 exports = module.exports = require('./lib/_stream_readable.js');
 exports.Stream = require('stream');
@@ -9139,7 +17584,7 @@ if (!process.browser && process.env.READABLE_STREAM === 'disable') {
 }
 
 }).call(this,require('_process'))
-},{"./lib/_stream_duplex.js":90,"./lib/_stream_passthrough.js":91,"./lib/_stream_readable.js":92,"./lib/_stream_transform.js":93,"./lib/_stream_writable.js":94,"_process":112,"stream":129}],100:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":142,"./lib/_stream_passthrough.js":143,"./lib/_stream_readable.js":144,"./lib/_stream_transform.js":145,"./lib/_stream_writable.js":146,"_process":165,"stream":182}],152:[function(require,module,exports){
 module.exports={
   "name": "cheerio",
   "version": "0.17.0",
@@ -9215,7 +17660,7 @@ module.exports={
   "readme": "ERROR: No README data found!"
 }
 
-},{}],101:[function(require,module,exports){
+},{}],153:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -16005,7 +24450,7 @@ module.exports={
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],102:[function(require,module,exports){
+},{}],154:[function(require,module,exports){
 
 /***** xregexp.js *****/
 
@@ -18315,9 +26760,11 @@ XRegExp = XRegExp || (function (undef) {
 }(XRegExp));
 
 
-},{}],103:[function(require,module,exports){
+},{}],155:[function(require,module,exports){
 
-},{}],104:[function(require,module,exports){
+},{}],156:[function(require,module,exports){
+arguments[4][155][0].apply(exports,arguments)
+},{"dup":155}],157:[function(require,module,exports){
 (function (global){
 /*!
  * The buffer module from node.js, for the browser.
@@ -20110,7 +28557,7 @@ function isnan (val) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"base64-js":105,"ieee754":106,"isarray":107}],105:[function(require,module,exports){
+},{"base64-js":158,"ieee754":159,"isarray":160}],158:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -20226,7 +28673,7 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-},{}],106:[function(require,module,exports){
+},{}],159:[function(require,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = nBytes * 8 - mLen - 1
@@ -20312,14 +28759,14 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],107:[function(require,module,exports){
+},{}],160:[function(require,module,exports){
 var toString = {}.toString;
 
 module.exports = Array.isArray || function (arr) {
   return toString.call(arr) == '[object Array]';
 };
 
-},{}],108:[function(require,module,exports){
+},{}],161:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -20623,9 +29070,9 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],109:[function(require,module,exports){
-arguments[4][96][0].apply(exports,arguments)
-},{"dup":96}],110:[function(require,module,exports){
+},{}],162:[function(require,module,exports){
+arguments[4][48][0].apply(exports,arguments)
+},{"dup":48}],163:[function(require,module,exports){
 /*!
  * Determine if an object is a Buffer
  *
@@ -20648,7 +29095,7 @@ function isSlowBuffer (obj) {
   return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
 }
 
-},{}],111:[function(require,module,exports){
+},{}],164:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -20876,7 +29323,7 @@ var substr = 'ab'.substr(-1) === 'b'
 ;
 
 }).call(this,require('_process'))
-},{"_process":112}],112:[function(require,module,exports){
+},{"_process":165}],165:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -21058,10 +29505,10 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],113:[function(require,module,exports){
+},{}],166:[function(require,module,exports){
 module.exports = require("./lib/_stream_duplex.js")
 
-},{"./lib/_stream_duplex.js":114}],114:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":167}],167:[function(require,module,exports){
 // a duplex stream is just a stream that is both readable and writable.
 // Since JS doesn't have multiple prototypal inheritance, this class
 // prototypally inherits from Readable, and then parasitically from
@@ -21137,7 +29584,7 @@ function forEach(xs, f) {
     f(xs[i], i);
   }
 }
-},{"./_stream_readable":116,"./_stream_writable":118,"core-util-is":121,"inherits":109,"process-nextick-args":123}],115:[function(require,module,exports){
+},{"./_stream_readable":169,"./_stream_writable":171,"core-util-is":174,"inherits":162,"process-nextick-args":176}],168:[function(require,module,exports){
 // a passthrough stream.
 // basically just the most minimal sort of Transform stream.
 // Every written chunk gets output as-is.
@@ -21164,7 +29611,7 @@ function PassThrough(options) {
 PassThrough.prototype._transform = function (chunk, encoding, cb) {
   cb(null, chunk);
 };
-},{"./_stream_transform":117,"core-util-is":121,"inherits":109}],116:[function(require,module,exports){
+},{"./_stream_transform":170,"core-util-is":174,"inherits":162}],169:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -22108,7 +30555,7 @@ function indexOf(xs, x) {
   return -1;
 }
 }).call(this,require('_process'))
-},{"./_stream_duplex":114,"./internal/streams/BufferList":119,"_process":112,"buffer":104,"buffer-shims":120,"core-util-is":121,"events":108,"inherits":109,"isarray":122,"process-nextick-args":123,"string_decoder/":130,"util":103}],117:[function(require,module,exports){
+},{"./_stream_duplex":167,"./internal/streams/BufferList":172,"_process":165,"buffer":157,"buffer-shims":173,"core-util-is":174,"events":161,"inherits":162,"isarray":175,"process-nextick-args":176,"string_decoder/":183,"util":156}],170:[function(require,module,exports){
 // a transform stream is a readable/writable stream where you do
 // something with the data.  Sometimes it's called a "filter",
 // but that's not a great name for it, since that implies a thing where
@@ -22291,7 +30738,7 @@ function done(stream, er, data) {
 
   return stream.push(null);
 }
-},{"./_stream_duplex":114,"core-util-is":121,"inherits":109}],118:[function(require,module,exports){
+},{"./_stream_duplex":167,"core-util-is":174,"inherits":162}],171:[function(require,module,exports){
 (function (process){
 // A bit simpler than readable streams.
 // Implement an async ._write(chunk, encoding, cb), and it'll handle all
@@ -22848,7 +31295,7 @@ function CorkedRequest(state) {
   };
 }
 }).call(this,require('_process'))
-},{"./_stream_duplex":114,"_process":112,"buffer":104,"buffer-shims":120,"core-util-is":121,"events":108,"inherits":109,"process-nextick-args":123,"util-deprecate":124}],119:[function(require,module,exports){
+},{"./_stream_duplex":167,"_process":165,"buffer":157,"buffer-shims":173,"core-util-is":174,"events":161,"inherits":162,"process-nextick-args":176,"util-deprecate":177}],172:[function(require,module,exports){
 'use strict';
 
 var Buffer = require('buffer').Buffer;
@@ -22913,7 +31360,7 @@ BufferList.prototype.concat = function (n) {
   }
   return ret;
 };
-},{"buffer":104,"buffer-shims":120}],120:[function(require,module,exports){
+},{"buffer":157,"buffer-shims":173}],173:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -23025,7 +31472,7 @@ exports.allocUnsafeSlow = function allocUnsafeSlow(size) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"buffer":104}],121:[function(require,module,exports){
+},{"buffer":157}],174:[function(require,module,exports){
 (function (Buffer){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -23136,9 +31583,9 @@ function objectToString(o) {
 }
 
 }).call(this,{"isBuffer":require("../../../../insert-module-globals/node_modules/is-buffer/index.js")})
-},{"../../../../insert-module-globals/node_modules/is-buffer/index.js":110}],122:[function(require,module,exports){
-arguments[4][107][0].apply(exports,arguments)
-},{"dup":107}],123:[function(require,module,exports){
+},{"../../../../insert-module-globals/node_modules/is-buffer/index.js":163}],175:[function(require,module,exports){
+arguments[4][160][0].apply(exports,arguments)
+},{"dup":160}],176:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -23185,7 +31632,7 @@ function nextTick(fn, arg1, arg2, arg3) {
 }
 
 }).call(this,require('_process'))
-},{"_process":112}],124:[function(require,module,exports){
+},{"_process":165}],177:[function(require,module,exports){
 (function (global){
 
 /**
@@ -23256,10 +31703,10 @@ function config (name) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],125:[function(require,module,exports){
+},{}],178:[function(require,module,exports){
 module.exports = require("./lib/_stream_passthrough.js")
 
-},{"./lib/_stream_passthrough.js":115}],126:[function(require,module,exports){
+},{"./lib/_stream_passthrough.js":168}],179:[function(require,module,exports){
 (function (process){
 var Stream = (function (){
   try {
@@ -23279,13 +31726,13 @@ if (!process.browser && process.env.READABLE_STREAM === 'disable' && Stream) {
 }
 
 }).call(this,require('_process'))
-},{"./lib/_stream_duplex.js":114,"./lib/_stream_passthrough.js":115,"./lib/_stream_readable.js":116,"./lib/_stream_transform.js":117,"./lib/_stream_writable.js":118,"_process":112}],127:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":167,"./lib/_stream_passthrough.js":168,"./lib/_stream_readable.js":169,"./lib/_stream_transform.js":170,"./lib/_stream_writable.js":171,"_process":165}],180:[function(require,module,exports){
 module.exports = require("./lib/_stream_transform.js")
 
-},{"./lib/_stream_transform.js":117}],128:[function(require,module,exports){
+},{"./lib/_stream_transform.js":170}],181:[function(require,module,exports){
 module.exports = require("./lib/_stream_writable.js")
 
-},{"./lib/_stream_writable.js":118}],129:[function(require,module,exports){
+},{"./lib/_stream_writable.js":171}],182:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -23414,18 +31861,18 @@ Stream.prototype.pipe = function(dest, options) {
   return dest;
 };
 
-},{"events":108,"inherits":109,"readable-stream/duplex.js":113,"readable-stream/passthrough.js":125,"readable-stream/readable.js":126,"readable-stream/transform.js":127,"readable-stream/writable.js":128}],130:[function(require,module,exports){
-arguments[4][98][0].apply(exports,arguments)
-},{"buffer":104,"dup":98}],131:[function(require,module,exports){
-arguments[4][96][0].apply(exports,arguments)
-},{"dup":96}],132:[function(require,module,exports){
+},{"events":161,"inherits":162,"readable-stream/duplex.js":166,"readable-stream/passthrough.js":178,"readable-stream/readable.js":179,"readable-stream/transform.js":180,"readable-stream/writable.js":181}],183:[function(require,module,exports){
+arguments[4][150][0].apply(exports,arguments)
+},{"buffer":157,"dup":150}],184:[function(require,module,exports){
+arguments[4][48][0].apply(exports,arguments)
+},{"dup":48}],185:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],133:[function(require,module,exports){
+},{}],186:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -24015,4 +32462,4 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":132,"_process":112,"inherits":131}]},{},[1]);
+},{"./support/isBuffer":185,"_process":165,"inherits":184}]},{},[1]);
