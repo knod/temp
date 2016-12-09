@@ -1,15 +1,8 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var unfluff = require('unfluff');
+var unfluff = require('unfluff-custom');
 var detect = require('detect-lang-flex');
-// var lngDetector = new (require('languagedetect'));
 
 (function(){
-	detect( $(document.body).text() ).then(function (data) { console.log(data) } );
-	// var langs = lngDetector.detect( $(document.body).text() );
-	// langs.sort(function (a, b) {
-	// 	return b[1] - a[1];
-	// })
-	// console.log(lngDetector.getLanguages());
 
 	var readOptions = {
 		"wpm": 300,
@@ -32,20 +25,15 @@ var detect = require('detect-lang-flex');
 				read( request.selectedText );
 				break;
 			case "readFullPage":
-
 				detect( $(document.body).text() ).then(function (data) {
-
 					var lang = data.iso6391 || 'en',
 						data = unfluff( document.documentElement.outerHTML, lang );
-					console.log('lang:', lang)
 					read( data.text )
-
 				});
-
 				break;
 			default:
 				break;
-		}
+		}  // End which event
 
 	});
 
@@ -97,124 +85,9 @@ var detect = require('detect-lang-flex');
 		});
 	}
 
-	// Detecting languages the hard way
-
-	function detectLanguage () {
-	/* 
-	* Tries to detect the page language using actual text
-	* from the page (since meta data has been insufficient)
-	*/
-		// Default :P
-		var lang = 'en';
-
-		var preText = '',
-			$elems 	= $('p');
-
-		for ( let eli = 0; eli < $elems.length; eli++ ) {
-			preText += $( $elems[eli] ).text();
-		}
-
-		// Total number of words
-		var numWords 	= preText.split(' ').length,
-			numInLang 	= 0;
-
-		// console.log('total words:', numWords)
-
-		// Find other languages (let's start with greek)
-		var langMatch 	= matchLanguage( preText ),
-			code 		= langMatch[0],
-			numMatches 	= langMatch[1]
-
-		var ratio = numMatches/numWords;
-		// console.log('ratio:', ratio)
-
-		// If more than half the words are in the other language
-		if ( ratio > 0.5 ) {
-			lang = code;
-		}
-
-		// console.log('lang:', lang);
-		return lang;
-	}  // End detectLanguage()
-
-	function matchLanguage ( text ) {
-
-		// // Can we just use stopwords?
-		// 	stopwords = {
-		//     ar: require('../data/stopwords/stopwords-ar.js'),
-		//     bg: require('../data/stopwords/stopwords-bg.js'),
-		//     cs: require('../data/stopwords/stopwords-cs.js'),
-		//     da: require('../data/stopwords/stopwords-da.js'),
-		//     de: require('../data/stopwords/stopwords-de.js'),
-		//     el: require('../data/stopwords/stopwords-el.js'),
-		//     en: require('../data/stopwords/stopwords-en.js'),
-		//     es: require('../data/stopwords/stopwords-es.js'),
-		//     fi: require('../data/stopwords/stopwords-fi.js'),
-		//     fr: require('../data/stopwords/stopwords-fr.js'),
-		//     hu: require('../data/stopwords/stopwords-hu.js'),
-		//     id: require('../data/stopwords/stopwords-id.js'),
-		//     it: require('../data/stopwords/stopwords-it.js'),
-		//     ko: require('../data/stopwords/stopwords-ko.js'),
-		//     nb: require('../data/stopwords/stopwords-nb.js'),
-		//     no: require('../data/stopwords/stopwords-no.js'),
-		//     pl: require('../data/stopwords/stopwords-pl.js'),
-		//     pt: require('../data/stopwords/stopwords-pt.js'),
-		//     ru: require('../data/stopwords/stopwords-ru.js'),
-		//     sv: require('../data/stopwords/stopwords-sv.js'),
-		//     th: require('../data/stopwords/stopwords-th.js'),
-		//     tr: require('../data/stopwords/stopwords-tr.js'),
-		//     zh: require('../data/stopwords/stopwords-zh.js')
-		//   };
-		// en is only alphabetical characters
-		var regexes = {
-			ar: /[\u0600-\u06FF]+/g, bg: /x+/g, cs: /x+/g,
-			da: /x+/g, de: /x+/g, el: /[\u0370-\u03FF]+/g,
-			en: /[\u0041-\u005A|\u0061-\u007A]+/g, es: /x+/g, fi: /x+/g,
-			fr: /x+/g, hu: /x+/g, id: /x+/g,
-			it: /x+/g, ko: /x+/g, nb: /x+/g,
-			no: /x+/g, pl: /x+/g, pt: /x+/g,
-			ru: /x+/g, sv: /x+/g, th: /x+/g,
-			tr: /x+/g, zh: /x+/g
-		};
-
-		// var regexes = require('./node_modules/unfluff/data/stopwords/stopwords-regex.js')
-
-		// If one is added here, a file needs to be added to ../data/stopwords and
-		// it needs to be added to the list in stopwords.js
-		var codes = [ 'el', 'en' ];
-
-		// var codes = [ 'ar', 'bg', 'cs', 'da', 'de', 'el', 'en',
-		// 			'es', 'fi', 'fr', 'hu', 'id', 'it', 'ko', 'nb', 'no',
-		// 			'pl', 'pt', 'ru', 'sv', 'th', 'tr', 'zh' ];
-
-		var topCode 	= 'en',
-			topMatches 	= 0;
-
-		// Get the code for the language code that has the most matching text
-		for ( let codei = 0; codei < codes.length; codei++ ) {
-			let code 		= codes[ codei ];
-
-			// Get number of matches in this language
-			let matches 	= text.match( regexes[ code ] ),
-				// Because .match can come out to null (comment here: http://stackoverflow.com/a/1072782/3791179)
-				numMatches 	= ( matches || [] ).length;
-
-			// console.log('matches:', code + ':', matches)
-			// if ( matches ) { numMatches = matches.length; }
-
-			// Top the previous one, if you can
-			if ( numMatches > topMatches ) {
-				topMatches 	= numMatches;
-				topCode 	= code;
-			}
-		}  // end for each language code
-
-		return [topCode, topMatches];
-	};  // End matchLanguage()
-
 })();
 
-},{"detect-lang-flex":2,"unfluff":81}],2:[function(require,module,exports){
+},{"detect-lang-flex":2,"unfluff-custom":81}],2:[function(require,module,exports){
 var fs = require('fs'),
     path = require('path');
 
@@ -224,7 +97,7 @@ var parseInput = function (input) {
         if (typeof input !== 'string' && !(input instanceof String)) {
             throw new Error('Input must be a string');
         }
-        // test file
+        // test file (if on the back end)
         if (fs.existsSync && fs.existsSync(path.normalize(input))) {
             fs.readFile(path.normalize(input), function (err, data) {
                 if (err) throw err;
@@ -9081,14 +8954,15 @@ void function () {
       return tag.attr('href');
     },
     lang: function (doc) {
-      var cache$, l, tag, value, content;
+      var cache$, l, metaLang, value;
       l = null != (cache$ = doc('html')) ? cache$.attr('lang') : void 0;
       if (!l) {
-        content = doc('meta[name=lang]').attr('content')
+        // doc('meta[whatever]') always returns a value. Need to try .attr
+        metaLang = doc('meta[name=lang]').attr('content')
               || doc('meta[http-equiv=content-language]').attr('content');
               // || doc('meta[name=language]').attr('content')
               // || doc('meta[name=Language]').attr('content');  // What about content like "Greek"?
-        l = null != content ? content : void 0;
+        l = null != metaLang ? metaLang : void 0;
       }
       if (l) {
         value = l.slice(0, +1 + 1 || 9e9);
@@ -9454,7 +9328,6 @@ void function () {
 void function () {
   var _, addNewlineToBr, cleanParagraphText, convertToText, formatter, linksToText, removeFewwordsParagraphs, removeNegativescoresNodes, replaceWithText, stopwords, ulToText, XRegExp;
   stopwords = require('./stopwords');
-  // stopwords = require('./stopwords');
   _ = require('lodash');
   XRegExp = require('xregexp').XRegExp;
   module.exports = formatter = function (doc, topNode, language) {
@@ -9609,7 +9482,7 @@ void function () {
     th: require('../data/stopwords/stopwords-th.js'),
     tr: require('../data/stopwords/stopwords-tr.js'),
     zh: require('../data/stopwords/stopwords-zh.js')
-  };
+  };  // End lanugages{}
 
   module.exports = stopwords = function (content, language) {
 
