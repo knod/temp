@@ -16,7 +16,7 @@ var detect = require('detect-lang-flex');
 	chrome.extension.onMessage.addListener(function (request, sender, sendResponse) {
 
 		var read = function ( text ) {
-			var filtered = text.replace(/\[\d{0,3}?]/g, '');
+			var filtered = text.replace(/\[\d{0,3}?]/g, '');  // Removes wikipedia-like footnote references
 			getReadOptions(filtered);
 		}
 
@@ -33,7 +33,7 @@ var detect = require('detect-lang-flex');
 				break;
 			default:
 				break;
-		}  // End which event
+		}  // end which event
 
 	});
 
@@ -9391,7 +9391,8 @@ void function () {
         hangingText = '';
       }
       txt = cleanParagraphText(node.text());
-      txt = txt.replace(/(\w+\.)([A-Z]+)/, '$1 $2');
+      // Is this supposed to address author mis-typings?
+      // txt = txt.replace(/(\w+\.)([A-Z]+)/, '$1 $2');
       return txts = txts.concat(txt.split(/\r?\n/));
     });
     if (hangingText.length > 0) {

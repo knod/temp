@@ -6,9 +6,9 @@
         ]
     },
     "browser_action": {
-		"name": "Read",
+		"name": "Read_Temp",
         "default_icon": "icon128.png",
-        "default_title": "Read"
+        "default_title": "Read_Temp"
     },
     "content_scripts": [
         {
@@ -37,14 +37,14 @@
         "48": "icon48.png"
     },
     "manifest_version": 2,
-    "name": "Read",
+    "name": "Read_Temp",
     "offline_enabled": true,
     "permissions": [
         "contextMenus",
         "activeTab",
 		"storage"
     ],
-    "short_name": "Read",
+    "short_name": "Read_Temp",
     "update_url": "https://clients2.google.com/service/update2/crx",
     "version": "2.0.3",
 	"web_accessible_resources": [

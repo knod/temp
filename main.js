@@ -15,7 +15,7 @@ var detect = require('detect-lang-flex');
 	chrome.extension.onMessage.addListener(function (request, sender, sendResponse) {
 
 		var read = function ( text ) {
-			var filtered = text.replace(/\[\d{0,3}?]/g, '');
+			var filtered = text.replace(/\[\d{0,3}?]/g, '');  // Removes wikipedia-like footnote references
 			getReadOptions(filtered);
 		}
 
@@ -32,7 +32,7 @@ var detect = require('detect-lang-flex');
 				break;
 			default:
 				break;
-		}  // End which event
+		}  // end which event
 
 	});
 
