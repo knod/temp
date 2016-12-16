@@ -25,7 +25,8 @@
             ],
             "matches": [
                 "http://*/*",
-                "https://*/*"
+                "https://*/*",
+                "<all_urls>"
             ]
         }
     ],
@@ -40,6 +41,7 @@
     "name": "Read_Temp",
     "offline_enabled": true,
     "permissions": [
+        "<all_urls>",
         "contextMenus",
         "activeTab",
 		"storage"
