@@ -16,18 +16,21 @@ var detect = require('detect-lang-flex');
 	chrome.extension.onMessage.addListener(function (request, sender, sendResponse) {
 
 		var read = function ( text ) {
-			var filtered = text.replace(/\[\d{0,3}?]/g, '');  // Removes wikipedia-like footnote references
-			getReadOptions(filtered);
+			// var text = text.replace(/\[\d{0,3}?]/g, '');  // Removes wikipedia-like footnote references
+			getReadOptions(text);
 		}
 
 		switch (request.functiontoInvoke) {
 			case "readSelectedText":
+				console.log(request.selectedText);
 				read( request.selectedText );
 				break;
 			case "readFullPage":
-				detect( $(document.body).text() ).then(function (data) {
+				var $clone = $('html').clone();
+				$clone.find('sup').remove();
+				detect( $clone.text() ).then(function (data) {
 					var lang = data.iso6391 || 'en',
-						data = unfluff( document.documentElement.outerHTML, lang );
+						data = unfluff( $clone.html(), lang );
 					read( data.text )
 				});
 				break;
