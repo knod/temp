@@ -1,4 +1,4 @@
-var unfluff = require('unfluff-custom');
+var unfluff = require('unfluff-client');
 var detect = require('detect-lang-flex');
 
 (function(){
