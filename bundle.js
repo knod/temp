@@ -21,11 +21,10 @@ var detect = require('detect-lang-flex');
 
 		switch (request.functiontoInvoke) {
 			case "readSelectedText":
-				var contents = document.getSelection().getRangeAt(0).cloneContents();
-				var container = $('<div></div>');
-				container.append(contents);
-				container.find('sup').remove();
-				read( container.text() );
+				var contents 	= document.getSelection().getRangeAt(0).cloneContents(),
+					$container 	= $('<div>').append(contents);
+				$container.find('sup').remove();
+				read( $container.text() );
 				break;
 			case "readFullPage":
 				var $clone = $('html').clone();
@@ -33,7 +32,6 @@ var detect = require('detect-lang-flex');
 				$clone.find('script').remove();
 				$clone.find('style').remove();
 				detect( $clone.text() ).then(function (data) {
-					console.log('data', data)
 					var lang = data.iso6391 || 'en',
 						data = unfluff( $clone.html(), lang );
 					read( data.text )

@@ -20,11 +20,10 @@ var detect = require('detect-lang-flex');
 
 		switch (request.functiontoInvoke) {
 			case "readSelectedText":
-				var contents = document.getSelection().getRangeAt(0).cloneContents();
-				var container = $('<div></div>');
-				container.append(contents);
-				container.find('sup').remove();
-				read( container.text() );
+				var contents 	= document.getSelection().getRangeAt(0).cloneContents(),
+					$container 	= $('<div>').append(contents);
+				$container.find('sup').remove();
+				read( $container.text() );
 				break;
 			case "readFullPage":
 				var $clone = $('html').clone();
