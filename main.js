@@ -15,8 +15,6 @@ var detect = require('detect-lang-flex');
 	chrome.extension.onMessage.addListener(function (request, sender, sendResponse) {
 
 		var read = function ( text ) {
-			// Testing other methodologies
-			// var text = text.replace(/\[\d{0,3}?]/g, '');  // Removes wikipedia-like footnote references
 			getReadOptions(text);
 		}
 
@@ -31,6 +29,8 @@ var detect = require('detect-lang-flex');
 			case "readFullPage":
 				var $clone = $('html').clone();
 				$clone.find('sup').remove();
+				$clone.find('script').remove();
+				$clone.find('style').remove();
 				detect( $clone.text() ).then(function (data) {
 					var lang = data.iso6391 || 'en',
 						data = unfluff( $clone.html(), lang );
